@@ -1,103 +1,156 @@
-import Image from "next/image";
+// pages/index.js
+import Head from 'next/head';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    return (
+        <div className="min-h-screen bg-white relative overflow-hidden font-inter">
+            <Head>
+                <title>Baatein - India's Leading Voice Platform</title>
+                <meta name="description" content="Join Baatein as a partner and earn ₹40,000-₹80,000 monthly" />
+                <link rel="icon" href="/favicon.ico" />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+                    rel="stylesheet"
+                />
+            </Head>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <main className="max-w-6xl mx-auto px-4 pt-16 pb-32 text-center relative z-10">
+                {/* Logo + Header */}
+                <div className="flex flex-col items-center mb-6">
+                    <div className="flex items-center justify-center">
+                        <Image
+                            src="/assets/Baaten Logo 6.png"
+                            alt="Baatein Logo"
+                            width={64}
+                            height={64}
+                        />
+                        <h1 className="text-5xl font-bold text-[#F5BC1C] ml-4">Baatein</h1>
+                    </div>
+                </div>
+
+                <h2 className="text-4xl text-[#AFAFAF] font-bold mb-6">Welcomes You Aboard</h2>
+
+                {/* Main Pitch */}
+                <h3 className="text-[28px] md:text-[32px] font-bold text-black mb-4">
+                    Earn <span className="text-[#F5BC1C]">₹40,000–₹80,000</span> Monthly as a Baatein Partner
+                </h3>
+                <p className="text-lg text-[#2D2D2D] mb-8">
+                    Join 1,000+ partners growing their community and income on India's leading voice platform.
+                </p>
+
+                {/* CTA Button */}
+                <div className="mb-16">
+                    <Link href="/language" className="inline-flex items-center bg-[#F5BC1C] text-white font-semibold py-4 px-10 rounded-lg text-lg hover:bg-yellow-500 transition duration-300">
+                        Apply to become a Partner
+                        <img src="/assets/icon.png" alt="right-arrow" className="ml-9" width={16} height={16} />
+                    </Link>
+                </div>
+
+                {/* Feature Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-70 relative max-w-6xl mx-auto">
+                    {[
+                        {
+                            title: "Multiple Revenue",
+                            desc: "Earn through voice rooms, virtual gifts, sponsored events, and premium content",
+                            icon: "/assets/multiple-revenue.png"
+                        },
+                        {
+                            title: "Rewards System",
+                            desc: "Earn additional rewards based on your lifetime earnings and total time spent on platform",
+                            icon: "/assets/rewards.png"
+                        },
+                        {
+                            title: "Weekly Payouts",
+                            desc: "Reliable transfers every 7 days directly to your bank account or UPI",
+                            icon: "/assets/weekly-payout.png"
+                        }
+                    ].map(({ title, desc, icon }, index) => (
+                        <div key={title} className="flex items-start space-x-4 relative">
+                            <div className="flex-shrink-0">
+                                <div className="w-[66px] h-[66px] rounded-full border border-[#F5BC1C] flex items-center justify-center bg-white">
+                                    <Image
+                                        src={icon}
+                                        alt={title}
+                                        width={32}
+                                        height={32}
+                                        className="object-contain"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-start text-left flex-1">
+                                <h4 className="text-[18px] font-semibold text-[#1A1A1A] mb-2">{title}</h4>
+                                <p className="text-sm text-[#AFAFAF] leading-[21px]">{desc}</p>
+                            </div>
+                            {index < 2 && (
+                                <div className="md:block absolute -right-4 top-1/2 -translate-y-1/2">
+                                    <img
+                                        src="/assets/line.png"
+                                        alt="Divider"
+                                        width={2}
+                                        height={5}
+                                        className="opacity-20 h-[100px] w-[2px] bg-[#F5BC1C]"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </main>
+
+            {/* Wave Background and People */}
+            <div className="absolute bottom-0 left-0 right-0 w-full">
+                <div className="relative h-[400px]">
+                    {/* Wave Background - Three Layers */}
+                    <div className="absolute bottom-0 w-full">
+                        <img
+                            src="/assets/wave-top.png"
+                            alt="Top Wave"
+                            className="object-bottom"
+                        />
+                    </div>
+                    <div className="absolute bottom-0 w-full">
+                        <img
+                            src="/assets/wave-middle.png"
+                            alt="Middle Wave"
+                            className="object-bottom"
+                        />
+                    </div>
+                    <div className="absolute bottom-0 w-full">
+                        <img
+                            src="/assets/wave-bottom.png"
+                            alt="Bottom Wave"
+                            className="object-bottom"
+                        />
+                    </div>
+
+                    {/* People Illustrations */}
+                    <div className="relative bottom-0 w-full top-[50px]">
+                        <div className="max-w-6xl mx-auto px-4">
+                            <div className="flex justify-between items-end">
+                                {[
+                                    { src: "/assets/person-hijab.png", alt: "Person with hijab", height: 280 },
+                                    { src: "/assets/person-music.png", alt: "Person with music", height: 300 },
+                                    { src: "/assets/person-headphones.png", alt: "Person with headphones", height: 290 },
+                                    { src: "/assets/person-phone.png", alt: "Person using phone", height: 270 }
+                                ].map((person, idx) => (
+                                    <div key={idx} className="relative w-1/4" style={{ height: `${person.height}px` }}>
+                                        <Image
+                                            src={person.src}
+                                            alt={person.alt}
+                                            layout="fill"
+                                            objectFit="contain"
+                                            objectPosition="bottom"
+                                            priority
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
