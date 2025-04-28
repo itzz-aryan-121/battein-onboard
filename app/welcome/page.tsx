@@ -34,9 +34,44 @@ const RegistrationForm = () => {
 
   return (
     <div className="bg-white flex flex-col min-h-screen relative overflow-x-hidden pb-40">
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          0% { opacity: 0; transform: translateY(40px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeInUp {
+          animation: fadeInUp 1s cubic-bezier(0.23, 1, 0.32, 1) both;
+        }
+        @keyframes floatY {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-16px); }
+        }
+        .animate-floatY {
+          animation: floatY 3.5s ease-in-out infinite;
+        }
+        .animate-floatY-delay-1 {
+          animation-delay: 0.7s;
+        }
+        .animate-floatY-delay-2 {
+          animation-delay: 1.4s;
+        }
+        @keyframes waveMove {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-40px); }
+        }
+        .animate-waveMove {
+          animation: waveMove 10s linear infinite alternate;
+        }
+        .animate-waveMove-slow {
+          animation: waveMove 16s linear infinite alternate;
+        }
+        .animate-waveMove-slowest {
+          animation: waveMove 22s linear infinite alternate;
+        }
+      `}</style>
       <div className="max-w-6xl mx-auto w-full flex flex-col md:flex-row items-start justify-between px-6 pt-12 pb-0 relative z-10">
         {/* Left: Form */}
-        <div className="w-[964px] md:w-[54%]">
+        <div className="w-[964px] md:w-[54%] animate-fadeInUp">
           {/* Logo and Heading */}
           <div className="flex items-center mb-2">
             <Image src="/assets/Baaten Logo 6.png" alt="Baatein Logo" width={56} height={56} />
@@ -44,7 +79,6 @@ const RegistrationForm = () => {
           </div>
           <h1 className="text-[32px] font-bold text-[#F5BC1C] mb-2 relative w-fit">
             Welcome to Baatein Family
-            
           </h1>
           <p className="text-[#2D2D2D] text-lg mb-8">Turn your time into income. Start your journey as a Partner.</p>
 
@@ -129,18 +163,16 @@ const RegistrationForm = () => {
         {/* Right: Illustration and Ellipses */}
         <div className="hidden md:flex flex-1 items-end justify-end relative min-h-[600px] z-50">
           {/* Floating ellipses */}
-          <Image src="/assets/Ellipse 799.png" alt="" width={18} height={18} className="absolute right-10 top-10" />
-          <Image src="/assets/Ellipse 802.png" alt="" width={10} height={10} className="absolute right-32 top-24" />
-          <Image src="/assets/Ellipse 799.png" alt="" width={14} height={14} className="absolute right-20 top-1/2" />
-          <Image src="/assets/Ellipse 799.png" alt="" width={14} height={14} className="absolute right-20 top-1/2" />
-          <Image src="/assets/Ellipse 799.png" alt="" width={14} height={14} className="absolute right-20 top-1/2" />
+          <Image src="/assets/Ellipse 799.png" alt="" width={18} height={18} className="absolute right-10 top-10 animate-floatY" />
+          <Image src="/assets/Ellipse 802.png" alt="" width={10} height={10} className="absolute right-32 top-24 animate-floatY animate-floatY-delay-1" />
+          <Image src="/assets/Ellipse 799.png" alt="" width={14} height={14} className="absolute right-20 top-1/2 animate-floatY animate-floatY-delay-2" />
           {/* Illustration */}
           <Image
             src="/assets/long man stand.png"
             alt="Baatein User"
             width={447}
             height={891}
-            className="z-50 -mb-10"
+            className="z-50 -mb-10 animate-fadeInUp"
             priority
           />
         </div>
@@ -153,28 +185,28 @@ const RegistrationForm = () => {
             src="/assets/wave-bottom.png"
             alt="Wave Bottom"
             fill
-            className="object-cover w-full h-full absolute left-0 bottom-0 z-10"
+            className="object-cover w-full h-full absolute left-0 bottom-0 z-10 animate-waveMove"
             priority
           />
           <Image
             src="/assets/wave-middle.png"
             alt="Wave Middle"
             fill
-            className="object-cover w-full h-full absolute left-0 bottom-0 z-20"
+            className="object-cover w-full h-full absolute left-0 bottom-0 z-20 animate-waveMove-slow"
             priority
           />
           <Image
             src="/assets/wave-top.png"
             alt="Wave Top"
             fill
-            className="object-cover w-full h-full absolute left-0 bottom-0 z-30"
+            className="object-cover w-full h-full absolute left-0 bottom-0 z-30 animate-waveMove-slowest"
             priority
           />
           <Image
             src="/assets/wave tangled.png"
             alt="Wave Tangled"
             fill
-            className="object-cover w-full h-full absolute left-0 bottom-0 z-40"
+            className="object-cover w-full h-full absolute left-0 bottom-0 z-40 animate-waveMove"
             priority
           />
 
@@ -184,21 +216,21 @@ const RegistrationForm = () => {
             alt=""
             width={32}
             height={32}
-            className="absolute left-[12%] bottom-6 z-50"
+            className="absolute left-[12%] bottom-6 z-50 animate-floatY"
           />
           <Image
             src="/assets/Ellipse 802.png"
             alt=""
             width={18}
             height={18}
-            className="absolute left-[40%] bottom-10 z-50"
+            className="absolute left-[40%] bottom-10 z-50 animate-floatY animate-floatY-delay-1"
           />
           <Image
             src="/assets/Ellipse 799.png"
             alt=""
             width={24}
             height={24}
-            className="absolute right-[18%] bottom-8 z-50"
+            className="absolute right-[18%] bottom-8 z-50 animate-floatY animate-floatY-delay-2"
           />
         </div>
       </div>
