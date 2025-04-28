@@ -77,7 +77,7 @@ export default function LanguageSelection() {
 
   const handleConfirm = () => {
     localStorage.setItem('preferredLanguage', selectedLanguage.toString());
-    router.push('/auth/signin');
+    router.push('/welcome');
   };
 
   const handleCancel = () => {
