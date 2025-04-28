@@ -1,7 +1,8 @@
-// pages/index.js
+// app/page.tsx with animations
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import './animations.css'; 
 
 export default function Home() {
     return (
@@ -18,38 +19,39 @@ export default function Home() {
 
             <main className="max-w-6xl mx-auto px-4 pt-16 pb-32 text-center relative z-10">
                 {/* Logo + Header */}
-                <div className="flex flex-col items-center mb-6">
+                <div className="flex flex-col items-center mb-6 animate-fadeInDown">
                     <div className="flex items-center justify-center">
                         <Image
                             src="/assets/Baaten Logo 6.png"
                             alt="Baatein Logo"
                             width={64}
                             height={64}
+                            className="animate-pulse"
                         />
                         <h1 className="text-5xl font-bold text-[#F5BC1C] ml-4">Baatein</h1>
                     </div>
                 </div>
 
-                <h2 className="text-4xl text-[#AFAFAF] font-bold mb-6">Welcomes You Aboard</h2>
+                <h2 className="text-4xl text-[#AFAFAF] font-bold mb-6 animate-fadeInUp delay-200">Welcomes You Aboard</h2>
 
                 {/* Main Pitch */}
-                <h3 className="text-[28px] md:text-[32px] font-bold text-black mb-4">
+                <h3 className="text-[28px] md:text-[32px] font-bold text-black mb-4 animate-fadeInUp delay-300">
                     Earn <span className="text-[#F5BC1C]">₹40,000–₹80,000</span> Monthly as a Baatein Partner
                 </h3>
-                <p className="text-lg text-[#2D2D2D] mb-8">
+                <p className="text-lg text-[#2D2D2D] mb-8 animate-fadeInUp delay-400">
                     Join 1,000+ partners growing their community and income on India's leading voice platform.
                 </p>
 
                 {/* CTA Button */}
-                <div className="mb-16">
-                    <Link href="/language" className="inline-flex items-center bg-[#F5BC1C] text-white font-semibold py-4 px-10 rounded-lg text-lg hover:bg-yellow-500 transition duration-300">
+                <div className="mb-16 animate-fadeInUp delay-500">
+                    <Link href="/language" className="inline-flex items-center bg-[#F5BC1C] text-white font-semibold py-4 px-10 rounded-lg text-lg hover:bg-yellow-500 transition duration-300 button-animate hover-lift">
                         Apply to become a Partner
                         <img src="/assets/icon.png" alt="right-arrow" className="ml-9" width={16} height={16} />
                     </Link>
                 </div>
 
                 {/* Feature Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-70 relative max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-70 relative max-w-6xl mx-auto stagger-children">
                     {[
                         {
                             title: "Multiple Revenue",
@@ -67,9 +69,9 @@ export default function Home() {
                             icon: "/assets/weekly-payout.png"
                         }
                     ].map(({ title, desc, icon }, index) => (
-                        <div key={title} className="flex items-start space-x-4 relative">
+                        <div key={title} className="flex items-start space-x-4 relative animate-fadeInUp hover-lift">
                             <div className="flex-shrink-0">
-                                <div className="w-[66px] h-[66px] rounded-full border border-[#F5BC1C] flex items-center justify-center bg-white">
+                                <div className="w-[66px] h-[66px] rounded-full border border-[#F5BC1C] flex items-center justify-center bg-white hover-scale">
                                     <Image
                                         src={icon}
                                         alt={title}
@@ -107,35 +109,37 @@ export default function Home() {
                         <img
                             src="/assets/wave-top.png"
                             alt="Top Wave"
-                            className="object-bottom"
+                            className="object-bottom animate-waveMove"
                         />
                     </div>
                     <div className="absolute bottom-0 w-full">
                         <img
                             src="/assets/wave-middle.png"
                             alt="Middle Wave"
-                            className="object-bottom"
+                            className="object-bottom animate-waveMove delay-200"
+                            style={{ animationDuration: '16s' }}
                         />
                     </div>
                     <div className="absolute bottom-0 w-full">
                         <img
                             src="/assets/wave-bottom.png"
                             alt="Bottom Wave"
-                            className="object-bottom"
+                            className="object-bottom animate-waveMove delay-400"
+                            style={{ animationDuration: '22s' }}
                         />
                     </div>
 
                     {/* People Illustrations */}
                     <div className="relative bottom-0 w-full top-[50px]">
                         <div className="max-w-6xl mx-auto px-4">
-                            <div className="flex justify-between items-end">
+                            <div className="flex justify-between items-end stagger-children">
                                 {[
                                     { src: "/assets/person-hijab.png", alt: "Person with hijab", height: 280 },
                                     { src: "/assets/person-music.png", alt: "Person with music", height: 300 },
                                     { src: "/assets/person-headphones.png", alt: "Person with headphones", height: 290 },
                                     { src: "/assets/person-phone.png", alt: "Person using phone", height: 270 }
                                 ].map((person, idx) => (
-                                    <div key={idx} className="relative w-1/4" style={{ height: `${person.height}px` }}>
+                                    <div key={idx} className="relative w-1/4 animate-fadeInUp animate-floatY" style={{ height: `${person.height}px`, animationDelay: `${idx * 0.2}s` }}>
                                         <Image
                                             src={person.src}
                                             alt={person.alt}
