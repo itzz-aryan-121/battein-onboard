@@ -1,37 +1,67 @@
 'use client'
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function BaateinEarningsPage() {
   const [videoEnabled, setVideoEnabled] = useState(true);
+  const router = useRouter();
+  
+  const handleAudioSelect = () => {
+    router.push('/avatar-upload');
+  };
+  
+  const handleVideoSelect = () => {
+    if (videoEnabled) {
+      router.push('/video-upload');
+    }
+  };
   
   return (
-    <div className="flex flex-col  bg-white mx-auto pt-20">
+    <div className="flex flex-col bg-white h-screen relative overflow-hidden">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 mx-auto ">
-      <div className="bg-white rounded-3xl shadow-lg p-10 relative z-10 w-[1159px] mx-auto h-[852px] translate-y-20">
-
+      <div className="flex-1 flex flex-col items-center justify-center px-4 mx-auto pt-6 py-5 mt-20 ">
+        <div className="bg-white rounded-3xl shadow-lg p-6 relative z-10 w-full max-w-6xl mx-auto bottom-3 h-[600px]">
           {/* Heading */}
           <h1 className="text-center text-4xl font-bold mb-6">
             <span className="text-[#FDC62B]">Earn</span> <span className="text-gray-800">Through Multiple Features</span>
           </h1>
           
           {/* Subheading */}
-          <div className="text-center mb-12 max-w-3xl mx-auto">
+          <div className="text-center mb-8 max-w-3xl mx-auto">
             <span className="font-semibold">Baatein</span> offers <span className="font-semibold">multiple earning opportunities</span> — connect with users through voice, chat, or video 
             calls, and receive virtual gifts as a token of appreciation. Start earning on your terms today.
           </div>
           
           {/* Section Title */}
-          <h2 className="text-center text-2xl font-bold mb-10">Enable Your Earning Options</h2>
+          <h2 className="text-center text-2xl font-bold mb-8">Enable Your Earning Options</h2>
           
           {/* Two Columns */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Left Column - Audio Calling */}
-            <div className="border-r border-[#FDC62B] pr-6">
+            <div className="border-r border-[#FDC62B] pr-6 relative">
+              {/* Disabled overlay when video is enabled */}
+              {videoEnabled && (
+                <div className="absolute inset-0 bg-gray-200 bg-opacity-70 z-10 flex flex-col items-center justify-center rounded-xl">
+                  <div className="bg-white p-4 rounded-lg shadow-md text-center mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                    <p className="text-gray-700 font-semibold">Audio Calling Unavailable</p>
+                    <p className="text-sm text-gray-500 mt-1">Video Calling is currently enabled</p>
+                  </div>
+                  <button 
+                    onClick={() => setVideoEnabled(false)}
+                    className="bg-[#FDC62B] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#f0b600] transition-colors"
+                  >
+                    Switch to Audio Calling
+                  </button>
+                </div>
+              )}
+              
               <div className="flex items-center mb-6">
                 <div className="p-3 rounded-lg">
-                  <img src="/assets/Voice.png" alt="Audio Icon" className="h-[47.32px] w-[61.86px] object-contain" />
+                  <img src="/assets/Voice.png" alt="Audio Icon" className="h-12 w-16 object-contain" />
                 </div>
                 <div className="ml-3">
                   <h3 className="text-xl font-bold">Audio Calling</h3>
@@ -39,7 +69,10 @@ export default function BaateinEarningsPage() {
                 </div>
               </div>
               
-              <div className="bg-[#FDC62B] rounded-lg py-3 text-center font-bold mb-6">
+              <div 
+                className="bg-[#FDC62B] rounded-lg py-3 text-center font-bold mb-6 cursor-pointer hover:bg-[#f0b600] transition-colors"
+                onClick={!videoEnabled ? handleAudioSelect : undefined}
+              >
                 Earn ₹20,000-₹30,000 Monthly
               </div>
               
@@ -86,7 +119,7 @@ export default function BaateinEarningsPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                   <div className="p-3 rounded-lg">
-                    <img src="/assets/Video.png" alt="Video Icon" className="h-[47.32px] w-[61.86px] object-contain" />
+                    <img src="/assets/Video.png" alt="Video Icon" className="h-12 w-16 object-contain" />
                   </div>
                   <div className="ml-3">
                     <h3 className="text-xl font-bold">Video Calling</h3>
@@ -110,7 +143,10 @@ export default function BaateinEarningsPage() {
                 </div>
               </div>
               
-              <div className="bg-[#FDC62B] rounded-lg py-3 text-center font-bold mb-6">
+              <div 
+                className="bg-[#FDC62B] rounded-lg py-3 text-center font-bold mb-6 cursor-pointer hover:bg-[#f0b600] transition-colors"
+                onClick={handleVideoSelect}
+              >
                 Earn ₹60,000-₹1,00,000 Monthly
               </div>
               
@@ -151,15 +187,36 @@ export default function BaateinEarningsPage() {
         </div>
       </div>
       
-      {/* Bottom Wave */}
-      <div className="w-full relative mt-8">
-        <div className="absolute bottom-0 right-30 w-[276px] h-[288px] top-[-100px] pointer-events-none z-10">
-          <img src="/assets/user money.png" alt="Person with money" className="object-contain" />
+      {/* Bottom Waves and User Money Image */}
+      <div className="w-full absolute bottom-0 left-0 right-0">
+        {/* Person with money image */}
+        <div className="absolute bottom-10 right-36 z-20 w-64">
+          <img src="/assets/user money.png" alt="Person with money" className="w-full h-auto object-contain" />
         </div>
-        <svg viewBox="0 0 1440 320" className="w-full transform translate-y-1" preserveAspectRatio="none">
-          <path fill="#F6BE05" fillOpacity="0.6" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,117.3C672,107,768,117,864,144C960,171,1056,213,1152,218.7C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-          <path fill="#F6BE05" fillOpacity="0.8" d="M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,234.7C672,245,768,235,864,213.3C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        </svg>
+        
+        {/* Waves - stacked in layers */}
+        <div className="relative w-full">
+          {/* Top wave - lightest */}
+          <img 
+            src="/assets/wave-top.png" 
+            alt="Top Wave" 
+            className="w-full object-cover h-40 absolute bottom-20"
+          />
+          
+          {/* Middle wave */}
+          <img 
+            src="/assets/wave-middle.png" 
+            alt="Middle Wave" 
+            className="w-full object-cover h-40 absolute bottom-10"
+          />
+          
+          {/* Bottom wave - darkest */}
+          <img 
+            src="/assets/wave-bottom.png" 
+            alt="Bottom Wave" 
+            className="w-full object-cover h-40 absolute bottom-0"
+          />
+        </div>
       </div>
     </div>
   );

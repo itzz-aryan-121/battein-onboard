@@ -26,8 +26,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Add preload for animations */}
-        <link rel="preload" href="/animations.css" as="style" />
+        {/* Import animations.css from public directory */}
+        <link rel="stylesheet" href="/animations.css" />
         {/* Add preconnect for better performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

@@ -43,15 +43,15 @@ export default function Home() {
                 </p>
 
                 {/* CTA Button */}
-                <div className="mb-16 animate-fadeInUp delay-500">
-                    <Link href="/language" className="inline-flex items-center bg-[#F5BC1C] text-white font-semibold py-4 px-10 rounded-lg text-lg hover:bg-yellow-500 transition duration-300 button-animate hover-lift">
+                <div className="mb-16 delay-500">
+                    <Link href="/language" className="inline-flex items-center bg-[#F5BC1C] text-white font-semibold py-4 px-10 rounded-lg text-lg hover:bg-yellow-500 transition duration-300 button-animate">
                         Apply to become a Partner
                         <img src="/assets/icon.png" alt="right-arrow" className="ml-9" width={16} height={16} />
                     </Link>
                 </div>
 
                 {/* Feature Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-70 relative max-w-6xl mx-auto stagger-children">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-70 relative max-w-6xl mx-auto">
                     {[
                         {
                             title: "Multiple Revenue",
@@ -69,7 +69,7 @@ export default function Home() {
                             icon: "/assets/weekly-payout.png"
                         }
                     ].map(({ title, desc, icon }, index) => (
-                        <div key={title} className="flex items-start space-x-4 relative animate-fadeInUp hover-lift">
+                        <div key={title} className="flex items-start space-x-4 relative animate-fadeInUp cursor-pointer">
                             <div className="flex-shrink-0">
                                 <div className="w-[66px] h-[66px] rounded-full border border-[#F5BC1C] flex items-center justify-center bg-white hover-scale">
                                     <Image
