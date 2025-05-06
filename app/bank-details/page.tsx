@@ -1,496 +1,239 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import FloatingParticles from '../components/FloatingParticles';
 
-export default function BankDetailsPage() {
-  const router = useRouter();
-  const [bankAccountNumber, setBankAccountNumber] = useState('');
-  const [accountHolderName, setAccountHolderName] = useState('');
-  const [ifscCode, setIfscCode] = useState('');
-  const [branchName, setBranchName] = useState('');
-  const [upiId, setUpiId] = useState('');
-  const [chequeFile, setChequeFile] = useState<File | null>(null);
+import { useState } from 'react';
+import Head from 'next/head';
+import Image from 'next/image';
+
+export default function BankDetails() {
+  const [formData, setFormData] = useState<{
+    bankAccountNumber: string;
+    accountHolderName: string;
+    ifscCode: string;
+    branchName: string;
+    upiId: string;
+    cancelCheque: File | null;
+  }>({
+    bankAccountNumber: '',
+    accountHolderName: '',
+    ifscCode: '',
+    branchName: '',
+    upiId: '',
+    cancelCheque: null
+  });
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const [showBankDetails, setShowBankDetails] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Handle bank account number input
-  const handleBankAccountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ''); // Only allow digits
-    setBankAccountNumber(value);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
-  
-  // Handle name input
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAccountHolderName(e.target.value);
-  };
-  
-  // Handle IFSC code input
-  const handleIFSCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Convert to uppercase and remove spaces
-    const value = e.target.value.toUpperCase().replace(/\s/g, '');
-    setIfscCode(value);
-  };
-  
-  // Handle branch name input
-  const handleBranchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBranchName(e.target.value);
-  };
-  
-  // Handle UPI ID input
-  const handleUpiIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUpiId(e.target.value);
-  };
-  
-  // Handle file upload for canceled cheque
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setChequeFile(file);
-      
-      // Simulate upload progress
-      simulateUpload();
-    }
-  };
-  
-  // Simulate file upload with progress
-  const simulateUpload = () => {
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          setIsUploaded(true);
-          return 100;
-        }
-        return prev + 5;
+      setFormData({
+        ...formData,
+        cancelCheque: e.target.files[0]
       });
-    }, 100);
-  };
-  
-  // Handle upload button click
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-  
-  // Toggle between bank details and UPI
-  const togglePaymentMethod = (showBank: boolean) => {
-    setShowBankDetails(showBank);
-  };
-  
-  // Validate form fields
-  const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
-    
-    if (showBankDetails) {
-      if (!bankAccountNumber) {
-        newErrors.bankAccountNumber = 'Bank account number is required';
-      } else if (!/^\d{9,18}$/.test(bankAccountNumber)) {
-        newErrors.bankAccountNumber = 'Enter a valid account number (9-18 digits)';
-      }
-      
-      if (!accountHolderName) {
-        newErrors.accountHolderName = 'Account holder name is required';
-      }
-      
-      if (!ifscCode) {
-        newErrors.ifscCode = 'IFSC code is required';
-      } else if (!/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/.test(ifscCode)) {
-        newErrors.ifscCode = 'Enter a valid IFSC code';
-      }
-      
-      if (!branchName) {
-        newErrors.branchName = 'Branch name is required';
-      }
-    } else {
-      if (!upiId) {
-        newErrors.upiId = 'UPI ID is required';
-      } else if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(upiId)) {
-        newErrors.upiId = 'Enter a valid UPI ID';
-      }
+      setIsUploaded(false);
+      setUploadProgress(0);
+      // Simulate upload progress
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setUploadProgress(progress);
+        if (progress >= 100) {
+          clearInterval(interval);
+          setIsUploaded(true);
+        }
+      }, 80);
     }
-    
-    if (!chequeFile) {
-      newErrors.chequeFile = 'Please upload a cancelled cheque or passbook';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
-  
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      // In a real app, you would send the bank details to a server
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Navigate to rules and regulations page
-      router.push('/rules-regulations');
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // Handle form submission logic here
+    console.log('Form Data:', formData);
   };
-  
+
   return (
-    <div className="flex flex-col bg-white h-screen   relative overflow-hidden">
-      {/* Floating particles background */}
-      <FloatingParticles color="#F5BC1C" count={8} />
-      
-      {/* Back button */}
-      <div className="absolute top-4 left-4 z-20">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
-          aria-label="Go back"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-      </div>
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center px-10 sm:px-10 py-20 mt-4">
-        <div className="bg-white rounded-xl shadow-lg p-3 sm:p-5 relative z-10 w-full max-w-6xl mx-auto">
-          <h1 className="text-center text-2xl font-bold mb-1">
-            Add Your <span className="text-[#F5BC1C]">Bank Details</span> to Receive Payouts
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden">
+      <Head>
+        <title>Add Bank Details</title>
+        <meta name="description" content="Add your bank details to receive payouts" />
+      </Head>
+
+      <main className="max-w-6xl w-[1159px] z-10 px-2">
+        <div className="bg-white rounded-xl shadow-lg p-3 sm:p-4 mx-auto">
+          <h1 className="text-xl sm:text-2xl font-bold text-center mb-3 sm:mb-4">
+            Add Your <span className="text-yellow-500">Bank Details</span> to Receive Payouts
           </h1>
-          
-          <p className="text-center text-gray-700 text-sm mb-3">
-            We collect your Bank Details, UPI ID to ensure secure and smooth
+          <p className="text-center text-gray-700 mb-3 sm:mb-4 text-md font-medium sm:text-base">
+            We collect your Bank Details, UPI ID to ensure secure and smooth<br />
             payouts directly to your account.
           </p>
-          
-          {/* Payment method toggle */}
-          <div className="flex justify-center mb-4">
-            <div className="inline-flex rounded-md shadow-sm" role="group">
-              <button
-                type="button"
-                onClick={() => togglePaymentMethod(true)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-l-lg ${
-                  showBankDetails
-                    ? 'bg-[#F5BC1C] text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
-                }`}
-              >
-                Bank Account
-              </button>
-              <button
-                type="button"
-                onClick={() => togglePaymentMethod(false)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-r-lg ${
-                  !showBankDetails
-                    ? 'bg-[#F5BC1C] text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
-                }`}
-              >
-                UPI
-              </button>
-            </div>
-          </div>
-          
-          {/* Information Box */}
-          <div className="bg-gray-50 rounded-lg p-2 mb-3 max-w-3xl mx-auto">
-            <h3 className="font-medium text-xs mb-1">Correct bank details needed to send your earnings securely</h3>
-            <ul className="text-xs space-y-0.5">
-              <li className="flex items-start">
+          <div className="bg-gray-50 rounded-md p-3 sm:p-4 mb-3 sm:mb-4 w-[596px] mx-auto">
+            <h2 className="text-center font-medium mb-2 sm:mb-3 text-sm sm:text-base">Correct bank details needed to send your earnings securely</h2>
+            <div className="space-y-1 sm:space-y-2">
+              <div className="flex items-center justify-center text-xs sm:text-sm">
                 <span className="text-green-500 mr-2">✅</span>
                 <span>Make sure all information is accurate</span>
-              </li>
-              <li className="flex items-start">
+              </div>
+              <div className="flex items-center justify-center text-xs sm:text-sm">
                 <span className="text-red-500 mr-2">❌</span>
                 <span>Incorrect details may lead to failed or delayed payouts</span>
-              </li>
-            </ul>
-          </div>
-          
-          <form onSubmit={handleSubmit} className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-              {/* Left Side - Bank Details Form */}
-              {showBankDetails && (
-                <div className="space-y-2">
-                  <div>
-                    <label htmlFor="bankAccount" className="block mb-0.5 text-xs font-medium">
-                      Bank Account Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="bankAccount"
-                      value={bankAccountNumber}
-                      onChange={handleBankAccountChange}
-                      placeholder="9124871274634"
-                      className={`w-full px-3 py-1.5 text-sm border ${
-                        errors.bankAccountNumber ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F5BC1C]`}
-                      aria-invalid={errors.bankAccountNumber ? 'true' : 'false'}
-                    />
-                    {errors.bankAccountNumber && (
-                      <p className="mt-0.5 text-xs text-red-500">{errors.bankAccountNumber}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="accountHolder" className="block mb-0.5 text-xs font-medium">
-                      Account Holder Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="accountHolder"
-                      value={accountHolderName}
-                      onChange={handleNameChange}
-                      placeholder="Riya sharma"
-                      className={`w-full px-3 py-1.5 text-sm border ${
-                        errors.accountHolderName ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F5BC1C]`}
-                      aria-invalid={errors.accountHolderName ? 'true' : 'false'}
-                    />
-                    {errors.accountHolderName && (
-                      <p className="mt-0.5 text-xs text-red-500">{errors.accountHolderName}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="ifscCode" className="block mb-0.5 text-xs font-medium">
-                      IFSC Code <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="ifscCode"
-                      value={ifscCode}
-                      onChange={handleIFSCChange}
-                      placeholder="SBIN12481002"
-                      className={`w-full px-3 py-1.5 text-sm border ${
-                        errors.ifscCode ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F5BC1C]`}
-                      aria-invalid={errors.ifscCode ? 'true' : 'false'}
-                    />
-                    {errors.ifscCode && (
-                      <p className="mt-0.5 text-xs text-red-500">{errors.ifscCode}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="branchName" className="block mb-0.5 text-xs font-medium">
-                      Branch Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="branchName"
-                      value={branchName}
-                      onChange={handleBranchChange}
-                      placeholder="Gurugram"
-                      className={`w-full px-3 py-1.5 text-sm border ${
-                        errors.branchName ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F5BC1C]`}
-                      aria-invalid={errors.branchName ? 'true' : 'false'}
-                    />
-                    {errors.branchName && (
-                      <p className="mt-0.5 text-xs text-red-500">{errors.branchName}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {/* UPI Section (Shown when bank details are hidden) */}
-              {!showBankDetails && (
-                <div className="space-y-2">
-                  <div>
-                    <label htmlFor="upiId" className="block mb-0.5 text-xs font-medium">
-                      Your UPI ID <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="upiId"
-                      value={upiId}
-                      onChange={handleUpiIdChange}
-                      placeholder="riya@ybl"
-                      className={`w-full px-3 py-1.5 text-sm border ${
-                        errors.upiId ? 'border-red-500' : 'border-gray-300'
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F5BC1C]`}
-                      aria-invalid={errors.upiId ? 'true' : 'false'}
-                    />
-                    {errors.upiId && (
-                      <p className="mt-0.5 text-xs text-red-500">{errors.upiId}</p>
-                    )}
-                  </div>
-                  
-                  <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-2 mt-2">
-                    <h4 className="font-medium text-xs mb-0.5 text-yellow-800">UPI Information:</h4>
-                    <ul className="text-xs space-y-0.5 text-yellow-700">
-                      <li className="flex items-start">
-                        <span className="text-yellow-500 mr-1">•</span>
-                        <span>UPI is an instant real-time payment system</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="text-yellow-500 mr-1">•</span>
-                        <span>Your UPI ID typically follows the format: username@bankcode</span>
-                      </li>
-                      <li className="flex items-start">
-                        <span className="text-yellow-500 mr-1">•</span>
-                        <span>You can find your UPI ID in your bank's mobile app</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              )}
-              
-              {/* Right Side - Upload Section */}
-              <div>
-                {/* Cheque Upload */}
-                <div className="mb-3">
-                  <label className="block mb-0.5 text-xs font-medium">
-                    Cancel cheque/ passbook <span className="text-red-500">*</span>
-                  </label>
-                  
-                  <div className={`border-2 border-dashed ${errors.chequeFile ? 'border-red-300 bg-red-50' : 'border-gray-300'} rounded-lg p-3 text-center cursor-pointer hover:border-[#F5BC1C] transition-colors`} onClick={handleUploadClick}>
-                    {!chequeFile ? (
-                      <div className="flex flex-col items-center py-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <p className="text-xs font-medium text-gray-700">Click to upload or drag and drop</p>
-                        <p className="text-xs text-gray-500 mt-0.5">PNG, JPG or PDF (max. 5MB)</p>
-                        
-                        {errors.chequeFile && (
-                          <p className="mt-1 text-xs text-red-500">{errors.chequeFile}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="border border-gray-200 rounded-lg p-2 bg-white">
-                        <div className="flex items-center">
-                          <div className="bg-[#F5BC1C] rounded-full w-6 h-6 flex items-center justify-center text-white mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <div className="flex-grow">
-                            <div className="flex justify-between text-xs">
-                              <span className="font-medium truncate max-w-[150px]">{chequeFile.name}</span>
-                              <span className="text-gray-500">{Math.round(chequeFile.size / 1024)} KB</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-1 mt-1 overflow-hidden">
-                              <div 
-                                className="bg-[#F5BC1C] h-full" 
-                                style={{ width: `${uploadProgress}%`, transition: 'width 0.3s ease' }}
-                              ></div>
-                            </div>
-                          </div>
-                          {isUploaded ? (
-                            <div className="ml-2 rounded-full w-4 h-4 flex items-center justify-center">
-                              <img src="/assets/_Checkbox base.png" alt="check" className="w-[14px] h-[14px]" />
-                            </div>
-                          ) : (
-                            <button 
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setChequeFile(null);
-                                setIsUploaded(false);
-                              }}
-                              className="ml-2 text-gray-500 hover:text-red-500"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                        {isUploading && (
-                          <div className="text-right text-xs text-gray-500 mt-0.5">
-                            Uploading... {uploadProgress}%
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Hidden file input */}
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*,.pdf"
-                    className="hidden"
-                    aria-label="Upload cancelled cheque or passbook"
-                  />
-                </div>
-                
-                {/* Additional information */}
-                <div className="mt-2 bg-gray-50 rounded-lg p-2">
-                  <h4 className="font-medium text-xs mb-0.5">Important Information:</h4>
-                  <ol className="text-xs list-decimal pl-3 space-y-0.5">
-                    <li>Ensure the bank account is in your name</li>
-                    <li>Double-check your account number and IFSC code</li>
-                    <li>Cancelled cheque helps verify your bank details</li>
-                    <li>UPI is an alternative method for receiving payments</li>
-                  </ol>
-                </div>
               </div>
             </div>
-            
-            {/* Submit Button */}
-            <div className="mt-4 max-w-xs mx-auto">
+          </div>
+          <form onSubmit={handleSubmit}>
+            <div className="flex justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div>
+                <label htmlFor="bankAccountNumber" className="block font-medium mb-1 text-xs sm:text-sm">
+                  Bank Account Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="bankAccountNumber"
+                  name="bankAccountNumber"
+                  className="w-[226px] border border-yellow-400 rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm"
+                  value={formData.bankAccountNumber}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter your Bank Account Number"
+                />
+              </div>
+              <div>
+                <label htmlFor="accountHolderName" className="block font-medium mb-1 text-xs sm:text-sm">
+                  Account Holder Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="accountHolderName"
+                  name="accountHolderName"
+                  className="w-[226px]  border border-yellow-400 rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm"
+                  value={formData.accountHolderName}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter Account Holder Name"
+                />
+              </div>
+              <div>
+                <label htmlFor="ifscCode" className="block font-medium mb-1 text-xs sm:text-sm">
+                  IFSC Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="ifscCode"
+                  name="ifscCode"
+                  className="w-[226px] border border-yellow-400 rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm"
+                  value={formData.ifscCode}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter IFSC Code"
+                />
+              </div>
+              <div>
+                <label htmlFor="branchName" className="block font-medium mb-1 text-xs sm:text-sm">
+                  Branch Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="branchName"
+                  name="branchName"
+                  className="w-[226px] border border-yellow-400 rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm"
+                  value={formData.branchName}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter Branch Name"
+                />
+              </div>
+            </div>
+            <div className="relative mb-3 sm:mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-2 sm:px-4 text-gray-500 text-xs sm:text-sm">or</span>
+              </div>
+            </div>
+            <div className="mb-3 sm:mb-4 flex flex-col  mx-auto">
+              <label htmlFor="upiId" className=" font-medium mb-1  text-xs sm:text-sm mx-auto">
+                Your UPI ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="upiId"
+                name="upiId"
+                className="w-[348px] max-w-md border border-yellow-400 rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm mx-auto"
+                value={formData.upiId}
+                onChange={handleInputChange}
+                required
+                placeholder="Enter your UPI ID"
+              />
+            </div>
+            <div className="mb-3 sm:mb-4">
+              <label htmlFor="cancelCheque" className="block font-medium mb-1 text-center text-xs sm:text-sm">
+                Cancel cheque/ passbook <span className="text-red-500">*</span>
+              </label>
+              <div className="flex flex-col items-center justify-center">
+                <label 
+                  htmlFor="cancelCheque" 
+                  className={`flex items-center gap-2 border border-gray-300 rounded-md px-2 py-2 sm:px-4 sm:py-3 cursor-pointer text-xs sm:text-sm transition-colors duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-gray-100'}`}
+                >
+                  <span className="text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="8" y1="4" x2="8" y2="20"></line>
+                      <line x1="16" y1="4" x2="16" y2="20"></line>
+                      <line x1="4" y1="8" x2="20" y2="8"></line>
+                      <line x1="4" y1="16" x2="20" y2="16"></line>
+                    </svg>
+                  </span>
+                  Upload Cancel Cheque / Passbook Front
+                </label>
+                <input
+                  type="file"
+                  id="cancelCheque"
+                  name="cancelCheque"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  accept="image/*,.pdf"
+                />
+                {formData.cancelCheque && (
+                  <>
+                    <div className="mt-2 flex flex-col items-center">
+                      <div className="w-[120px] h-[6px] bg-gray-200 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-yellow-400'}`} style={{ width: `${uploadProgress}%` }}></div>
+                      </div>
+                      <span className="text-xs text-gray-600 mt-1">{uploadProgress}%</span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-green-600 text-center mt-1">
+                      File selected: {formData.cancelCheque.name}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-[#F5BC1C] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#e5ac0f] transition-colors flex items-center justify-center disabled:bg-[#f5bc1c99] disabled:cursor-not-allowed"
+                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 sm:py-3 px-4 rounded-md transition duration-300 text-base sm:text-lg"
               >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing...
-                  </>
-                ) : "Proceed"}
+                Proceed
               </button>
             </div>
           </form>
         </div>
-      </div>
-      
-      {/* Bottom Waves - Made shorter */}
-      <div className="w-full absolute bottom-0 left-0 right-0 overflow-hidden" style={{ height: '100px' }}>
-        {/* Background layer - main wave */}
-        <img 
-          src="/assets/wave-bottom-yellow.png" 
-          alt="Wave" 
-          className="w-full absolute bottom-0 left-0 right-0 object-cover"
-          style={{ height: '100px' }}
-        />
-        
-        {/* Middle layer wave for depth */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <img 
-            src="/assets/wave-middle.png" 
-            alt="Wave Middle" 
-            className="w-full object-cover"
-            style={{ height: '60px' }}
-          />
-        </div>
+      </main>
+
+      <div className="w-full absolute bottom-0 left-0 right-0 pointer-events-none">
+        <img src="/assets/wave-top.png" alt="Top Wave" className="w-full object-cover h-24 absolute bottom-16" />
+        <img src="/assets/wave-middle.png" alt="Middle Wave" className="w-full object-cover h-24 absolute bottom-8" />
+        <img src="/assets/wave-bottom.png" alt="Bottom Wave" className="w-full object-cover h-24 absolute bottom-0" />
       </div>
     </div>
   );
-} 
+}

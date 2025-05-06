@@ -8,7 +8,9 @@ export default function BaateinEarningsPage() {
   const router = useRouter();
   
   const handleAudioSelect = () => {
-    router.push('/avatar-upload');
+    if (!videoEnabled) {
+      router.push('/avatar-upload');
+    }
   };
   
   const handleVideoSelect = () => {
@@ -40,25 +42,6 @@ export default function BaateinEarningsPage() {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Left Column - Audio Calling */}
             <div className="border-r border-[#FDC62B] pr-6 relative">
-              {/* Disabled overlay when video is enabled */}
-              {videoEnabled && (
-                <div className="absolute inset-0 bg-gray-200 bg-opacity-70 z-10 flex flex-col items-center justify-center rounded-xl">
-                  <div className="bg-white p-4 rounded-lg shadow-md text-center mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                    </svg>
-                    <p className="text-gray-700 font-semibold">Audio Calling Unavailable</p>
-                    <p className="text-sm text-gray-500 mt-1">Video Calling is currently enabled</p>
-                  </div>
-                  <button 
-                    onClick={() => setVideoEnabled(false)}
-                    className="bg-[#FDC62B] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#f0b600] transition-colors"
-                  >
-                    Switch to Audio Calling
-                  </button>
-                </div>
-              )}
-              
               <div className="flex items-center mb-6">
                 <div className="p-3 rounded-lg">
                   <img src="/assets/Voice.png" alt="Audio Icon" className="h-12 w-16 object-contain" />
@@ -70,10 +53,23 @@ export default function BaateinEarningsPage() {
               </div>
               
               <div 
-                className="bg-[#FDC62B] rounded-lg py-3 text-center font-bold mb-6 cursor-pointer hover:bg-[#f0b600] transition-colors"
-                onClick={!videoEnabled ? handleAudioSelect : undefined}
+                className={`rounded-lg py-3 text-center font-bold mb-6 transition-colors ${
+                  !videoEnabled 
+                    ? "bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]" 
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
+                onClick={handleAudioSelect}
               >
-                Earn ₹20,000-₹30,000 Monthly
+                {videoEnabled ? (
+                  <div className="flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Disabled while Video Calling is enabled
+                  </div>
+                ) : (
+                  "Earn ₹20,000-₹30,000 Monthly"
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -144,10 +140,23 @@ export default function BaateinEarningsPage() {
               </div>
               
               <div 
-                className="bg-[#FDC62B] rounded-lg py-3 text-center font-bold mb-6 cursor-pointer hover:bg-[#f0b600] transition-colors"
+                className={`rounded-lg py-3 text-center font-bold mb-6 transition-colors ${
+                  videoEnabled 
+                    ? "bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]" 
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
                 onClick={handleVideoSelect}
               >
-                Earn ₹60,000-₹1,00,000 Monthly
+                {!videoEnabled ? (
+                  <div className="flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Disabled while Audio Calling is enabled
+                  </div>
+                ) : (
+                  "Earn ₹60,000-₹1,00,000 Monthly"
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-4">

@@ -42,7 +42,7 @@ export default function AvatarUploadPage() {
 
   const handleContinue = () => {
     // Here you would typically save the avatar selection
-    router.push('/dashboard');
+    router.push('/kyc-upload');
   };
 
   return (

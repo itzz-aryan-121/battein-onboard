@@ -81,7 +81,7 @@ export default function LanguageSelection() {
           <img
             src="/assets/people-group.png"
             alt="People using mobile devices"
-            className="object-contain w-full max-w-[1000px] h-auto"
+            className="object-contain w-full max-w-[800px] h-auto"
             style={{ pointerEvents: 'auto' }}
           />
         </div>
