@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function BaateinEarningsPage() {
-  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(false);
   const router = useRouter();
   
   const handleAudioSelect = () => {
@@ -53,23 +53,10 @@ export default function BaateinEarningsPage() {
               </div>
               
               <div 
-                className={`rounded-lg py-3 text-center font-bold mb-6 transition-colors ${
-                  !videoEnabled 
-                    ? "bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]" 
-                    : "bg-gray-300 cursor-not-allowed"
-                }`}
+                className={`rounded-lg py-3 text-center font-bold mb-6 transition-colors bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]`}
                 onClick={handleAudioSelect}
               >
-                {videoEnabled ? (
-                  <div className="flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    Disabled while Video Calling is enabled
-                  </div>
-                ) : (
-                  "Earn ₹20,000-₹30,000 Monthly"
-                )}
+                Earn ₹20,000-₹30,000 Monthly
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -142,21 +129,13 @@ export default function BaateinEarningsPage() {
               <div 
                 className={`rounded-lg py-3 text-center font-bold mb-6 transition-colors ${
                   videoEnabled 
-                    ? "bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]" 
-                    : "bg-gray-300 cursor-not-allowed"
+                    ? 'bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]' 
+                    : 'bg-gray-300 cursor-not-allowed'
                 }`}
-                onClick={handleVideoSelect}
+                onClick={videoEnabled ? handleVideoSelect : undefined}
+                style={{ pointerEvents: videoEnabled ? 'auto' : 'none' }}
               >
-                {!videoEnabled ? (
-                  <div className="flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    Disabled while Audio Calling is enabled
-                  </div>
-                ) : (
-                  "Earn ₹60,000-₹1,00,000 Monthly"
-                )}
+                Earn ₹60,000-₹1,00,000 Monthly
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -199,7 +178,7 @@ export default function BaateinEarningsPage() {
       {/* Bottom Waves and User Money Image */}
       <div className="w-full absolute bottom-0 left-0 right-0">
         {/* Person with money image */}
-        <div className="absolute bottom-10 right-36 z-20 w-64">
+        <div className="absolute bottom-5 right-36 z-20 w-[140px]">
           <img src="/assets/user money.png" alt="Person with money" className="w-full h-auto object-contain" />
         </div>
         

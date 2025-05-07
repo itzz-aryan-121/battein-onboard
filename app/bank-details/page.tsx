@@ -23,6 +23,7 @@ export default function BankDetails() {
   });
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -53,8 +54,24 @@ export default function BankDetails() {
     }
   };
 
+  const validateDetails = () => {
+    // Basic validation: all fields required, IFSC code 11 alphanumeric, account number 9-18 digits, UPI ID contains '@'
+    if (!formData.bankAccountNumber.match(/^\d{9,18}$/)) return false;
+    if (!formData.accountHolderName.trim()) return false;
+    if (!formData.ifscCode.match(/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/)) return false;
+    if (!formData.branchName.trim()) return false;
+    if (!formData.upiId.includes('@')) return false;
+    if (!formData.cancelCheque) return false;
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!validateDetails()) {
+      setError('Invalid details');
+      return;
+    }
+    setError(null);
     // Handle form submission logic here
     console.log('Form Data:', formData);
   };
@@ -71,6 +88,9 @@ export default function BankDetails() {
           <h1 className="text-xl sm:text-2xl font-bold text-center mb-3 sm:mb-4">
             Add Your <span className="text-yellow-500">Bank Details</span> to Receive Payouts
           </h1>
+          {error && (
+            <div className="text-red-600 text-center font-semibold mb-2">{error}</div>
+          )}
           <p className="text-center text-gray-700 mb-3 sm:mb-4 text-md font-medium sm:text-base">
             We collect your Bank Details, UPI ID to ensure secure and smooth<br />
             payouts directly to your account.
@@ -156,7 +176,7 @@ export default function BankDetails() {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-2 sm:px-4 text-gray-500 text-xs sm:text-sm">or</span>
+                
               </div>
             </div>
             <div className="mb-3 sm:mb-4 flex flex-col  mx-auto">
