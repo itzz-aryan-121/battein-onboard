@@ -112,7 +112,7 @@ export default function RulesRegulationsPage() {
             </button>
           </div>
           {/* Girl Illustration absolutely at the bottom right edge of the card */}
-          <div className=" absolute" style={{right: '-70px', bottom: '-20px', pointerEvents: 'none'}}>
+          <div className=" absolute" style={{right: '-50px', bottom: '-20px', pointerEvents: 'none', zIndex: 1000}}>
             <Image 
               src="/assets/rules-girl.png" 
               alt="Person with checklist" 
