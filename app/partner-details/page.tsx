@@ -227,10 +227,25 @@ const PartnerDetailsForm = () => {
             alert("Please record your audio introduction before submitting.");
             return;
         }
+        
+        if (!formData.spokenLanguage) {
+            alert("Spoken Language is required.");
+            return;
+        }
+        
+        if (formData.hobbies.length === 0) {
+            alert("Please select at least one hobby.");
+            return;
+        }
+        
+        if (!formData.bio) {
+            alert("Bio is required.");
+            return;
+        }
 
         console.log('Form submitted:', formData);
-        // Navigate to next page in the flow
-        // router.push('/next-page');
+        // Navigate to earn-multiple page
+        router.push('/earn-multiple');
     };
 
     return (
@@ -271,7 +286,7 @@ const PartnerDetailsForm = () => {
                             {/* Hobbies & Interests - Dropdown */}
                             <div className={`transition-all duration-500 delay-200 ${animatedFields ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                                 <label className="block text-[#2D2D2D] font-medium mb-1 text-sm" style={{ fontFamily: 'Inter' }}>
-                                    Hobbies & Interests
+                                    Hobbies & Interests <span className="text-[red]">*</span>
                                 </label>
                                 <div className="relative" ref={dropdownRef}>
                                     <button
@@ -327,7 +342,7 @@ const PartnerDetailsForm = () => {
                             {/* Bio */}
                             <div className={`transition-all duration-500 delay-300 ${animatedFields ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                                 <label className="block text-[#2D2D2D] font-medium mb-1 text-sm" style={{ fontFamily: 'Inter' }}>
-                                    Bio
+                                    Bio <span className="text-[red]">*</span>
                                 </label>
                                 <textarea
                                     name="bio"
@@ -336,6 +351,7 @@ const PartnerDetailsForm = () => {
                                     placeholder="Typing..."
                                     className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 h-24 resize-none text-sm"
                                     style={{ fontFamily: 'Inter' }}
+                                    required
                                 />
                             </div>
 

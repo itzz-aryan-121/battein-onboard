@@ -37,7 +37,8 @@ export default function OtpVerification() {
 
   const handleContinue = () => {
     console.log('OTP Submitted:', otp.join(''));
-    // router.push('/next-page');
+    // Navigate to partner-details page regardless of the OTP
+    router.push('/partner-details');
   };
 
   const handleSendOtp = () => {
