@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import '../animations.css'; // Import animations
+import { useLanguage } from '../context/LanguageContext';
 
 const RegistrationForm = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -65,7 +67,7 @@ const RegistrationForm = () => {
       setTimeout(() => button.classList.remove('animate-pulse'), 1000);
     }
     
-    router.push('/earn-multiple');
+    router.push(`/otp-verification?phoneNumber=${formData.phoneNumber}`);
   };
 
   return (
@@ -84,16 +86,16 @@ const RegistrationForm = () => {
             <div className="p-6">
               <div className="flex">
                 <div className="w-1/2">
-                  <h2 className="text-gray-400 text-[42px] font-bold mb-1">Error 901</h2>
-                  <h3 className="text-[#E75A34] text-lg font-medium mb-2">Something went wrong</h3>
+                  <h2 className="text-gray-400 text-[42px] font-bold mb-1">{t('errors', 'errorCode')}</h2>
+                  <h3 className="text-[#E75A34] text-lg font-medium mb-2">{t('errors', 'errorTitle')}</h3>
                   <p className="text-[#464646] text-sm mb-4">
-                    Please check your details and try again. Make sure all fields are filled in correctly.
+                    {t('errors', 'errorMessage')}
                   </p>
                   <button 
                     onClick={() => setShowErrorModal(false)}
                     className="w-full bg-[#E75A34] text-white font-medium py-3 rounded-md transition-colors mt-4"
                   >
-                    Try again
+                    {t('errors', 'tryAgain')}
                   </button>
                 </div>
                 <div className="w-1/2 flex items-center justify-center">
@@ -125,34 +127,34 @@ const RegistrationForm = () => {
           
           {/* Header */}
           <h1 className="text-2xl font-bold text-[#F5BC1C] mb-1 animate-fadeInUp delay-200">
-            Welcome to Baatein Family
+            {t('welcome', 'title')}
           </h1>
-          <p className="text-[#2D2D2D] text-sm mb-4 animate-fadeInUp delay-300">Turn your time into income. Start your journey as a Partner.</p>
+          <p className="text-[#2D2D2D] text-sm mb-4 animate-fadeInUp delay-300">{t('welcome', 'subtitle')}</p>
           
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3 flex-1 max-w-lg">
             <div className={animatedFields.name ? 'animate-fadeInUp' : 'opacity-0'}>
               <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
-                Your Name <span className="text-[#F5BC1C]">*</span>
+                {t('welcome', 'nameLabel')} <span className="text-[#F5BC1C]">*</span>
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Riya Sharma"
+                placeholder={t('welcome', 'namePlaceholder')}
                 className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2"
                 required
               />
               <p className="text-xs text-[#AFAFAF] mt-0.5">
-                Note: Please enter your name exactly as it appears on your government ID.
+                {t('welcome', 'nameNote')}
               </p>
             </div>
             
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className={`${animatedFields.phoneNumber ? 'animate-fadeInUp' : 'opacity-0'} w-full md:w-1/2`}>
                 <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
-                  Phone Number <span className="text-[#F5BC1C]">*</span>
+                  {t('welcome', 'phoneLabel')} <span className="text-[#F5BC1C]">*</span>
                 </label>
                 <div className="flex gap-2">
                   <div className="w-16">
@@ -168,7 +170,7 @@ const RegistrationForm = () => {
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleChange}
-                    placeholder="Enter your phone Number"
+                    placeholder={t('welcome', 'phonePlaceholder')}
                     className="flex-1 border border-[#F5BC1C] rounded-lg px-3 py-2"
                     required
                   />
@@ -177,7 +179,7 @@ const RegistrationForm = () => {
               
               <div className={`${animatedFields.gender ? 'animate-fadeInUp' : 'opacity-0'} w-full md:w-1/2`}>
                 <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
-                  Gender <span className="text-[#F5BC1C]">*</span>
+                  {t('welcome', 'genderLabel')} <span className="text-[#F5BC1C]">*</span>
                 </label>
                 <div className="flex gap-2">
                   {['Female', 'Male', 'LGBTQIA'].map((g, index) => (
@@ -201,14 +203,14 @@ const RegistrationForm = () => {
             
             <div className={animatedFields.referralCode ? 'animate-fadeInUp' : 'opacity-0'}>
               <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
-                Referral Code <span className="text-xs text-gray-400 font-normal">(Agency Code)</span>
+                {t('welcome', 'referralLabel')} <span className="text-xs text-gray-400 font-normal">{t('welcome', 'referralSubtext')}</span>
               </label>
               <input
                 type="text"
                 name="referralCode"
                 value={formData.referralCode}
                 onChange={handleChange}
-                placeholder="Abx1232yaf"
+                placeholder={t('welcome', 'referralPlaceholder')}
                 className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2"
               />
             </div>
@@ -220,9 +222,9 @@ const RegistrationForm = () => {
                   <img src="/assets/Group 481609.png" alt="Play Icon" className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">Baatein App Demo Video</p>
+                  <p className="font-medium text-sm">{t('welcome', 'demoTitle')}</p>
                   <p className="text-xs text-gray-500">
-                    See how Baatein works — from profile setup to live calls.
+                    {t('welcome', 'demoSubtitle')}
                   </p>
                 </div>
               </div>
@@ -231,7 +233,7 @@ const RegistrationForm = () => {
               <div className="flex items-center mb-4">
                 <Image src="/assets/Cloud Security.png" alt="privacy" width={20} height={20} className="mr-2 animate-pulse" style={{animationDuration: '4s'}} />
                 <span className="text-xs text-gray-500">
-                  Your data is highly encrypted and never shared with anyone.
+                  {t('welcome', 'privacyNote')}
                 </span>
               </div>
               
@@ -239,7 +241,7 @@ const RegistrationForm = () => {
                 type="submit"
                 className="w-full bg-[#F5BC1C] text-white font-medium py-2.5 rounded-lg transition-colors"
               >
-                Join as a Partner
+                {t('welcome', 'submitButton')}
               </button>
             </div>
           </form>

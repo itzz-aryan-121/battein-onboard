@@ -5,14 +5,17 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import '../animations.css'; 
+import { useLanguage } from '../context/LanguageContext';
+import { LocaleKey } from '../locales';
 
 interface Language {
-  value: string;
+  value: LocaleKey;
   label: string;
 }
 
 export default function LanguageSelection() {
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState<LocaleKey | ''>('');
+  const { setLanguage, t } = useLanguage();
   const languages = [
     { value: 'english', label: 'English' },
     { value: 'hindi', label: 'Hindi' }
@@ -20,12 +23,13 @@ export default function LanguageSelection() {
   const router = useRouter();
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedLanguage(e.target.value);
+    setSelectedLanguage(e.target.value as LocaleKey);
   };
 
   const handleConfirm = () => {
     if (selectedLanguage) {
-      localStorage.setItem('preferredLanguage', selectedLanguage);
+      // Update context and localStorage
+      setLanguage(selectedLanguage);
       router.push('/welcome');
     }
   };
@@ -35,11 +39,11 @@ export default function LanguageSelection() {
       {/* Main content - reduced vertical space */}
       <div className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-16 pb-0">
         <h1 className="text-2xl md:text-3xl font-bold text-center mb-4 animate-fadeInDown">
-          Begin your soulful journey with <span className="text-[#F5BC1C]">Baatein</span>
+          {selectedLanguage ? t('language', 'title') : "Begin your soulful journey with"} <span className="text-[#F5BC1C]">Baatein</span>
         </h1>
         
         <p className="text-xl md:text-2xl text-center mb-4 font-normal delay-200">
-          Select your language to proceed
+          {selectedLanguage ? t('language', 'selectLanguage') : "Select your language to proceed"}
         </p>
         
         {/* Language Dropdown - using native select */}
@@ -69,7 +73,7 @@ export default function LanguageSelection() {
             onClick={handleConfirm}
             className="w-[300px] bg-[#F5BC1C] text-white font-medium py-2.5 px-4 rounded-lg hover:bg-amber-500 transition-colors animate-fadeInUp delay-400"
           >
-            Confirm
+            {t('language', 'confirm')}
           </button>
         )}
       </div>

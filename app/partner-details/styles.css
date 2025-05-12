@@ -1,0 +1,38 @@
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(245, 188, 28, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(102.19deg, #DBDBDB 9.14%, #A5A5A5 91.62%);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(102.19deg, #D1D1D1 9.14%, #999999 91.62%);
+}
+
+/* Firefox scrollbar styles */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #A5A5A5 rgba(245, 188, 28, 0.1);
+}
+
+/* For horizontal scrolling with mouse wheel */
+.custom-scrollbar.horizontal-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  padding-bottom: 8px;
+}
+
+/* Ensure the scrollbar is visible on hover for better UX */
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: linear-gradient(102.19deg, #D1D1D1 9.14%, #999999 91.62%);
+} 
