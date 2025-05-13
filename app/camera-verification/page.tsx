@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Webcam from 'react-webcam';
+import WaveBackground from '../components/WaveBackground';
+import FaceErrorModal from './FaceErrorModal';
 
 export default function CameraVerificationPage() {
   const router = useRouter();
@@ -14,6 +16,8 @@ export default function CameraVerificationPage() {
   const [cameraActive, setCameraActive] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [showFaceErrorModal, setShowFaceErrorModal] = useState(false);
+  const [processingComplete, setProcessingComplete] = useState(false);
   
   // Show entry animation
   useEffect(() => {
@@ -49,22 +53,40 @@ export default function CameraVerificationPage() {
     }
   }, [countdown]);
   
-  // Auto proceed to next page after capturing photo
+  // Simulate face detection verification
   useEffect(() => {
-    if (capturedPhoto) {
-      // Save captured photo to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('capturedPhoto', capturedPhoto);
-      }
-      
-      // Display the captured photo for a moment before proceeding
+    if (capturedPhoto && !processingComplete) {
+      // Simulate photo processing/face detection
       const timer = setTimeout(() => {
-        router.push('/facial-success');
-      }, 1500);
+        // Simulate a face detection result - randomly fail ~30% of the time for demo purposes
+        const faceDetected = Math.random() > 0.3;
+        
+        if (faceDetected) {
+          // Face detected successfully
+          setProcessingComplete(true);
+          
+          // Save captured photo to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('capturedPhoto', capturedPhoto);
+          }
+          
+          // Display the captured photo for a moment before proceeding
+          const proceedTimer = setTimeout(() => {
+            router.push('/facial-success');
+          }, 1500);
+          
+          return () => clearTimeout(proceedTimer);
+        } else {
+          // No face detected - show error modal
+          setCapturedPhoto(null);
+          setScanning(false);
+          setShowFaceErrorModal(true);
+        }
+      }, 2000); // Simulate processing time
       
       return () => clearTimeout(timer);
     }
-  }, [capturedPhoto, router]);
+  }, [capturedPhoto, router, processingComplete]);
   
   // Handle camera errors
   const handleCameraError = (error: string | DOMException) => {
@@ -143,6 +165,21 @@ export default function CameraVerificationPage() {
     setError(null);
     setCountdown(null);
     setScanning(false);
+    // Force remounting of Webcam component
+    setCameraActive(false);
+    setTimeout(() => {
+      setCameraActive(true);
+    }, 100);
+  };
+  
+  // Handle face error modal close
+  const handleFaceErrorModalClose = () => {
+    setShowFaceErrorModal(false);
+    setProcessingComplete(false);
+    // Restart camera and countdown process
+    setCountdown(null);
+    setScanning(false);
+    
     // Force remounting of Webcam component
     setCameraActive(false);
     setTimeout(() => {
@@ -291,23 +328,29 @@ export default function CameraVerificationPage() {
               </div>
             )}
             
-            {capturedPhoto && (
+            {capturedPhoto && !processingComplete && (
               <div className="text-center text-[#F5BC1C] animate-pulse">
                 <p className="text-lg font-medium">Processing your photo...</p>
+              </div>
+            )}
+            
+            {capturedPhoto && processingComplete && (
+              <div className="text-center text-green-500 animate-pulse">
+                <p className="text-lg font-medium">Face verified! Redirecting...</p>
               </div>
             )}
           </div>
         </div>
       </div>
       
-      {/* Bottom Wave */}
-      <div className="w-full absolute bottom-0 left-0 right-0">
-        <img 
-          src="/assets/wave-bottom.png" 
-          alt="Wave" 
-          className="w-full object-cover h-32"
-        />
-      </div>
+      {/* Face Error Modal */}
+      <FaceErrorModal 
+        isOpen={showFaceErrorModal} 
+        onClose={handleFaceErrorModalClose} 
+      />
+      
+      {/* Bottom Wave Background */}
+      <WaveBackground height={180} />
     </div>
   );
-} 
+}

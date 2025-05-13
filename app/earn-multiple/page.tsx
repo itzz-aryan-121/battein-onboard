@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import WaveBackground from '../components/WaveBackground';
 
 export default function BaateinEarningsPage() {
   const [videoEnabled, setVideoEnabled] = useState(false);
@@ -175,37 +176,13 @@ export default function BaateinEarningsPage() {
         </div>
       </div>
       
-      {/* Bottom Waves and User Money Image */}
-      <div className="w-full absolute bottom-0 left-0 right-0">
-        {/* Person with money image */}
-        <div className="absolute bottom-5 right-36 z-20 w-[140px]">
-          <img src="/assets/user money.png" alt="Person with money" className="w-full h-auto object-contain" />
-        </div>
-        
-        {/* Waves - stacked in layers */}
-        <div className="relative w-full">
-          {/* Top wave - lightest */}
-          <img 
-            src="/assets/wave-top.png" 
-            alt="Top Wave" 
-            className="w-full object-cover h-40 absolute bottom-20"
-          />
-          
-          {/* Middle wave */}
-          <img 
-            src="/assets/wave-middle.png" 
-            alt="Middle Wave" 
-            className="w-full object-cover h-40 absolute bottom-10"
-          />
-          
-          {/* Bottom wave - darkest */}
-          <img 
-            src="/assets/wave-bottom.png" 
-            alt="Bottom Wave" 
-            className="w-full object-cover h-40 absolute bottom-0"
-          />
-        </div>
+      {/* Person with money image */}
+      <div className="absolute bottom-24 right-36 z-20 w-[140px]">
+        <img src="/assets/user money.png" alt="Person with money" className="w-full h-auto object-contain" />
       </div>
+      
+      {/* Wave Background Component */}
+      <WaveBackground height={180} />
     </div>
   );
 }

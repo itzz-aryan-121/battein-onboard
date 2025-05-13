@@ -3,10 +3,14 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import WaveBackground from '../components/WaveBackground';
+import './styles.css';
 
 export default function OtpVerification() {
   const [otp, setOtp] = useState(['', '', '', '']);
   const [mobileNumber, setMobileNumber] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -19,12 +23,49 @@ export default function OtpVerification() {
 
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    if (value !== '' && index < 3) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      if (nextInput) nextInput.focus();
+    
+    // Check if input is numeric or empty
+    if (value === '' || /^[0-9]$/.test(value)) {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+      
+      if (value !== '') {
+        // If current input is filled and not the last one, focus on next input
+        if (index < 3) {
+          const nextInput = document.getElementById(`otp-${index + 1}`);
+          if (nextInput) nextInput.focus();
+        } 
+        // If this is the last input being filled, check if all inputs are filled
+        else if (index === 3) {
+          const allFilled = newOtp.every(digit => digit !== '');
+          if (allFilled) {
+            // Show processing state immediately
+            setIsProcessing(true);
+            // Auto-continue after a short delay
+            setTimeout(() => {
+              handleContinue();
+            }, 100);
+          }
+        }
+      }
+    } else {
+      // Show error modal for non-numeric input
+      setShowErrorModal(true);
+      
+      // Add shake animation to the current input
+      const currentInput = document.getElementById(`otp-${index}`);
+      if (currentInput) {
+        currentInput.classList.add('shake');
+        setTimeout(() => {
+          currentInput.classList.remove('shake');
+        }, 500);
+      }
+      
+      // Set timeout to hide error after 3 seconds
+      setTimeout(() => {
+        setShowErrorModal(false);
+      }, 3000);
     }
   };
 
@@ -37,8 +78,12 @@ export default function OtpVerification() {
 
   const handleContinue = () => {
     console.log('OTP Submitted:', otp.join(''));
-    // Navigate to partner-details page regardless of the OTP
-    router.push('/partner-details');
+    setIsProcessing(true);
+    
+    // Simulate verification delay (in a real app, this would be an API call)
+    setTimeout(() => {
+      router.push('/partner-details');
+    }, 1500);
   };
 
   const handleSendOtp = () => {
@@ -53,12 +98,12 @@ export default function OtpVerification() {
         alt="Illustration" 
         width={453} 
         height={520}
-        className="absolute right-[325px] bottom-24 z-0 object-contain"
+        className="absolute right-[200px] bottom-32 z-50 object-contain"
         priority
       />
 
       {/* Main content - aligned to the left */}
-      <div className="flex flex-1 items-start justify-start relative z-10 px-12 pt-12">
+      <div className="flex flex-1  relative z-10 px-44 pt-16">
         <div className="bg-white rounded-[32px] shadow-lg flex flex-col md:flex-row w-[650px] max-w-4xl overflow-hidden relative z-10 border border-[#F3F3F3] h-[650px]">
           
           {/* Left: OTP Form */}
@@ -72,11 +117,11 @@ export default function OtpVerification() {
             </p>
             <div className="flex items-center gap-2 mb-8 mt-2">
               <span className="font-extrabold text-lg" style={{ fontFamily: 'Inter' }}>{mobileNumber}</span>
-              <button className="ml-1 text-gray-400 hover:text-amber-400" aria-label="Edit number">
+              {/* <button className="ml-1 text-gray-400 hover:text-amber-400" aria-label="Edit number">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
-              </button>
+              </button> */}
             </div>
 
             {/* OTP Inputs */}
@@ -88,7 +133,7 @@ export default function OtpVerification() {
                     type="text"
                     inputMode="numeric"
                     maxLength={1}
-                    className="w-full h-full bg-transparent text-center text-2xl font-extrabold rounded-full border-2 border-[#F5BC1C] focus:border-[#F5BC1C] focus:outline-none transition-all text-[#232323] placeholder:text-[#C7C7C7]"
+                    className="w-full h-full bg-gray-100 text-center text-2xl font-extrabold rounded-full border-2 border-[#F5BC1C] focus:border-[#F5BC1C] focus:outline-none transition-all text-[#232323] placeholder:text-[#C7C7C7]"
                     value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
@@ -110,44 +155,54 @@ export default function OtpVerification() {
             </div>
 
             <button 
-              className="bg-[#F5BC1C] hover:bg-[#FFB800] text-white font-extrabold py-3 px-6 rounded-[8px] w-[220px] transition-colors text-[1.15rem] shadow-sm"
+              className={`bg-[#F5BC1C] hover:bg-[#FFB800] text-white font-extrabold py-3 px-6 rounded-[8px] w-[220px] transition-colors text-[1.15rem] shadow-sm ${isProcessing ? 'opacity-80 cursor-not-allowed' : ''}`}
               onClick={handleContinue}
+              disabled={isProcessing}
               style={{ fontFamily: 'Inter' }}
             >
-              Continue
+              {isProcessing ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Processing...
+                </div>
+              ) : (
+                'Continue'
+              )}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Waves at the bottom */}
-      <div className="w-full absolute bottom-0 left-0 right-0 overflow-hidden" style={{ height: '180px' }}>
-        <img 
-          src="/assets/wave-bottom-yellow.png" 
-          alt="Wave" 
-          className="w-full absolute bottom-0 left-0 right-0 object-cover"
-          style={{ height: '180px' }}
-        />
-        <div className="absolute bottom-0 left-0 right-0" style={{ opacity: 0.4, transform: 'translateY(-40px)' }}>
-          <img 
-            src="/assets/wave-middle.png" 
-            alt="Wave Middle" 
-            className="w-full object-cover"
-            style={{ height: '100px' }}
-          />
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0" onClick={() => setShowErrorModal(false)}></div>
+          <div className="bg-white rounded-lg p-6 shadow-xl relative z-10 max-w-md mx-4 animate-fadeIn">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-red-500">Invalid Input</h3>
+              <button onClick={() => setShowErrorModal(false)} className="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="mb-6">
+              <p className="text-gray-700">Please enter only numeric values (0-9) for OTP verification.</p>
+            </div>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => setShowErrorModal(false)}
+                className="bg-[#F5BC1C] text-white px-4 py-2 rounded font-medium"
+              >
+                OK
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="absolute bottom-0 w-full">
-          <div className="absolute left-[10%] bottom-[40px]">
-            <div className="bg-[#F5BC1C] opacity-20 rounded-full" style={{ width: '30px', height: '30px' }}></div>
-          </div>
-          <div className="absolute right-[15%] bottom-[80px]">
-            <div className="bg-[#F5BC1C] opacity-30 rounded-full" style={{ width: '20px', height: '20px' }}></div>
-          </div>
-          <div className="absolute left-[30%] bottom-[60px]">
-            <div className="bg-[#F5BC1C] opacity-25 rounded-full" style={{ width: '15px', height: '15px' }}></div>
-          </div>
-        </div>
-      </div>
+      )}
+
+      {/* Wave Background Component */}
+      <WaveBackground height={180} />
     </div>
   );
 }

@@ -1,17 +1,61 @@
 'use client'
 
 
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import WaveBackground from '../components/WaveBackground';
 
 export default function KYCVerification() {
   const [panNumber, setPanNumber] = useState('');
   const [panCardFile, setPanCardFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
+
+  // Initialize video modal on page load
+  useEffect(() => {
+    // Show video modal when component mounts (page loads/refreshes)
+    setShowVideoModal(true);
+    
+    // Add event listener for page refresh/reload
+    const handleBeforeUnload = () => {
+      // This is just to register the event, actual state reset happens on component mount
+      return undefined;
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  // Handle video playback
+  useEffect(() => {
+    if (showVideoModal && videoRef.current) {
+      videoRef.current.play()
+        .catch(e => console.log('Video autoplay prevented:', e));
+      setIsVideoPlaying(true);
+    }
+  }, [showVideoModal]);
+
+  // Toggle video play/pause
+  const toggleVideoPlayback = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsVideoPlaying(true);
+      }
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -49,6 +93,72 @@ export default function KYCVerification() {
         <title>KYC Verification - PAN Card Upload</title>
         <meta name="description" content="Complete your KYC by uploading your PAN Card" />
       </Head>
+
+      {/* Video Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Blurred Transparent Background */}
+          <div 
+            className="absolute inset-0  bg-opacity-50 backdrop-filter backdrop-blur-sm"
+            onClick={() => setShowVideoModal(false)}
+          ></div>
+          
+          {/* Video Modal Content */}
+          <div className="relative bg-white w-11/12 max-w-2xl mx-auto z-10 rounded-xl overflow-hidden shadow-2xl">
+            {/* Close button */}
+            <button 
+              onClick={() => setShowVideoModal(false)}
+              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            
+            <div className="p-6 pb-8">
+              {/* Header content */}
+              <div className="text-center mb-6">
+                <h2 className="text-yellow-500 text-2xl font-bold mb-1">
+                  KYC Verification Guide
+                </h2>
+                <p className="text-gray-700 text-sm">
+                  Watch this step-by-step guide on how to complete your KYC verification
+                </p>
+              </div>
+              
+              {/* Video container */}
+              <div className="relative rounded-lg overflow-hidden w-full aspect-video">
+                <video 
+                  ref={videoRef}
+                  className="w-full h-full object-cover"
+                  onClick={toggleVideoPlayback}
+                  controls={false}
+                  muted
+                  autoPlay
+                >
+                  <source src="/assets/kyc-reference-video.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                
+                {/* Play/Pause Overlay */}
+                {!isVideoPlaying && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                    onClick={toggleVideoPlayback}
+                  >
+                    <div className="w-16 h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="w-[1154px] z-10">
         <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl mx-auto">
@@ -118,16 +228,20 @@ export default function KYCVerification() {
             <div className="mb-4">
               <h3 className="text-center text-sm font-medium mb-1">Reference Video:</h3>
               <p className="text-center text-xs text-gray-600 mb-2">Complete Step by Step Process Explained</p>
-              <div className="relative mx-auto rounded-lg overflow-hidden w-[257px]" style={{ maxHeight: "150px" }}>
+              <div 
+                className="relative mx-auto rounded-lg overflow-hidden w-[257px] cursor-pointer" 
+                style={{ maxHeight: "150px" }}
+                onClick={() => setShowVideoModal(true)}
+              >
                 <img src="/assets/kyc-video-thumbnail.png" alt="KYC Video Thumbnail" className="w-full h-full object-cover" style={{ maxHeight: "150px" }} />
-                {/* <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center">
                   <div className="bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center">
-                    {/* <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg> 
+                    </svg>
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
             <button
@@ -142,11 +256,9 @@ export default function KYCVerification() {
           </form>
         </div>
       </main>
-      <div className="w-full absolute bottom-0 left-0 right-0">
-        <img src="/assets/wave-top.png" alt="Top Wave" className="w-full object-cover h-24 absolute bottom-16" />
-        <img src="/assets/wave-middle.png" alt="Middle Wave" className="w-full object-cover h-24 absolute bottom-8" />
-        <img src="/assets/wave-bottom.png" alt="Bottom Wave" className="w-full object-cover h-24 absolute bottom-0" />
-      </div>
+
+      {/* Wave Background Component */}
+      <WaveBackground height={250} />
     </div>
   );
 }

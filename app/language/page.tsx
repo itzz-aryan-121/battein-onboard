@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import '../animations.css'; 
 import { useLanguage } from '../context/LanguageContext';
 import { LocaleKey } from '../locales';
+import WaveBackground from '../components/WaveBackground';
 
 interface Language {
   value: LocaleKey;
@@ -89,41 +90,37 @@ export default function LanguageSelection() {
             style={{ pointerEvents: 'auto' }}
           />
         </div>
-        {/* Waves - lower z-index */}
-        <div className="absolute bottom-0 left-0 right-0 w-full z-10 pointer-events-none">
-          <div className="relative w-full h-[180px]">
-            <img src="/assets/wave-bottom.png" className="absolute w-full h-full left-0 bottom-0 object-cover z-10" />
-            <img src="/assets/wave-middle.png" className="absolute w-full h-full left-0 bottom-0 object-cover z-20" />
-            <img src="/assets/wave-top.png" className="absolute w-full h-full left-0 bottom-0 object-cover z-30" />
-            {/* Decorative Ellipses */}
-            <div className="absolute w-full h-full">
-              <img
-                src="/assets/Ellipse 799.png"
-                alt=""
-                className="absolute right-[15%] bottom-[30%] w-6 h-6 opacity-80 animate-floatY"
-              />
-              <img
-                src="/assets/Ellipse 802.png"
-                alt=""
-                className="absolute left-[20%] bottom-[30%] w-4 h-4 opacity-60 animate-floatY delay-200"
-              />
-              <img
-                src="/assets/Ellipse 799.png"
-                alt=""
-                className="absolute right-[35%] bottom-[30%] w-5 h-5 opacity-70 animate-floatY delay-400"
-              />
-              <img
-                src="/assets/Ellipse 802.png"
-                alt=""
-                className="absolute left-[40%] bottom-[30%] w-3 h-3 opacity-50 animate-floatY delay-300"
-              />
-              <img
-                src="/assets/Ellipse 799.png"
-                alt=""
-                className="absolute right-[25%] bottom-[30%] w-4 h-4 opacity-60 animate-floatY delay-100"
-              />
-            </div>
-          </div>
+        
+        {/* Wave Background Component */}
+        <WaveBackground height={180} />
+        
+        {/* Decorative Ellipses */}
+        <div className="absolute w-full h-[180px] bottom-0 left-0 z-40 pointer-events-none">
+          <img
+            src="/assets/Ellipse 799.png"
+            alt=""
+            className="absolute right-[15%] bottom-[30%] w-6 h-6 opacity-80 animate-floatY"
+          />
+          <img
+            src="/assets/Ellipse 802.png"
+            alt=""
+            className="absolute left-[20%] bottom-[30%] w-4 h-4 opacity-60 animate-floatY delay-200"
+          />
+          <img
+            src="/assets/Ellipse 799.png"
+            alt=""
+            className="absolute right-[35%] bottom-[30%] w-5 h-5 opacity-70 animate-floatY delay-400"
+          />
+          <img
+            src="/assets/Ellipse 802.png"
+            alt=""
+            className="absolute left-[40%] bottom-[30%] w-3 h-3 opacity-50 animate-floatY delay-300"
+          />
+          <img
+            src="/assets/Ellipse 799.png"
+            alt=""
+            className="absolute right-[25%] bottom-[30%] w-4 h-4 opacity-60 animate-floatY delay-100"
+          />
         </div>
       </div>
     </div>

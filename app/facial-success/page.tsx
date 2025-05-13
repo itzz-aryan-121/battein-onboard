@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import WaveBackground from '../components/WaveBackground';
 
 export default function FacialSuccessPage() {
   const router = useRouter();
@@ -91,7 +92,7 @@ export default function FacialSuccessPage() {
           </h2>
           
           <button
-            onClick={() => router.push('/kyc-upload')}
+            onClick={() => router.push('/rules-regulations')}
             className="w-full bg-[#F5BC1C] text-white font-medium py-4 px-6 rounded-lg hover:bg-[#e5ac0f] transition-colors"
           >
             Proceeding to the next step
@@ -99,39 +100,8 @@ export default function FacialSuccessPage() {
         </div>
       </div>
       
-      {/* Bottom Waves - Layered for complete effect */}
-      <div className="w-full absolute bottom-0 left-0 right-0 overflow-hidden" style={{ height: '180px' }}>
-        {/* Background layer - main wave */}
-        <img 
-          src="/assets/wave-bottom-yellow.png" 
-          alt="Wave" 
-          className="w-full absolute bottom-0 left-0 right-0 object-cover"
-          style={{ height: '180px' }}
-        />
-        
-        {/* Middle layer wave for depth */}
-        <div className="absolute bottom-0 left-0 right-0" style={{ opacity: 0.4, transform: 'translateY(-40px)' }}>
-          <img 
-            src="/assets/wave-middle.png" 
-            alt="Wave Middle" 
-            className="w-full object-cover"
-            style={{ height: '100px' }}
-          />
-        </div>
-        
-        {/* Top layer - decorative elements */}
-        <div className="absolute bottom-0 w-full">
-          <div className="absolute left-[10%] bottom-[40px]">
-            <div className="bg-[#F5BC1C] opacity-20 rounded-full" style={{ width: '30px', height: '30px' }}></div>
-          </div>
-          <div className="absolute right-[15%] bottom-[80px]">
-            <div className="bg-[#F5BC1C] opacity-30 rounded-full" style={{ width: '20px', height: '20px' }}></div>
-          </div>
-          <div className="absolute left-[30%] bottom-[60px]">
-            <div className="bg-[#F5BC1C] opacity-25 rounded-full" style={{ width: '15px', height: '15px' }}></div>
-          </div>
-        </div>
-      </div>
+      {/* Wave Background Component */}
+      <WaveBackground height={180} />
     </div>
   );
 } 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import WaveBackground from '../components/WaveBackground';
 
 export default function VideoUploadPage() {
   const router = useRouter();
@@ -79,14 +80,8 @@ export default function VideoUploadPage() {
         </div>
       </div>
       
-      {/* Bottom Wave */}
-      <div className="w-full absolute bottom-0 left-0 right-0">
-        <img 
-          src="/assets/wave-bottom.png" 
-          alt="Wave" 
-          className="w-full object-cover h-32"
-        />
-      </div>
+      {/* Wave Background Component */}
+      <WaveBackground height={180} />
     </div>
   );
 } 

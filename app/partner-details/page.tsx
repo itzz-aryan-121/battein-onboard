@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import './styles.css';
+import WaveBackground from '../components/WaveBackground';
 
 const PartnerDetailsForm = () => {
     const [formData, setFormData] = useState({
@@ -219,6 +220,15 @@ const PartnerDetailsForm = () => {
         }));
     };
 
+    const handleReRecord = () => {
+        // Clear previous recording
+        handleDeleteRecording();
+        // Start a new recording immediately
+        setTimeout(() => {
+            handleStartRecording();
+        }, 100);
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -249,7 +259,7 @@ const PartnerDetailsForm = () => {
     };
 
     return (
-        <div className="fixed inset-0 bg-white overflow-hidden flex flex-col">
+        <div className="min-h-screen bg-white flex flex-col justify-between relative overflow-hidden">
             {/* Main content */}
             <div className="flex flex-1 h-full">
                 {/* Left side - Form */}
@@ -357,96 +367,97 @@ const PartnerDetailsForm = () => {
 
                             {/* Audio Intro */}
                             <div className={`transition-all duration-500 delay-400 ${animatedFields ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                                <label className="block text-[#2D2D2D] font-medium mb-1 text-sm" style={{ fontFamily: 'Inter' }}>
+                                <label className="relative text-[#2D2D2D] font-medium mb-1 text-sm" style={{ fontFamily: 'Inter' }}>
                                     Record Your Intro <span className="text-[#F5BC1C]">*</span>
                                 </label>
-                                <div className="bg-[#FFF9E9] rounded-lg p-4 border border-[#F5BC1C] border-opacity-30">
-                                    {!audioRecorded ? (
-                                        <>
-                                            {!isRecording ? (
-                                                <>
-                                                    <div className="flex flex-col md:flex-row gap-3">
-                                                        <div className="flex-1">
-                                                            <p className="text-xs text-[#2D2D2D]" style={{ fontFamily: 'Inter' }}>
-                                                                <span className="font-bold">When you upload your audio,</span> take a moment to talk about yourself, your interests, what you're looking for, or anything you'd like others to know. Make sure your audio is at least 30 seconds long so people can get a good sense of who you are!
-                                                            </p>
-                                                            <div className="flex items-center mt-2">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={handleHearSample}
-                                                                    className="flex items-center text-[#F5BC1C] text-xs font-medium"
-                                                                    style={{ fontFamily: 'Inter' }}
-                                                                    disabled={isPlaying}
-                                                                >
-                                                                    <div className="w-5 h-5 rounded-full flex items-center justify-center mr-1.5">
-                                                                        {isPlaying ? (
-                                                                            <span className="w-2 h-2"></span>
-                                                                        ) : (
-                                                                            <img src="/assets/play.png" alt="Play" className="w-4 h-4" />
-                                                                        )}
-                                                                    </div>
-                                                                    Hear sample intro
-                                                                </button>
-                                                            </div>
+                                {!audioRecorded && !isRecording ? (
+                                    <div className="bg-[#FFF9E9] rounded-lg p-4 border border-[#F5BC1C] border-opacity-30">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1 pr-3">
+                                                <p className="text-xs text-[#2D2D2D]" style={{ fontFamily: 'Inter' }}>
+                                                    <span className="font-bold">When you upload your audio,</span> take a moment to talk about yourself your interests, what you're looking for, or anything you'd like others to know. Make sure your audio is at least <span className="font-bold">30 seconds long</span> so people can get a good sense of who you are!
+                                                </p>
+                                                <div className="mt-2 space-x-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleHearSample}
+                                                        className="flex items-center text-[#2D2D2D] text-xs font-medium"
+                                                        style={{ fontFamily: 'Inter' }}
+                                                        disabled={isPlaying}
+                                                    >
+                                                        <span className="mr-3">Hear sample intro</span>
+                                                        <div className="w-9 h-9 rounded-full flex items-center justify-center ">
+                                                            <img src="/assets/play.png" alt="Play" className="w-9 h-9" />
                                                         </div>
-                                                        <div className="flex items-center">
-                                                            <button
-                                                                type="button"
-                                                                onClick={handleStartRecording}
-                                                                className="bg-[#F5BC1C] text-white rounded-lg px-3 py-1.5 text-xs font-medium"
-                                                                style={{ fontFamily: 'Inter' }}
-                                                            >
-                                                                Start Recording
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                // Recording in progress view
-                                                <div className="flex flex-col">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <span className="text-xs font-medium text-[#FF9900]" style={{ fontFamily: 'Inter' }}>
-                                                            Recording... {formatTime(recordingTime)}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={handleStopRecording}
-                                                            className="bg-[#F5BC1C] text-white rounded-lg px-2 py-1 text-xs font-medium"
-                                                            style={{ fontFamily: 'Inter' }}
-                                                        >
-                                                            Stop Recording
-                                                        </button>
-                                                    </div>
-
-                                                    {/* Audio Waveform Visualization */}
-                                                    <div className="h-10 w-full rounded-lg border border-[#F5BC1C] border-opacity-30 overflow-hidden bg-white p-1">
-                                                        <div className="flex items-center justify-between h-full space-x-0.5">
-                                                            {/* Simulate a sound wave with bars matching the design */}
-                                                            {Array(40).fill(0).map((_, index) => {
-                                                                // Determine if this is a golden/active bar or a gray/inactive bar
-                                                                const isActive = Math.random() > 0.5; // Randomly alternate for animation effect
-                                                                return (
-                                                                    <div
-                                                                        key={index}
-                                                                        className={`h-full w-0.5 rounded-full ${isActive ? 'bg-[#F5BC1C]' : 'bg-[#DDDDDD]'}`}
-                                                                        style={{
-                                                                            height: `${20 + Math.sin(index * 0.3 + recordingTime * 2) * 60}%`,
-                                                                            transition: 'height 0.1s ease'
-                                                                        }}
-                                                                    ></div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </div>
-
-                                                    <p className="text-xs text-[#2D2D2D] mt-1" style={{ fontFamily: 'Inter' }}>
-                                                        Speak clearly and at a normal pace. Your audio will be used to introduce you to other users.
-                                                    </p>
+                                                    </button>
                                                 </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        // Audio recorded view
+                                            </div>
+                                            <div className="flex flex-col items-center ml-2">
+                                                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2">
+                                                    <img src="/assets/mic.png" alt="Microphone" className="w-9 h-9" />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleStartRecording}
+                                                    className="bg-[#F5BC1C] text-white rounded-2xl px-3 py-1.5 text-sm font-medium"
+                                                    style={{ fontFamily: 'Inter' }}
+                                                >
+                                                    Upload Audio
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : isRecording ? (
+                                    // Recording in progress view
+                                    <div className="bg-[#FFF9E9] rounded-lg p-4 border border-[#F5BC1C] border-opacity-30">
+                                        <div className="flex flex-col">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-xs font-medium text-[#FF9900]" style={{ fontFamily: 'Inter' }}>
+                                                    Recording... {formatTime(recordingTime)}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleStopRecording}
+                                                    className="bg-[#F5BC1C] text-white rounded-lg px-3 py-1.5 text-xs font-medium"
+                                                    style={{ fontFamily: 'Inter' }}
+                                                >
+                                                    Stop Recording
+                                                </button>
+                                            </div>
+
+                                            {/* Updated waveform to match the recorded audio view */}
+                                            <div className="relative h-14 bg-[#FFF9E9] rounded-xl border border-[#F5BC1C] px-4 py-2">
+                                                {/* Animated waveform visualization */}
+                                                <div className="absolute inset-0 flex items-center space-x-1 px-4">
+                                                    {Array(40).fill(0).map((_, index) => {
+                                                        // Randomize which bars are active to simulate recording
+                                                        const isActive = Math.random() > 0.6;
+                                                        // Create dynamic height based on time and position
+                                                        const height = 20 + Math.sin(index * 0.3 + recordingTime * 2) * 30;
+                                                        
+                                                        return (
+                                                            <div
+                                                                key={index}
+                                                                className={`rounded-full ${isActive ? 'bg-[#F5BC1C]' : 'bg-gray-300'}`}
+                                                                style={{
+                                                                    height: `${height}%`,
+                                                                    width: '5px',
+                                                                    transition: 'height 0.1s ease'
+                                                                }}
+                                                            ></div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                            <p className="text-xs text-[#2D2D2D] mt-1" style={{ fontFamily: 'Inter' }}>
+                                                Speak clearly and at a normal pace. Your audio will be used to introduce you to other users.
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // Audio recorded view
+                                    <div className="bg-[#FFF9E9] rounded-lg p-4 border border-[#F5BC1C] border-opacity-30">
                                         <div className="flex flex-col">
                                             <div className="flex justify-between items-center mb-3">
                                                 <span className="text-sm font-medium text-[#2D2D2D]" style={{ fontFamily: 'Inter' }}>
@@ -463,74 +474,72 @@ const PartnerDetailsForm = () => {
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        onClick={handleStartRecording}
+                                                        onClick={handleReRecord}
                                                         className="bg-[#F5BC1C] text-white rounded-lg px-3 py-1.5 text-xs font-medium"
                                                         style={{ fontFamily: 'Inter' }}
                                                     >
-                                                        Record Again
+                                                        Re-record
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            {/* Audio Player */}
-                                            <div className="flex items-center gap-2 p-1.5 bg-white rounded-lg border border-[#F5BC1C] border-opacity-30">
+                                            {/* Audio Player - Updated to match the image */}
+                                            <div className="relative h-14 bg-[#FFF9E9] rounded-xl border border-[#F5BC1C] px-4 py-2">
+                                                {/* Waveform visualization */}
+                                                <div className="absolute inset-0 flex items-center space-x-1 px-4">
+                                                    {Array(40).fill(0).map((_, index) => {
+                                                        // Make first few bars gold to match image
+                                                        const isGold = index < 5;
+                                                        // Vary heights for natural waveform look
+                                                        const height = 30 + Math.sin(index * 0.5) * 25;
+                                                        
+                                                        return (
+                                                            <div
+                                                                key={index}
+                                                                className={`rounded-full ${isGold ? 'bg-[#F5BC1C]' : 'bg-gray-300'}`}
+                                                                style={{
+                                                                    height: `${height}%`,
+                                                                    width: '5px'
+                                                                }}
+                                                            ></div>
+                                                        );
+                                                    })}
+                                                </div>
+                                                
+                                                {/* Play button positioned on the right */}
                                                 <button
                                                     type="button"
                                                     onClick={handlePlayRecording}
-                                                    className="w-6 h-6 rounded-full bg-[#F5BC1C] flex items-center justify-center flex-shrink-0"
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center"
                                                 >
                                                     {isPlaying ? (
-                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <rect x="6" y="4" width="4" height="16" fill="white" />
-                                                            <rect x="14" y="4" width="4" height="16" fill="white" />
-                                                        </svg>
+                                                        <img src="/assets/pause-button.png" alt="Pause" className="w-5 h-5" />
                                                     ) : (
-                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                            <path d="M8 5V19L19 12L8 5Z" fill="white" />
-                                                        </svg>
+                                                        <img src="/assets/play.png" alt="Play" className="w-5 h-5" />
                                                     )}
                                                 </button>
-
-                                                <div className="h-6 flex-1 relative">
-                                                    {/* Static waveform for recorded audio - styled like the image */}
-                                                    <div className="absolute inset-0 flex items-center justify-between space-x-0.5">
-                                                        {Array(40).fill(0).map((_, index) => {
-                                                            // Create a pattern similar to the image
-                                                            const isActive = index % 3 === 0 || index % 5 === 0; // Create a pattern of active bars
-                                                            return (
-                                                                <div
-                                                                    key={index}
-                                                                    className={`h-full flex-1 rounded-full ${isActive ? 'bg-[#F5BC1C]' : 'bg-[#DDDDDD]'}`}
-                                                                    style={{
-                                                                        height: `${30 + Math.sin(index * 0.4) * 50}%`
-                                                                    }}
-                                                                ></div>
-                                                            );
-                                                        })}
-                                                    </div>
-
-                                                    {/* Audio element */}
-                                                    {audioUrl && (
-                                                        <audio
-                                                            ref={audioRef}
-                                                            src={audioUrl}
-                                                            onEnded={() => setIsPlaying(false)}
-                                                            className="hidden"
-                                                        />
-                                                    )}
-                                                </div>
+                                                
+                                                {/* Audio element - hidden */}
+                                                {audioUrl && (
+                                                    <audio
+                                                        ref={audioRef}
+                                                        src={audioUrl}
+                                                        onEnded={() => setIsPlaying(false)}
+                                                        className="hidden"
+                                                    />
+                                                )}
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Submit Button - Fixed at bottom */}
-                        <div className="mt-4 mb-2 sticky bottom-0 z-20">
+                        <div className="mt-4 mb-32 z-20 mx-auto">
                             <button
                                 type="submit"
-                                className={`w-full py-2.5 rounded-lg transition-colors font-medium ${
+                                className={`w-[373px] mx-auto py-3 rounded-lg transition-colors font-medium text-md ${
                                     audioRecorded 
                                     ? 'bg-[#F5BC1C] text-white cursor-pointer' 
                                     : 'bg-[#F5BC1C] bg-opacity-50 text-white cursor-not-allowed'
@@ -559,39 +568,8 @@ const PartnerDetailsForm = () => {
                 </div>
             </div>
 
-            {/* Wave Combination */}
-            <div className="absolute bottom-0 left-0 right-0 w-full h-28 overflow-hidden pointer-events-none">
-                {/* Main wave */}
-                <img
-                    src="/assets/wave-bottom-yellow.png"
-                    alt="Wave"
-                    className="w-full object-cover absolute bottom-0"
-                    style={{ height: '130px' }}
-                />
-
-                {/* Middle layer wave */}
-                <div className="absolute bottom-0 w-full" style={{ opacity: 0.4, transform: 'translateY(-20px)' }}>
-                    <img
-                        src="/assets/wave-middle.png"
-                        alt="Wave Middle"
-                        className="w-full object-cover"
-                        style={{ height: '80px' }}
-                    />
-                </div>
-
-                {/* Decorative elements */}
-                <div className="absolute bottom-0 w-full">
-                    <div className="absolute left-[10%] bottom-[40px]">
-                        <div className="bg-[#F5BC1C] opacity-20 rounded-full" style={{ width: '20px', height: '20px' }}></div>
-                    </div>
-                    <div className="absolute right-[15%] bottom-[60px]">
-                        <div className="bg-[#F5BC1C] opacity-30 rounded-full" style={{ width: '15px', height: '15px' }}></div>
-                    </div>
-                    <div className="absolute left-[30%] bottom-[30px]">
-                        <div className="bg-[#F5BC1C] opacity-25 rounded-full" style={{ width: '12px', height: '12px' }}></div>
-                    </div>
-                </div>
-            </div>
+            {/* Wave Background Component */}
+            <WaveBackground height={200} />
         </div>
     );
 };

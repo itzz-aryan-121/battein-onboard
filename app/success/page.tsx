@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import FloatingParticles from '../components/FloatingParticles';
+import WaveBackground from '../components/WaveBackground';
 
 export default function SuccessPage() {
   const router = useRouter();
@@ -67,16 +68,8 @@ export default function SuccessPage() {
         </div>
       </div>
       
-      {/* Bottom Waves */}
-      <div className="w-full absolute bottom-0 left-0 right-0 overflow-hidden" style={{ height: '150px' }}>
-        {/* Background layer - main wave */}
-        <img 
-          src="/assets/wave-bottom-yellow.png" 
-          alt="Wave" 
-          className="w-full absolute bottom-0 left-0 right-0 object-cover"
-          style={{ height: '150px' }}
-        />
-      </div>
+      {/* Wave Background Component */}
+      <WaveBackground height={150} />
     </div>
   );
 } 

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import WaveBackground from '../components/WaveBackground';
 
 export default function VideoCallPage() {
   const router = useRouter();
@@ -191,6 +192,11 @@ export default function VideoCallPage() {
             )}
           </button>
         </div>
+      </div>
+      
+      {/* Wave Background Component - with lower opacity to fit dark theme */}
+      <div className="opacity-30">
+        <WaveBackground height={180} />
       </div>
     </div>
   );
