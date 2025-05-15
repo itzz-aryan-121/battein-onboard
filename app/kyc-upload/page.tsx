@@ -13,6 +13,7 @@ export default function KYCVerification() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(true);
+  const [panError, setPanError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
@@ -57,6 +58,39 @@ export default function KYCVerification() {
     }
   };
 
+  // Validate PAN number
+  const validatePanNumber = (pan: string): boolean => {
+    // PAN format: AAAAA0000A (5 letters, 4 numbers, 1 letter)
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    return panRegex.test(pan);
+  };
+
+  // Handle PAN number change
+  const handlePanNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase(); // Convert to uppercase
+    setPanNumber(value);
+    
+    // Clear error if field is empty
+    if (!value.trim()) {
+      setPanError(null);
+      return;
+    }
+    
+    // Only validate if length is 10 (complete PAN)
+    if (value.length === 10) {
+      if (!validatePanNumber(value)) {
+        setPanError("Invalid PAN format. It should be 5 letters, 4 numbers, followed by 1 letter (e.g., AAAAA0000A)");
+      } else {
+        setPanError(null);
+      }
+    } else if (value.length > 10) {
+      setPanError("PAN number cannot be more than 10 characters");
+    } else {
+      // Don't show error while typing
+      setPanError(null);
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setPanCardFile(e.target.files[0]);
@@ -78,14 +112,22 @@ export default function KYCVerification() {
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
+    
+    // Validate PAN number before submission
+    if (!validatePanNumber(panNumber)) {
+      setPanError("Invalid PAN format. It should be 5 letters, 4 numbers, followed by 1 letter (e.g., AAAAA0000A)");
+      return;
+    }
+    
     // Handle form submission logic here
     console.log('PAN Number:', panNumber);
     console.log('PAN Card File:', panCardFile);
-    // Navigate to bank details page
+    
+    // Navigate to bank details page as the next step in the flow
     router.push('/bank-details');
   };
 
-  const isFormValid = panNumber.trim() !== '' && panCardFile !== null;
+  const isFormValid = panNumber.trim() !== '' && panCardFile !== null && !panError;
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden">
@@ -184,12 +226,21 @@ export default function KYCVerification() {
               <input
                 type="text"
                 id="panNumber"
-                className="w-[480px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                placeholder="Enter your PAN Number"
+                className={`w-[480px] px-3 py-2 text-sm border ${panError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-yellow-500'} rounded-lg focus:outline-none focus:ring-2`}
+                placeholder="Enter your PAN Number (e.g., AAAAA0000A)"
                 value={panNumber}
-                onChange={(e) => setPanNumber(e.target.value)}
+                onChange={handlePanNumberChange}
+                maxLength={10}
                 required
               />
+              {panError && (
+                <p className="mt-1 text-xs text-red-500">
+                  {panError}
+                </p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Format: 5 letters, 4 numbers, 1 letter (e.g., AAAAA0000A)
+              </p>
             </div>
             <div className="mb-4 w-[483px] mx-auto">
               <div className="flex items-center justify-between mb-1">

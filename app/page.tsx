@@ -36,7 +36,7 @@ export default function Home() {
 
                 {/* Main Pitch */}
                 <h3 className="text-[28px] md:text-[32px] font-bold text-black mb-4 animate-fadeInUp delay-300">
-                    Earn <span className="text-[#F5BC1C]">₹40,000–₹80,000</span> Monthly as a Baatein Partner
+                    Earn <span className="text-[#F5BC1C]">₹80,000-₹1,00,000</span> Monthly as a Baatein Partner
                 </h3>
                 <p className="text-lg text-[#2D2D2D] mb-8 animate-fadeInUp delay-400">
                     Join 1,000+ partners growing their community and income on India's leading voice platform.

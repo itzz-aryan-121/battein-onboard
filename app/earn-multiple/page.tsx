@@ -5,17 +5,21 @@ import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 
 export default function BaateinEarningsPage() {
-  const [videoEnabled, setVideoEnabled] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<'audio' | 'video' | null>(null); // Default to no selection
   const router = useRouter();
   
   const handleAudioSelect = () => {
-    if (!videoEnabled) {
-      router.push('/avatar-upload');
-    }
+    setSelectedOption('audio');
   };
   
   const handleVideoSelect = () => {
-    if (videoEnabled) {
+    setSelectedOption('video');
+  };
+  
+  const handleContinue = () => {
+    if (selectedOption === 'audio') {
+      router.push('/avatar-upload');
+    } else if (selectedOption === 'video') {
       router.push('/video-upload');
     }
   };
@@ -40,9 +44,19 @@ export default function BaateinEarningsPage() {
           <h2 className="text-center text-2xl font-bold mb-8">Enable Your Earning Options</h2>
           
           {/* Two Columns */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-0 relative">
+            {/* Center Divider Line */}
+            <div className="absolute top-0 bottom-0 left-1/2 transform -translate-x-1/2 w-px bg-[#FDC62B]"></div>
+            
             {/* Left Column - Audio Calling */}
-            <div className="border-r border-[#FDC62B] pr-6 relative">
+            <div 
+              className={`pr-6 relative transition-all duration-300 cursor-pointer ${
+                selectedOption === 'audio' 
+                  ? 'bg-[#FFF8E0]' 
+                  : 'hover:bg-gray-50'
+              }`}
+              onClick={handleAudioSelect}
+            >
               <div className="flex items-center mb-6">
                 <div className="p-3 rounded-lg">
                   <img src="/assets/Voice.png" alt="Audio Icon" className="h-12 w-16 object-contain" />
@@ -53,11 +67,8 @@ export default function BaateinEarningsPage() {
                 </div>
               </div>
               
-              <div 
-                className={`rounded-lg py-3 text-center font-bold mb-6 transition-colors bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]`}
-                onClick={handleAudioSelect}
-              >
-                Earn ₹20,000-₹30,000 Monthly
+              <div className="rounded-lg py-3 text-center font-bold mb-6 bg-[#FDC62B]">
+                Earn <span className='text-white'>₹20,000-₹30,000</span> Monthly
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -99,44 +110,26 @@ export default function BaateinEarningsPage() {
             </div>
             
             {/* Right Column - Video Calling */}
-            <div className="pl-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  <div className="p-3 rounded-lg">
-                    <img src="/assets/Video.png" alt="Video Icon" className="h-12 w-16 object-contain" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-xl font-bold">Video Calling</h3>
-                    <p className="text-sm text-gray-600">Earn more through video calls and gifts</p>
-                  </div>
+            <div 
+              className={`pl-6 transition-all duration-300 cursor-pointer ${
+                selectedOption === 'video' 
+                  ? 'bg-[#FFF8E0]' 
+                  : 'hover:bg-gray-50'
+              }`}
+              onClick={handleVideoSelect}
+            >
+              <div className="flex items-center mb-6">
+                <div className="p-3 rounded-lg">
+                  <img src="/assets/Video.png" alt="Video Icon" className="h-12 w-16 object-contain" />
                 </div>
-                <div>
-                  <label 
-                    className="inline-flex relative items-center cursor-pointer"
-                  >
-                    <input 
-                      type="checkbox" 
-                      className="sr-only" 
-                      checked={videoEnabled}
-                      onChange={() => setVideoEnabled(!videoEnabled)}
-                    />
-                    <div className={`w-14 h-7 rounded-full transition ${videoEnabled ? 'bg-[#F5BC1B]' : 'bg-gray-200'}`}>
-                      <div className={`absolute top-1 left-1 bg-white w-5 h-5 rounded-full transition-transform transform ${videoEnabled ? 'translate-x-7' : ''}`}></div>
-                    </div>
-                  </label>
+                <div className="ml-3">
+                  <h3 className="text-xl font-bold">Video Calling</h3>
+                  <p className="text-sm text-gray-600">Earn more through video calls and gifts</p>
                 </div>
               </div>
               
-              <div 
-                className={`rounded-lg py-3 text-center font-bold mb-6 transition-colors ${
-                  videoEnabled 
-                    ? 'bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600]' 
-                    : 'bg-gray-300 cursor-not-allowed'
-                }`}
-                onClick={videoEnabled ? handleVideoSelect : undefined}
-                style={{ pointerEvents: videoEnabled ? 'auto' : 'none' }}
-              >
-                Earn ₹60,000-₹1,00,000 Monthly
+              <div className="rounded-lg py-3 text-center font-bold mb-6 bg-[#FDC62B]">
+                Earn <span className='text-white'>₹60,000-₹1,00,000</span> Monthly
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -172,6 +165,22 @@ export default function BaateinEarningsPage() {
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* Proceed Button */}
+          <div className="flex justify-center mt-2">
+            <button 
+              onClick={handleContinue}
+              disabled={!selectedOption}
+              className={`rounded-full p-3 flex transition-all ${
+                selectedOption ? 'bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600] transform hover:scale-105' : 'bg-gray-300 cursor-not-allowed opacity-50'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-right">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
           </div>
         </div>
       </div>

@@ -138,7 +138,7 @@ export default function BankDetails() {
     // If validation passes, proceed with submission
     console.log('Form Data:', formData);
     
-    // Navigate to rules and regulations page
+    // Navigate to rules and regulations page as the next step in the flow
     router.push('/rules-regulations');
   };
 

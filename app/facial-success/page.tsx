@@ -36,6 +36,11 @@ export default function FacialSuccessPage() {
     };
   }, [router]);
 
+  const handleContinue = () => {
+    // Route to kyc-upload as the first step in the flow
+    router.push('/kyc-upload');
+  };
+
   return (
     <div className="flex flex-col bg-white min-h-screen relative overflow-hidden">
       {/* Main Content */}
@@ -92,10 +97,10 @@ export default function FacialSuccessPage() {
           </h2>
           
           <button
-            onClick={() => router.push('/rules-regulations')}
+            onClick={handleContinue}
             className="w-full bg-[#F5BC1C] text-white font-medium py-4 px-6 rounded-lg hover:bg-[#e5ac0f] transition-colors"
           >
-            Proceeding to the next step
+            Continue to KYC Verification
           </button>
         </div>
       </div>
