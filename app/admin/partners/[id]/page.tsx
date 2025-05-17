@@ -1,9 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FiCheck, FiX, FiPhone, FiMail, FiMapPin, FiCalendar, FiDollarSign } from 'react-icons/fi';
-import toast from 'react-hot-toast';
-import { usePartnerCounts } from '@/app/context/PartnerCountsContext';
 import { PartnerApprovalActions } from './PartnerApprovalActions';
 
 interface Partner {
@@ -67,12 +63,11 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-type Props = {
-  params: { id: string }
-  searchParams: { [key: string]: string | string[] | undefined }
-}
-
-export default async function PartnerDetailPage({ params }: Props) {
+export default async function Page({
+  params,
+}: {
+  params: { id: string };
+}) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`);
   const partner = await response.json();
 
