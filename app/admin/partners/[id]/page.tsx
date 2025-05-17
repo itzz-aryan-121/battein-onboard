@@ -1,11 +1,10 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FiCheck, FiX, FiPhone, FiMail, FiMapPin, FiCalendar, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { usePartnerCounts } from '@/app/context/PartnerCountsContext';
+import { PartnerApprovalActions } from './PartnerApprovalActions';
 
 interface Partner {
   _id: string;
@@ -68,66 +67,13 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export default function PartnerDetailPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
-  const { refreshCounts } = usePartnerCounts();
-  const [partner, setPartner] = useState<Partner | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const [showRejectionModal, setShowRejectionModal] = useState(false);
-  const [statusLoading, setStatusLoading] = useState<'Approved' | 'Rejected' | null>(null);
-
-  useEffect(() => {
-    const fetchPartner = async () => {
-      try {
-        const response = await fetch(`/api/partners/${params.id}`);
-        const data = await response.json();
-        setPartner(data);
-      } catch (error) {
-        console.error('Error fetching partner:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPartner();
-  }, [params.id]);
-
-  const handleStatusChange = async (newStatus: string) => {
-    try {
-      const response = await fetch(`/api/partners?id=${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          applicationStatus: newStatus,
-          ...(newStatus === 'Rejected' && { rejectionReason }),
-          ...(newStatus === 'Approved' && { approvedAt: new Date() }),
-        }),
-      });
-
-      if (response.ok) {
-        router.refresh();
-        if (newStatus === 'Rejected') {
-          setShowRejectionModal(false);
-        }
-      }
-    } catch (error) {
-      console.error('Error updating partner status:', error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5BC1C]"></div>
-          <p className="mt-4 text-gray-500">Loading partner details...</p>
-        </div>
-      </div>
-    );
-  }
+export default async function PartnerDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`);
+  const partner = await response.json();
 
   if (!partner) {
     return (
@@ -191,51 +137,8 @@ export default function PartnerDetailPage({ params }: { params: { id: string } }
         </Section>
         <Section title="Approval Status">
           <div><strong>Status:</strong> {partner.status || '-'}</div>
-          <div className="mt-2 flex gap-2">
-            <button
-              onClick={async () => {
-                setStatusLoading('Approved');
-                const res = await fetch(`/api/partners/${partner._id}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: 'Approved' })
-                });
-                if (res.ok) {
-                  const updated = await res.json();
-                  setPartner(updated);
-                  toast.success('Partner approved!');
-                  await refreshCounts();
-                  router.push('/admin/partners/active');
-                }
-                setStatusLoading(null);
-              }}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              disabled={partner.status === 'Approved' || statusLoading === 'Approved'}
-            >
-              {statusLoading === 'Approved' ? 'Approving...' : 'Approve'}
-            </button>
-            <button
-              onClick={async () => {
-                setStatusLoading('Rejected');
-                const res = await fetch(`/api/partners/${partner._id}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: 'Rejected' })
-                });
-                if (res.ok) {
-                  const updated = await res.json();
-                  setPartner(updated);
-                  toast.success('Partner rejected!');
-                  await refreshCounts();
-                  router.push('/admin/partners/rejected');
-                }
-                setStatusLoading(null);
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              disabled={partner.status === 'Rejected' || statusLoading === 'Rejected'}
-            >
-              {statusLoading === 'Rejected' ? 'Rejecting...' : 'Reject'}
-            </button>
+          <div className="mt-2">
+            <PartnerApprovalActions partner={partner} />
           </div>
         </Section>
       </div>
