@@ -8,8 +8,23 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: Request) {
   try {
+    if (!JWT_SECRET || JWT_SECRET === 'your-secret-key') {
+      console.error('JWT_SECRET not properly configured');
+      return NextResponse.json(
+        { error: 'Server configuration error: JWT_SECRET not set' },
+        { status: 500 }
+      );
+    }
+
     await connectDB();
     const { email, password } = await request.json();
+
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
 
     // Find admin by email
     const admin = await Admin.findOne({ email });
@@ -64,8 +79,13 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Login error:', error);
+    // Provide more specific error information
+    const errorMessage = error instanceof Error 
+      ? `${error.name}: ${error.message}` 
+      : 'Unknown error occurred';
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }
