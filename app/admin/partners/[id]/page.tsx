@@ -63,11 +63,15 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export default async function Page({
-  params,
-}: {
-  params: { id: string };
-}) {
+// Fix the type definition for the page component
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams?: Record<string, string | string[] | undefined>;
+}
+
+export default async function Page({ params }: PageProps) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`);
   const partner = await response.json();
 
@@ -140,4 +144,4 @@ export default async function Page({
       </div>
     </div>
   );
-} 
+}
