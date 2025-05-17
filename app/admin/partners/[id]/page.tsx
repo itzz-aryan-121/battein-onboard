@@ -1,3 +1,4 @@
+// app/admin/partners/[id]/page.tsx
 import Image from 'next/image';
 import { FiCheck, FiX, FiPhone, FiMail, FiMapPin, FiCalendar, FiDollarSign } from 'react-icons/fi';
 import { PartnerApprovalActions } from './PartnerApprovalActions';
@@ -36,9 +37,7 @@ interface Partner {
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="bg-white rounded-lg shadow-sm p-6">
     <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
-    <div className="space-y-4">
-      {children}
-    </div>
+    <div className="space-y-4">{children}</div>
   </div>
 );
 
@@ -63,17 +62,15 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Fix the type definition for the page component
-interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams?: Record<string, string | string[] | undefined>;
-}
-
-export default async function Page({ params }: PageProps) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`);
-  const partner = await response.json();
+export default async function Page({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`, {
+    cache: 'no-store', // Optional: Ensure fresh data
+  });
+  const partner: Partner = await response.json();
 
   if (!partner) {
     return (
@@ -136,7 +133,7 @@ export default async function Page({ params }: PageProps) {
           </div>
         </Section>
         <Section title="Approval Status">
-          <div><strong>Status:</strong> {partner.status || '-'}</div>
+          <div><strong>Status:</strong> <StatusBadge status={partner.status || '-'} /></div>
           <div className="mt-2">
             <PartnerApprovalActions partner={partner} />
           </div>
