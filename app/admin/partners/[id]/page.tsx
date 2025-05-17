@@ -66,6 +66,7 @@ export default async function Page({
   params,
 }: {
   params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`, {
     cache: 'no-store', // Optional: Ensure fresh data
