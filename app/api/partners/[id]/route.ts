@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/app/lib/mongodb';
 import { Partner } from '@/app/models/Partner';
 
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -29,7 +29,7 @@ export async function GET(
 }
 
 export async function PATCH(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -59,7 +59,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
