@@ -4,11 +4,11 @@ import jwt from 'jsonwebtoken';
 import connectDB from '@/app/lib/mongodb';
 import { Admin } from '@/app/models/Admin';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: Request) {
   try {
-    if (!JWT_SECRET || JWT_SECRET === 'your-secret-key') {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
       console.error('JWT_SECRET not properly configured');
       return NextResponse.json(
         { error: 'Server configuration error: JWT_SECRET not set' },
