@@ -110,19 +110,43 @@ export default function KYCVerification() {
     }
   };
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    
+
     // Validate PAN number before submission
     if (!validatePanNumber(panNumber)) {
       setPanError("Invalid PAN format. It should be 5 letters, 4 numbers, followed by 1 letter (e.g., AAAAA0000A)");
       return;
     }
-    
-    // Handle form submission logic here
-    console.log('PAN Number:', panNumber);
-    console.log('PAN Card File:', panCardFile);
-    
+
+    const partnerId = localStorage.getItem('partnerId');
+    if (!partnerId) {
+      alert('No partner ID found!');
+      return;
+    }
+
+    // 1. Upload the PAN card file if needed
+    let panCardFileUrl = '';
+    if (panCardFile) {
+      const formData = new FormData();
+      formData.append('file', panCardFile);
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+      const uploadData = await uploadRes.json();
+      panCardFileUrl = uploadData.url;
+    }
+
+    // 2. PATCH the partner document with KYC data
+    await fetch(`/api/partners/${partnerId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kyc: {
+          panNumber,
+          panCardFile: panCardFileUrl
+        }
+      })
+    });
+
     // Navigate to bank details page as the next step in the flow
     router.push('/bank-details');
   };
@@ -299,7 +323,7 @@ export default function KYCVerification() {
               type="submit"
               className={`w-[278px] mx-auto bg-yellow-500 text-white py-2 rounded-lg text-base font-medium transition-colors ${
                 !isFormValid ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-600'
-              }`}
+              } button-animate`}
               disabled={!isFormValid}
             >
               Proceed

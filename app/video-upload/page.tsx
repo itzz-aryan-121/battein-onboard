@@ -39,7 +39,7 @@ export default function VideoUploadPage() {
             
             <button 
               onClick={handleOpenCamera}
-              className="bg-[#4CAF50] text-white font-medium px-6 py-3 rounded-lg hover:bg-[#3d9940] transition-colors mb-10"
+              className="bg-[#4CAF50] text-white font-medium px-6 py-3 rounded-lg hover:bg-[#3d9940] transition-colors mb-10 button-animate"
             >
               Click here for open Camera
             </button>

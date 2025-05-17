@@ -21,6 +21,7 @@ const PartnerDetailsForm = () => {
     const [animatedFields, setAnimatedFields] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isHobbiesDropdownOpen, setIsHobbiesDropdownOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -229,33 +230,89 @@ const PartnerDetailsForm = () => {
         }, 100);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
         // Validate form
         if (!audioRecorded || !formData.audioIntro) {
             alert("Please record your audio introduction before submitting.");
+            setIsSubmitting(false);
             return;
         }
         
         if (!formData.spokenLanguage) {
             alert("Spoken Language is required.");
+            setIsSubmitting(false);
             return;
         }
         
         if (formData.hobbies.length === 0) {
             alert("Please select at least one hobby.");
+            setIsSubmitting(false);
             return;
         }
         
         if (!formData.bio) {
             alert("Bio is required.");
+            setIsSubmitting(false);
             return;
         }
 
-        console.log('Form submitted:', formData);
-        // Navigate to earn-multiple page
-        router.push('/earn-multiple');
+        try {
+            let audioUrl = '';
+            
+            // Upload audio file if exists
+            if (formData.audioIntro) {
+                const audioFormData = new FormData();
+                audioFormData.append('file', formData.audioIntro);
+
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: audioFormData
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Failed to upload audio file');
+                }
+
+                const { url } = await uploadResponse.json();
+                audioUrl = url;
+            }
+
+            // Only send the fields we have in the form
+            const partnerData = {
+                spokenLanguage: formData.spokenLanguage,
+                hobbies: formData.hobbies,
+                bio: formData.bio,
+                audioIntro: audioUrl
+            };
+
+            // Create partner
+            const response = await fetch('/api/partners', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(partnerData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit partner details');
+            }
+
+            // Get the partner ID from the response and save it to localStorage
+            const partner = await response.json();
+            localStorage.setItem('partnerId', partner._id);
+
+            // Navigate to earn-multiple page on success
+            router.push('/earn-multiple');
+        } catch (error) {
+            console.error('Error submitting partner details:', error);
+            alert('Failed to submit partner details. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -302,7 +359,7 @@ const PartnerDetailsForm = () => {
                                     <button
                                         type="button"
                                         onClick={toggleHobbiesDropdown}
-                                        className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white"
+                                        className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate"
                                         style={{ fontFamily: 'Inter' }}
                                     >
                                         <span className={`${formData.hobbies.length > 0 ? 'text-[#2D2D2D] font-medium' : 'text-gray-500'} truncate mr-2`}>
@@ -381,7 +438,7 @@ const PartnerDetailsForm = () => {
                                                     <button
                                                         type="button"
                                                         onClick={handleHearSample}
-                                                        className="flex items-center text-[#2D2D2D] text-xs font-medium"
+                                                        className="flex items-center text-[#2D2D2D] text-xs font-medium button-animate"
                                                         style={{ fontFamily: 'Inter' }}
                                                         disabled={isPlaying}
                                                     >
@@ -399,7 +456,7 @@ const PartnerDetailsForm = () => {
                                                 <button
                                                     type="button"
                                                     onClick={handleStartRecording}
-                                                    className="bg-[#F5BC1C] text-white rounded-2xl px-3 py-1.5 text-sm font-medium"
+                                                    className="bg-[#F5BC1C] text-white rounded-2xl px-3 py-1.5 text-sm font-medium button-animate"
                                                     style={{ fontFamily: 'Inter' }}
                                                 >
                                                     Upload Audio
@@ -418,7 +475,7 @@ const PartnerDetailsForm = () => {
                                                 <button
                                                     type="button"
                                                     onClick={handleStopRecording}
-                                                    className="bg-[#F5BC1C] text-white rounded-lg px-3 py-1.5 text-xs font-medium"
+                                                    className="bg-[#F5BC1C] text-white rounded-lg px-3 py-1.5 text-xs font-medium button-animate"
                                                     style={{ fontFamily: 'Inter' }}
                                                 >
                                                     Stop Recording
@@ -467,7 +524,7 @@ const PartnerDetailsForm = () => {
                                                     <button
                                                         type="button"
                                                         onClick={handleDeleteRecording}
-                                                        className="border border-[#F5BC1C] text-[#F5BC1C] rounded-lg px-3 py-1.5 text-xs font-medium"
+                                                        className="border border-[#F5BC1C] text-[#F5BC1C] rounded-lg px-3 py-1.5 text-xs font-medium button-animate"
                                                         style={{ fontFamily: 'Inter' }}
                                                     >
                                                         Delete
@@ -475,7 +532,7 @@ const PartnerDetailsForm = () => {
                                                     <button
                                                         type="button"
                                                         onClick={handleReRecord}
-                                                        className="bg-[#F5BC1C] text-white rounded-lg px-3 py-1.5 text-xs font-medium"
+                                                        className="bg-[#F5BC1C] text-white rounded-lg px-3 py-1.5 text-xs font-medium button-animate"
                                                         style={{ fontFamily: 'Inter' }}
                                                     >
                                                         Re-record
@@ -510,7 +567,7 @@ const PartnerDetailsForm = () => {
                                                 <button
                                                     type="button"
                                                     onClick={handlePlayRecording}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center"
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center button-animate"
                                                 >
                                                     {isPlaying ? (
                                                         <img src="/assets/pause-button.png" alt="Pause" className="w-5 h-5" />
@@ -543,11 +600,21 @@ const PartnerDetailsForm = () => {
                                     audioRecorded 
                                     ? 'bg-[#F5BC1C] text-white cursor-pointer' 
                                     : 'bg-[#F5BC1C] bg-opacity-50 text-white cursor-not-allowed'
-                                }`}
+                                } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 style={{ fontFamily: 'Inter' }}
-                                disabled={!audioRecorded}
+                                disabled={!audioRecorded || isSubmitting}
                             >
-                                Join as a Partner
+                                {isSubmitting ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                        </svg>
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    'Join as a Partner'
+                                )}
                             </button>
                         </div>
                     </form>

@@ -128,16 +128,45 @@ export default function BankDetails() {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateDetails()) {
       setShowErrorModal(true);
       return;
     }
     
-    // If validation passes, proceed with submission
-    console.log('Form Data:', formData);
-    
+    const partnerId = localStorage.getItem('partnerId');
+    if (!partnerId) {
+      alert('No partner ID found!');
+      return;
+    }
+
+    // 1. Upload the cancel cheque file if needed
+    let cancelChequeUrl = '';
+    if (formData.cancelCheque) {
+      const formDataFile = new FormData();
+      formDataFile.append('file', formData.cancelCheque);
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataFile });
+      const uploadData = await uploadRes.json();
+      cancelChequeUrl = uploadData.url;
+    }
+
+    // 2. PATCH the partner document with bank details
+    await fetch(`/api/partners/${partnerId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bankDetails: {
+          bankAccountNumber: formData.bankAccountNumber,
+          accountHolderName: formData.accountHolderName,
+          ifscCode: formData.ifscCode,
+          branchName: formData.branchName,
+          upiId: formData.upiId,
+          cancelCheque: cancelChequeUrl
+        }
+      })
+    });
+
     // Navigate to rules and regulations page as the next step in the flow
     router.push('/rules-regulations');
   };
@@ -215,7 +244,7 @@ export default function BankDetails() {
                   
                   <button 
                     onClick={() => setShowErrorModal(false)}
-                    className="w-full bg-[#E75A34] text-white font-medium py-3 rounded-md transition-colors mt-6"
+                    className="w-full bg-[#E75A34] text-white font-medium py-3 rounded-md transition-colors mt-6 button-animate"
                   >
                     Fix Errors
                   </button>
@@ -389,7 +418,7 @@ export default function BankDetails() {
             <div className="flex justify-center">
               <button
                 type="submit"
-                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 sm:py-3 px-4 rounded-md transition duration-300 text-base sm:text-lg"
+                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 sm:py-3 px-4 rounded-md transition duration-300 text-base sm:text-lg button-animate"
               >
                 Proceed
               </button>

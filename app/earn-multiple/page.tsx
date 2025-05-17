@@ -174,7 +174,7 @@ export default function BaateinEarningsPage() {
               disabled={!selectedOption}
               className={`rounded-full p-3 flex transition-all ${
                 selectedOption ? 'bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600] transform hover:scale-105' : 'bg-gray-300 cursor-not-allowed opacity-50'
-              }`}
+              } button-animate`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-right">
                 <line x1="5" y1="12" x2="19" y2="12"></line>

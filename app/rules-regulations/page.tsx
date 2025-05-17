@@ -101,7 +101,7 @@ export default function RulesRegulationsPage() {
               type="button"
               disabled={!isAgreed || isLoading}
               onClick={handleSubmit}
-              className="w-[280px] bg-[#F5BC1C] text-white py-2.5 rounded-lg text-base font-medium hover:bg-[#e5ac0f] transition-colors flex items-center justify-center disabled:bg-[#f5bc1c99] disabled:cursor-not-allowed"
+              className="w-[280px] bg-[#F5BC1C] text-white py-2.5 rounded-lg text-base font-medium hover:bg-[#e5ac0f] transition-colors flex items-center justify-center disabled:bg-[#f5bc1c99] disabled:cursor-not-allowed button-animate"
             >
               {isLoading ? (
                 <>

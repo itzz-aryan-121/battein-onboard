@@ -146,7 +146,7 @@ export default function OtpVerification() {
             <div className="flex items-center mb-8">
               <span className="text-[#232323] mr-2 text-[1.08rem]" style={{ fontFamily: 'Inter' }}>Do not send OTP?</span>
               <button 
-                className="text-[#FF9900] font-bold hover:underline text-[1.08rem]"
+                className="text-[#FF9900] font-bold hover:underline text-[1.08rem] button-animate"
                 onClick={handleSendOtp}
                 style={{ fontFamily: 'Inter' }}
               >
@@ -155,7 +155,7 @@ export default function OtpVerification() {
             </div>
 
             <button 
-              className={`bg-[#F5BC1C] hover:bg-[#FFB800] text-white font-extrabold py-3 px-6 rounded-[8px] w-[220px] transition-colors text-[1.15rem] shadow-sm ${isProcessing ? 'opacity-80 cursor-not-allowed' : ''}`}
+              className={`bg-[#F5BC1C] hover:bg-[#FFB800] text-white font-extrabold py-3 px-6 rounded-[8px] w-[220px] transition-colors text-[1.15rem] shadow-sm ${isProcessing ? 'opacity-80 cursor-not-allowed' : ''} button-animate`}
               onClick={handleContinue}
               disabled={isProcessing}
               style={{ fontFamily: 'Inter' }}
