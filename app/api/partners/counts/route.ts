@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/app/lib/mongodb';
 import { Partner } from '@/app/models/Partner';
 
-export async function GET() {
+// GET /api/partners/counts - Get counts of partners by status
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
     const pending = await Partner.countDocuments({ status: 'Pending' });
