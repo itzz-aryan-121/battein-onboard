@@ -67,11 +67,12 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export default async function PartnerDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+type Props = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function PartnerDetailPage({ params }: Props) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`);
   const partner = await response.json();
 
