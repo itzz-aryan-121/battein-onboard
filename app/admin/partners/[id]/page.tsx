@@ -62,12 +62,12 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export default async function Page({
-  params,
-}: {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+type Props = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function Page({ params, searchParams }: Props) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/partners/${params.id}`, {
     cache: 'no-store', // Optional: Ensure fresh data
   });
