@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
 
 export async function POST(request: Request) {
     try {
@@ -14,25 +12,22 @@ export async function POST(request: Request) {
             );
         }
 
+        // Convert file to base64
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-
-        // Create unique filename
-        const filename = `${Date.now()}-${file.name}`;
-        const uploadDir = join(process.cwd(), 'public', 'uploads');
-        const filepath = join(uploadDir, filename);
-
-        // Write file
-        await writeFile(filepath, buffer);
-
-        // Return the URL path that can be used to access the file
+        const base64Data = buffer.toString('base64');
+        
+        // Create a data URL with the file's MIME type
+        const dataUrl = `data:${file.type};base64,${base64Data}`;
+        
+        // Return the data URL that can be stored in the database
         return NextResponse.json({ 
-            url: `/uploads/${filename}`
+            url: dataUrl
         });
     } catch (error) {
-        console.error('Error uploading file:', error);
+        console.error('Error processing file:', error);
         return NextResponse.json(
-            { error: 'Error uploading file' },
+            { error: 'Error processing file' },
             { status: 500 }
         );
     }

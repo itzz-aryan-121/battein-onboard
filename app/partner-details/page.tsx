@@ -149,7 +149,9 @@ const PartnerDetailsForm = () => {
         try {
             chunksRef.current = [];
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream);
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm' // More widely supported format
+            });
             mediaRecorderRef.current = mediaRecorder;
 
             mediaRecorder.ondataavailable = (e) => {
@@ -157,15 +159,15 @@ const PartnerDetailsForm = () => {
             };
 
             mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(chunksRef.current, { type: 'audio/mpeg' });
+                const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
                 const url = URL.createObjectURL(audioBlob);
                 setAudioBlob(audioBlob);
                 setAudioUrl(url);
                 setAudioRecorded(true);
 
                 // Create a File object from the Blob
-                const audioFile = new File([audioBlob], "audio-recording.mp3", {
-                    type: "audio/mpeg",
+                const audioFile = new File([audioBlob], "audio-recording.webm", {
+                    type: "audio/webm",
                     lastModified: Date.now()
                 });
 
@@ -179,7 +181,7 @@ const PartnerDetailsForm = () => {
             };
 
             // Start recording
-            mediaRecorder.start();
+            mediaRecorder.start(100); // Collect data every 100ms for smoother processing
             setIsRecording(true);
 
             // Start timer
@@ -267,17 +269,25 @@ const PartnerDetailsForm = () => {
                 const audioFormData = new FormData();
                 audioFormData.append('file', formData.audioIntro);
 
-                const uploadResponse = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: audioFormData
-                });
+                try {
+                    const uploadResponse = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: audioFormData
+                    });
 
-                if (!uploadResponse.ok) {
-                    throw new Error('Failed to upload audio file');
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json();
+                        throw new Error(errorData.error || 'Failed to upload audio file');
+                    }
+
+                    const data = await uploadResponse.json();
+                    audioUrl = data.url;
+                } catch (uploadError: any) {
+                    console.error('Error uploading audio:', uploadError);
+                    alert(`Error uploading audio: ${uploadError.message || 'Unknown error'}`);
+                    setIsSubmitting(false);
+                    return;
                 }
-
-                const { url } = await uploadResponse.json();
-                audioUrl = url;
             }
 
             // Only send the fields we have in the form
@@ -298,7 +308,8 @@ const PartnerDetailsForm = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to submit partner details');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to submit partner details');
             }
 
             // Get the partner ID from the response and save it to localStorage
@@ -307,9 +318,9 @@ const PartnerDetailsForm = () => {
 
             // Navigate to earn-multiple page on success
             router.push('/earn-multiple');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting partner details:', error);
-            alert('Failed to submit partner details. Please try again.');
+            alert(`Failed to submit partner details: ${error.message || 'Unknown error'}`);
         } finally {
             setIsSubmitting(false);
         }

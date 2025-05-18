@@ -91,22 +91,55 @@ export default function KYCVerification() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setPanCardFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setPanCardFile(file);
       setIsUploaded(false);
       setUploadProgress(0);
 
-      // Simulate upload progress
+      // Simulate initial upload progress
       let progress = 0;
       const interval = setInterval(() => {
         progress += 10;
         setUploadProgress(progress);
-        if (progress >= 100) {
+        if (progress >= 60) {
           clearInterval(interval);
-          setIsUploaded(true);
+          
+          // Now actually upload the file to get the Base64 data URL
+          uploadFileToServer(file);
         }
       }, 80);
+    }
+  };
+
+  const uploadFileToServer = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const uploadResponse = await fetch('/api/upload', { 
+        method: 'POST', 
+        body: formData 
+      });
+      
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload PAN card');
+      }
+      
+      const data = await uploadResponse.json();
+      
+      // Store the Base64 data URL for later use
+      localStorage.setItem('panCardFileUrl', data.url);
+      
+      // Complete the progress bar
+      setUploadProgress(100);
+      setIsUploaded(true);
+    } catch (error: any) {
+      console.error('Error uploading PAN card:', error);
+      alert(`Error uploading PAN card: ${error.message || 'Unknown error'}`);
+      setUploadProgress(0);
+      setIsUploaded(false);
     }
   };
 
@@ -125,30 +158,37 @@ export default function KYCVerification() {
       return;
     }
 
-    // 1. Upload the PAN card file if needed
-    let panCardFileUrl = '';
-    if (panCardFile) {
-      const formData = new FormData();
-      formData.append('file', panCardFile);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
-      const uploadData = await uploadRes.json();
-      panCardFileUrl = uploadData.url;
+    try {
+      // Get the Base64 data URL from localStorage
+      const panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
+      
+      if (!panCardFileUrl) {
+        alert('Please upload your PAN card first');
+        return;
+      }
+
+      // Update the partner document with KYC data
+      const response = await fetch(`/api/partners?id=${partnerId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kyc: {
+            panNumber,
+            panCardFile: panCardFileUrl
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update KYC information');
+      }
+
+      // Navigate to bank details page as the next step in the flow
+      router.push('/bank-details');
+    } catch (error: any) {
+      console.error('Error submitting KYC details:', error);
+      alert(`Error submitting KYC details: ${error.message || 'Unknown error'}`);
     }
-
-    // 2. PATCH the partner document with KYC data
-    await fetch(`/api/partners/${partnerId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        kyc: {
-          panNumber,
-          panCardFile: panCardFileUrl
-        }
-      })
-    });
-
-    // Navigate to bank details page as the next step in the flow
-    router.push('/bank-details');
   };
 
   const isFormValid = panNumber.trim() !== '' && panCardFile !== null && !panError;

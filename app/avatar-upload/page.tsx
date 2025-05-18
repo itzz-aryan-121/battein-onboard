@@ -46,13 +46,38 @@ export default function AvatarUploadPage() {
     '/assets/avatars/image (5).png',
   ];
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-    
-      const imageUrl = URL.createObjectURL(file);
-      setCustomAvatar(imageUrl);
-      setSelectedAvatar(null); 
+      try {
+        // First create a temporary URL for preview
+        const imageUrl = URL.createObjectURL(file);
+        setCustomAvatar(imageUrl);
+        setSelectedAvatar(null);
+        
+        // Upload the file to get the Base64 data URL
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload avatar');
+        }
+        
+        // The response contains the Base64 data URL that can be stored in the database
+        const data = await uploadResponse.json();
+        
+        // Update the avatar with the Base64 data URL
+        // This will be saved when the user clicks "Continue"
+        setCustomAvatar(data.url);
+      } catch (error: any) {
+        console.error('Error uploading avatar:', error);
+        alert(`Error uploading avatar: ${error.message || 'Unknown error'}`);
+      }
     }
   };
 
@@ -66,9 +91,44 @@ export default function AvatarUploadPage() {
     router.push('/video-upload');
   };
 
-  const handleContinue = () => {
-    // Here you would typically save the avatar selection
-    router.push('/kyc-upload');
+  const handleContinue = async () => {
+    try {
+      // Here you would save the avatar selection to the database
+      // For predefined avatars, use the URL directly
+      // For custom avatars, we already have the Base64 data URL
+      
+      let avatarUrl = '';
+      
+      if (selectedAvatar !== null) {
+        avatarUrl = avatars[selectedAvatar];
+      } else if (customAvatar !== null) {
+        avatarUrl = customAvatar;
+      }
+      
+      // Get the partner ID from localStorage
+      const partnerId = localStorage.getItem('partnerId');
+      
+      if (partnerId && avatarUrl) {
+        // Update the partner record with the avatar
+        const response = await fetch(`/api/partners?id=${partnerId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ avatarUrl })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to save avatar');
+        }
+      }
+      
+      // Navigate to the next step
+      router.push('/kyc-upload');
+    } catch (error: any) {
+      console.error('Error saving avatar:', error);
+      alert(`Error saving avatar: ${error.message || 'Unknown error'}`);
+    }
   };
 
   // Function to handle generating an avatar from the API

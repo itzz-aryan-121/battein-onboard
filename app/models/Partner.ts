@@ -43,6 +43,9 @@ const partnerSchema = new mongoose.Schema({
   hobbies: [{ type: String }],
   bio: { type: String },
   audioIntro: { type: String },
+  
+  // avatar-upload
+  avatarUrl: { type: String },
 
   // kyc-upload
   kyc: {
