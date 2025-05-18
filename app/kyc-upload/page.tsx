@@ -14,6 +14,7 @@ export default function KYCVerification() {
   const [isUploaded, setIsUploaded] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(true);
   const [panError, setPanError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
@@ -145,16 +146,19 @@ export default function KYCVerification() {
 
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     // Validate PAN number before submission
     if (!validatePanNumber(panNumber)) {
       setPanError("Invalid PAN format. It should be 5 letters, 4 numbers, followed by 1 letter (e.g., AAAAA0000A)");
+      setIsSubmitting(false);
       return;
     }
 
     const partnerId = localStorage.getItem('partnerId');
     if (!partnerId) {
       alert('No partner ID found!');
+      setIsSubmitting(false);
       return;
     }
 
@@ -164,6 +168,7 @@ export default function KYCVerification() {
       
       if (!panCardFileUrl) {
         alert('Please upload your PAN card first');
+        setIsSubmitting(false);
         return;
       }
 
@@ -188,6 +193,7 @@ export default function KYCVerification() {
     } catch (error: any) {
       console.error('Error submitting KYC details:', error);
       alert(`Error submitting KYC details: ${error.message || 'Unknown error'}`);
+      setIsSubmitting(false);
     }
   };
 
@@ -309,9 +315,21 @@ export default function KYCVerification() {
             <div className="mb-4 w-[483px] mx-auto">
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium">Upload your <span className="uppercase">PAN CARD</span> Photo</label>
-                <label htmlFor="panCardUpload" className="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
-                  Upload <svg className="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
-                  <input type="file" id="panCardUpload" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                <label htmlFor="panCardUpload" className={`inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white ${uploadProgress > 0 && uploadProgress < 100 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`}>
+                  {uploadProgress > 0 && uploadProgress < 100 ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin h-3 w-3 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                      Uploading...
+                    </span>
+                  ) : (
+                    <>
+                      Upload <svg className="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                    </>
+                  )}
+                  <input type="file" id="panCardUpload" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploadProgress > 0 && uploadProgress < 100} />
                 </label>
               </div>
               {panCardFile && (
@@ -362,11 +380,21 @@ export default function KYCVerification() {
             <button
               type="submit"
               className={`w-[278px] mx-auto bg-yellow-500 text-white py-2 rounded-lg text-base font-medium transition-colors ${
-                !isFormValid ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-600'
+                !isFormValid || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-600'
               } button-animate`}
-              disabled={!isFormValid}
+              disabled={!isFormValid || isSubmitting}
             >
-              Proceed
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                'Proceed'
+              )}
             </button>
           </form>
         </div>

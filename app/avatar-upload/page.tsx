@@ -33,6 +33,8 @@ export default function AvatarUploadPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationPrompt, setGenerationPrompt] = useState('');
   const [showGenerateInput, setShowGenerateInput] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -50,6 +52,7 @@ export default function AvatarUploadPage() {
     const file = e.target.files?.[0];
     if (file) {
       try {
+        setIsUploading(true);
         // First create a temporary URL for preview
         const imageUrl = URL.createObjectURL(file);
         setCustomAvatar(imageUrl);
@@ -77,6 +80,8 @@ export default function AvatarUploadPage() {
       } catch (error: any) {
         console.error('Error uploading avatar:', error);
         alert(`Error uploading avatar: ${error.message || 'Unknown error'}`);
+      } finally {
+        setIsUploading(false);
       }
     }
   };
@@ -93,6 +98,7 @@ export default function AvatarUploadPage() {
 
   const handleContinue = async () => {
     try {
+      setIsSaving(true);
       // Here you would save the avatar selection to the database
       // For predefined avatars, use the URL directly
       // For custom avatars, we already have the Base64 data URL
@@ -128,6 +134,8 @@ export default function AvatarUploadPage() {
     } catch (error: any) {
       console.error('Error saving avatar:', error);
       alert(`Error saving avatar: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -172,10 +180,15 @@ export default function AvatarUploadPage() {
             {/* Upload Box */}
             <div className="flex justify-center mb-5">
               <div 
-                className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors overflow-hidden"
-                onClick={handleAvatarClick}
+                className={`w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors overflow-hidden ${isUploading ? 'opacity-50' : ''}`}
+                onClick={!isUploading ? handleAvatarClick : undefined}
               >
-                {customAvatar ? (
+                {isUploading ? (
+                  <svg className="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                ) : customAvatar ? (
                   <img src={customAvatar} alt="Custom Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -189,6 +202,7 @@ export default function AvatarUploadPage() {
                 ref={fileInputRef} 
                 onChange={handleFileUpload} 
                 className="hidden" 
+                disabled={isUploading}
               />
             </div>
             
@@ -305,10 +319,24 @@ export default function AvatarUploadPage() {
             <div className="flex justify-center mt-5">
               <button 
                 onClick={handleContinue}
-                className={`bg-[#4CAF50] text-white px-5 py-1.5 rounded-lg font-medium transition-colors ${(selectedAvatar !== null || customAvatar !== null) ? 'hover:bg-[#3d9940]' : 'opacity-50 cursor-not-allowed'}`}
-                disabled={selectedAvatar === null && customAvatar === null}
+                className={`bg-[#4CAF50] text-white px-5 py-1.5 rounded-lg font-medium transition-colors ${
+                  (selectedAvatar !== null || customAvatar !== null) && !isSaving 
+                  ? 'hover:bg-[#3d9940]' 
+                  : 'opacity-50 cursor-not-allowed'
+                }`}
+                disabled={(selectedAvatar === null && customAvatar === null) || isSaving || isUploading}
               >
-                Continue
+                {isSaving ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    Saving...
+                  </span>
+                ) : (
+                  'Continue'
+                )}
               </button>
             </div>
           </div>
