@@ -11,9 +11,11 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.18",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/mongoose": "^5.11.96",
     "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.3",

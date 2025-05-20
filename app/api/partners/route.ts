@@ -2,25 +2,29 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/app/lib/mongodb';
 import { Partner } from '@/app/models/Partner';
 
+// Common headers for CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
-// GET /api/partners - Get all partners (with filters)
+// GET /api/partners - Get all partners with pagination
 export async function GET(request: Request) {
   try {
     await connectDB();
     const { searchParams } = new URL(request.url);
-    
-    // Get query parameters
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const status = searchParams.get('status') || 'all';
 
-    // No filtering, just return all partners with pagination
     const skip = (page - 1) * limit;
-    const partners = await Partner.find({})
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const query = status !== 'all' ? { status } : {};
 
-    const total = await Partner.countDocuments({});
+    const [partners, total] = await Promise.all([
+      Partner.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
+      Partner.countDocuments(query)
+    ]);
 
     return NextResponse.json({
       partners,
@@ -28,14 +32,19 @@ export async function GET(request: Request) {
         total,
         page,
         limit,
-        pages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit)
       }
+    }, {
+      headers: corsHeaders
     });
   } catch (error) {
     console.error('Error fetching partners:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders
+      }
     );
   }
 }
@@ -46,17 +55,23 @@ export async function POST(request: Request) {
     await connectDB();
     const data = await request.json();
 
-    // Create new partner (no applicationStatus)
+    // Create new partner
     const partner = await Partner.create({
-      ...data
+      ...data,
+      status: 'Pending'
     });
 
-    return NextResponse.json(partner);
+    return NextResponse.json(partner, {
+      headers: corsHeaders
+    });
   } catch (error) {
     console.error('Error creating partner:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders
+      }
     );
   }
 }
@@ -72,7 +87,10 @@ export async function PUT(request: Request) {
     if (!id) {
       return NextResponse.json(
         { error: 'Partner ID is required' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: corsHeaders
+        }
       );
     }
 
@@ -86,16 +104,31 @@ export async function PUT(request: Request) {
     if (!partner) {
       return NextResponse.json(
         { error: 'Partner not found' },
-        { status: 404 }
+        { 
+          status: 404,
+          headers: corsHeaders
+        }
       );
     }
 
-    return NextResponse.json(partner);
+    return NextResponse.json(partner, {
+      headers: corsHeaders
+    });
   } catch (error) {
     console.error('Error updating partner:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders
+      }
     );
   }
+}
+
+// OPTIONS handler for CORS preflight requests
+export async function OPTIONS() {
+  return NextResponse.json({}, {
+    headers: corsHeaders
+  });
 } 

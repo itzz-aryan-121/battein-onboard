@@ -150,7 +150,7 @@ const RegistrationForm = () => {
     return feminineEndings.some(ending => lowercaseName.endsWith(ending));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate all fields before submission
@@ -171,18 +171,39 @@ const RegistrationForm = () => {
       return;
     }
 
-    const button = document.querySelector('button[type="submit"]');
-    if (button) {
-      button.classList.add('animate-pulse');
-      setTimeout(() => button.classList.remove('animate-pulse'), 1000);
-    }
+    try {
+      // Create a new partner record
+      const response = await fetch('/api/partners', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+          gender: formData.gender,
+          referralCode: formData.referralCode,
+          status: 'Pending'
+        })
+      });
 
-    // If gender is Male, show success modal without redirection
-    if (formData.gender === 'Male') {
-      setShowSuccessModal(true);
-    } else {
-      // For female and LGBTQ gender, proceed to OTP verification
-      router.push(`/otp-verification?phoneNumber=${formData.phoneNumber}`);
+      if (!response.ok) {
+        throw new Error('Failed to create partner record');
+      }
+
+      const partner = await response.json();
+
+      // If gender is Male, show success modal without redirection
+      if (formData.gender === 'Male') {
+        setShowSuccessModal(true);
+      } else {
+        // For female and LGBTQ gender, proceed to OTP verification
+        router.push(`/otp-verification?phoneNumber=${formData.phoneNumber}&partnerId=${partner._id}`);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setErrorMessage("Failed to submit the form. Please try again.");
+      setShowErrorModal(true);
     }
   };
 
@@ -403,9 +424,9 @@ const RegistrationForm = () => {
       )}
       
       {/* Main content container */}
-      <div className="flex h-full">
+      <div className="flex flex-col md:flex-row h-full">
         {/* Left side - Form */}
-        <div className=" md:w-1/2 px-10 pt-6 pb-0 flex flex-col">
+        <div className="w-full md:w-1/2 px-4 md:px-10 pt-6 pb-0 flex flex-col">
           {/* Logo */}
           <div className="flex items-center mb-4 animate-fadeInDown">
             <div className="bg-[#F5BC1C] w-12 h-12 rounded-xl flex items-center justify-center mr-3 animate-pulse" style={{animationDuration: '3s'}}>
@@ -549,14 +570,14 @@ const RegistrationForm = () => {
         </div>
         
         {/* Right side - Illustration */}
-        <div className=" md:block md:w-1/2 relative">
-          <div className="absolute inset-0">
+        <div className="hidden md:block md:w-1/2 relative">
+          <div className="absolute inset-0 flex items-center justify-center">
             <Image 
               src="/assets/two-girls.png"
               alt="People using Baatein"
               width={600}
               height={600}
-              className="object-contain w-full h-full z-auto"
+              className="object-contain w-full h-full"
               priority
             />
           </div>
