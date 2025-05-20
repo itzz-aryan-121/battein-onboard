@@ -38,6 +38,12 @@ const bankDetailsSchema = new mongoose.Schema({
 });
 
 const partnerSchema = new mongoose.Schema({
+  // Basic information
+  name: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
+  gender: { type: String, enum: ['Female', 'Male', 'LGBTQ'], required: true },
+  referralCode: { type: String },
+
   // partner-details
   spokenLanguage: { type: String },
   hobbies: [{ type: String }],

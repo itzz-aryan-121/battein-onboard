@@ -172,7 +172,7 @@ const RegistrationForm = () => {
     }
 
     try {
-      // Create a new partner record
+      // Create a new partner record with basic information
       const response = await fetch('/api/partners', {
         method: 'POST',
         headers: {
@@ -182,16 +182,24 @@ const RegistrationForm = () => {
           name: formData.name,
           phoneNumber: formData.phoneNumber,
           gender: formData.gender,
-          referralCode: formData.referralCode,
+          referralCode: formData.referralCode || undefined,
           status: 'Pending'
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create partner record');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create partner record');
       }
 
       const partner = await response.json();
+
+      // Store basic info in localStorage for use in partner-details
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('name', formData.name);
+        localStorage.setItem('phoneNumber', formData.phoneNumber);
+        localStorage.setItem('gender', formData.gender);
+      }
 
       // If gender is Male, show success modal without redirection
       if (formData.gender === 'Male') {

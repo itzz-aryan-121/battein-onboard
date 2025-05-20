@@ -295,8 +295,15 @@ const PartnerDetailsForm = () => {
                 }
             }
 
-            // Only send the fields we have in the form
+            // Only send the fields we have in the form, plus required fields from registration
+            const name = localStorage.getItem('name');
+            const phoneNumber = localStorage.getItem('phoneNumber');
+            const gender = localStorage.getItem('gender');
+
             const partnerData = {
+                name,
+                phoneNumber,
+                gender,
                 spokenLanguage: formData.spokenLanguage,
                 hobbies: formData.hobbies,
                 bio: formData.bio,
