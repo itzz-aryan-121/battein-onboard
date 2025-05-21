@@ -38,6 +38,7 @@ const RegistrationForm = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Progressive form field appearance for better UX
   useEffect(() => {
@@ -152,26 +153,26 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate all fields before submission
-    validateField('name', formData.name);
-    validateField('phoneNumber', formData.phoneNumber);
-    
-    // Check if we have any errors
-    if (errors.name || errors.phoneNumber || formData.name.trim() === '' || formData.phoneNumber.trim() === '') {
-      setErrorMessage("Please fix the errors in the form before submitting.");
-      setShowErrorModal(true);
-      return;
-    }
-
-    // Special check for LGBTQ with non-feminine name
-    if (formData.gender === 'LGBTQ' && !isFeminineName(formData.name)) {
-      setErrorMessage("For LGBTQ selection, please use a feminine name style.");
-      setShowLGBTQErrorModal(true);
-      return;
-    }
-
+    setIsLoading(true);
     try {
+      // Validate all fields before submission
+      validateField('name', formData.name);
+      validateField('phoneNumber', formData.phoneNumber);
+      
+      // Check if we have any errors
+      if (errors.name || errors.phoneNumber || formData.name.trim() === '' || formData.phoneNumber.trim() === '') {
+        setErrorMessage("Please fix the errors in the form before submitting.");
+        setShowErrorModal(true);
+        return;
+      }
+
+      // Special check for LGBTQ with non-feminine name
+      if (formData.gender === 'LGBTQ' && !isFeminineName(formData.name)) {
+        setErrorMessage("For LGBTQ selection, please use a feminine name style.");
+        setShowLGBTQErrorModal(true);
+        return;
+      }
+
       // Create a new partner record with basic information
       const response = await fetch('/api/partners', {
         method: 'POST',
@@ -212,6 +213,8 @@ const RegistrationForm = () => {
       console.error('Error submitting form:', error);
       setErrorMessage("Failed to submit the form. Please try again.");
       setShowErrorModal(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -569,9 +572,20 @@ const RegistrationForm = () => {
               
               <button
                 type="submit"
-                className="w-full bg-[#F5BC1C] text-white font-medium py-2.5 rounded-lg transition-colors"
+                className={`w-full bg-[#F5BC1C] text-white font-medium py-2.5 rounded-lg transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                disabled={isLoading}
               >
-                {t('welcome', 'submitButton')}
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    Processing...
+                  </span>
+                ) : (
+                  t('welcome', 'submitButton')
+                )}
               </button>
             </div>
           </form>
