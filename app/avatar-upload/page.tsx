@@ -1,14 +1,41 @@
 'use client'
 
-import { useState, useRef } from 'react';
-import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 
+// Helper function to convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+// Helper function to convert image URL to base64
+const imageUrlToBase64 = async (url: string): Promise<string> => {
+  try {
+    // Fetch the image
+    const response = await fetch(url);
+    const blob = await response.blob();
+    
+    // Convert blob to base64
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  } catch (error) {
+    console.error('Error converting image URL to base64:', error);
+    throw error;
+  }
+};
 
 const generateAvatarFromAPI = async (prompt: string) => {
   try {
- 
     console.log(`Generating avatar with prompt: ${prompt}`);
     
     // Mock response for now - this would be replaced with actual API call
@@ -35,51 +62,51 @@ export default function AvatarUploadPage() {
   const [showGenerateInput, setShowGenerateInput] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [avatarsBase64, setAvatarsBase64] = useState<string[]>([]);
+  const [avatarsLoaded, setAvatarsLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const avatars = [
     '/assets/avatars/image 3.png',
-    // '/assets/avatars/image.png',
     '/assets/avatars/image (1).png',
-    // '/assets/avatars/image (2).png',
-    // '/assets/avatars/image (3).png',
     '/assets/avatars/image (4).png',
     '/assets/avatars/image (5).png',
   ];
+
+  // Preload all predefined avatars as base64 on component mount
+  useEffect(() => {
+    const loadAvatarsAsBase64 = async () => {
+      try {
+        const base64Promises = avatars.map(avatarUrl => imageUrlToBase64(avatarUrl));
+        const base64Results = await Promise.all(base64Promises);
+        setAvatarsBase64(base64Results);
+        setAvatarsLoaded(true);
+      } catch (error) {
+        console.error('Error loading avatars as base64:', error);
+        // Fall back to using URLs if conversion fails
+        setAvatarsLoaded(true);
+      }
+    };
+    
+    loadAvatarsAsBase64();
+  }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
         setIsUploading(true);
-        // First create a temporary URL for preview
-        const imageUrl = URL.createObjectURL(file);
-        setCustomAvatar(imageUrl);
+        
+        // Convert the file to base64 directly
+        const base64Image = await fileToBase64(file);
+        
+        // Set the base64 image as custom avatar
+        setCustomAvatar(base64Image);
         setSelectedAvatar(null);
-        
-        // Upload the file to get the Base64 data URL
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
-        
-        if (!uploadResponse.ok) {
-          throw new Error('Failed to upload avatar');
-        }
-        
-        // The response contains the Base64 data URL that can be stored in the database
-        const data = await uploadResponse.json();
-        
-        // Update the avatar with the Base64 data URL
-        // This will be saved when the user clicks "Continue"
-        setCustomAvatar(data.url);
       } catch (error: any) {
-        console.error('Error uploading avatar:', error);
-        alert(`Error uploading avatar: ${error.message || 'Unknown error'}`);
+        console.error('Error processing avatar:', error);
+        alert(`Error processing avatar: ${error.message || 'Unknown error'}`);
       } finally {
         setIsUploading(false);
       }
@@ -99,15 +126,25 @@ export default function AvatarUploadPage() {
   const handleContinue = async () => {
     try {
       setIsSaving(true);
-      // Here you would save the avatar selection to the database
-      // For predefined avatars, use the URL directly
-      // For custom avatars, we already have the Base64 data URL
       
       let avatarUrl = '';
       
       if (selectedAvatar !== null) {
-        avatarUrl = avatars[selectedAvatar];
+        // Use the preloaded base64 version of the predefined avatar
+        if (avatarsLoaded && avatarsBase64[selectedAvatar]) {
+          avatarUrl = avatarsBase64[selectedAvatar];
+        } else {
+          // Fallback: Convert the selected avatar to base64 right now
+          try {
+            avatarUrl = await imageUrlToBase64(avatars[selectedAvatar]);
+          } catch (error) {
+            console.error('Error converting avatar to base64:', error);
+            // Last resort fallback - just use the URL
+            avatarUrl = avatars[selectedAvatar];
+          }
+        }
       } else if (customAvatar !== null) {
+        // Custom avatars are already in base64 format
         avatarUrl = customAvatar;
       }
       
@@ -115,13 +152,16 @@ export default function AvatarUploadPage() {
       const partnerId = localStorage.getItem('partnerId');
       
       if (partnerId && avatarUrl) {
-        // Update the partner record with the avatar
+        // Update the partner record with the base64 avatar
         const response = await fetch(`/api/partners?id=${partnerId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ avatarUrl })
+          body: JSON.stringify({ 
+            avatarUrl,
+            isBase64: true // Always true since we're always using base64 now
+          })
         });
         
         if (!response.ok) {
@@ -147,7 +187,9 @@ export default function AvatarUploadPage() {
     try {
       const result = await generateAvatarFromAPI(generationPrompt);
       if (result.success && result.imageUrl) {
-        setCustomAvatar(result.imageUrl);
+        // Convert the generated avatar URL to base64
+        const base64Image = await imageUrlToBase64(result.imageUrl);
+        setCustomAvatar(base64Image);
         setSelectedAvatar(null);
         setShowGenerateInput(false);
       } else {
@@ -347,4 +389,4 @@ export default function AvatarUploadPage() {
       <WaveBackground height={250} />
     </div>
   );
-} 
+}
