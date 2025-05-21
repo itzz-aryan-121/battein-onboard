@@ -1,4 +1,3 @@
-// app/welcome/page.tsx
 'use client'
 
 import { useState, useEffect, useRef } from 'react';
@@ -163,6 +162,7 @@ const RegistrationForm = () => {
       if (errors.name || errors.phoneNumber || formData.name.trim() === '' || formData.phoneNumber.trim() === '') {
         setErrorMessage("Please fix the errors in the form before submitting.");
         setShowErrorModal(true);
+        setIsLoading(false);
         return;
       }
 
@@ -170,50 +170,31 @@ const RegistrationForm = () => {
       if (formData.gender === 'LGBTQ' && !isFeminineName(formData.name)) {
         setErrorMessage("For LGBTQ selection, please use a feminine name style.");
         setShowLGBTQErrorModal(true);
+        setIsLoading(false);
         return;
       }
 
-      // Create a new partner record with basic information
-      const response = await fetch('/api/partners', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          phoneNumber: formData.phoneNumber,
-          gender: formData.gender,
-          referralCode: formData.referralCode || undefined,
-          status: 'Pending'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create partner record');
-      }
-
-      const partner = await response.json();
-
-      // Store basic info in localStorage for use in partner-details
+      // Store user data in localStorage instead of creating a database record
       if (typeof window !== 'undefined') {
         localStorage.setItem('name', formData.name);
         localStorage.setItem('phoneNumber', formData.phoneNumber);
         localStorage.setItem('gender', formData.gender);
+        localStorage.setItem('referralCode', formData.referralCode || '');
       }
 
       // If gender is Male, show success modal without redirection
       if (formData.gender === 'Male') {
         setShowSuccessModal(true);
+        setIsLoading(false);
       } else {
         // For female and LGBTQ gender, proceed to OTP verification
-        router.push(`/otp-verification?phoneNumber=${formData.phoneNumber}&partnerId=${partner._id}`);
+        // Pass the phone number as a query parameter without creating a partner record
+        router.push(`/otp-verification?phoneNumber=${formData.phoneNumber}`);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      setErrorMessage("Failed to submit the form. Please try again.");
+      console.error('Error processing form:', error);
+      setErrorMessage("Failed to process the form. Please try again.");
       setShowErrorModal(true);
-    } finally {
       setIsLoading(false);
     }
   };
