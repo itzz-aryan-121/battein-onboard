@@ -67,8 +67,8 @@ export default function BaateinEarningsPage() {
                 </div>
               </div>
               
-              <div className="rounded-lg py-3 text-center font-bold mb-6 bg-[#FDC62B]">
-                Earn <span className='text-white'>₹20,000-₹30,000</span> Monthly
+              <div className="rounded-lg py-3 text-center font-bold mb-6">
+                Earn <span className='text-black'>₹20,000-₹30,000</span> Monthly
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -128,8 +128,8 @@ export default function BaateinEarningsPage() {
                 </div>
               </div>
               
-              <div className="rounded-lg py-3 text-center font-bold mb-6 bg-[#FDC62B]">
-                Earn <span className='text-white'>₹60,000-₹1,00,000</span> Monthly
+              <div className="rounded-lg py-3 text-center font-bold mb-6">
+                Earn <span className='text-black'>₹60,000-₹1,00,000</span> Monthly
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -172,14 +172,11 @@ export default function BaateinEarningsPage() {
             <button 
               onClick={handleContinue}
               disabled={!selectedOption}
-              className={`rounded-full p-3 flex transition-all ${
+              className={`p-3 flex transition-all font-medium rounded-xl ${
                 selectedOption ? 'bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600] transform hover:scale-105' : 'bg-gray-300 cursor-not-allowed opacity-50'
               } button-animate`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-right">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+              Start Earning
             </button>
           </div>
         </div>

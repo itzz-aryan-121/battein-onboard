@@ -85,6 +85,41 @@ export async function DELETE(request: Request) {
   }
 }
 
+// PUT /api/partners/[id]/profile-pic
+// This endpoint is used to update the profile picture of a partner
+
+export async function PUT(request: Request) {
+  try {
+    await connectDB();
+    const id = getIdFromUrl(request);
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400, headers: corsHeaders });
+    }
+
+    const body = await request.json();
+    const { profilePicture } = body;
+
+    if (!profilePicture || typeof profilePicture !== 'string') {
+      return NextResponse.json({ error: 'Profile picture is required' }, { status: 400, headers: corsHeaders });
+    }
+
+    const updatedPartner = await Partner.findByIdAndUpdate(
+      id,
+      { profilePicture },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPartner) {
+      return NextResponse.json({ error: 'Partner not found' }, { status: 404, headers: corsHeaders });
+    }
+
+    return NextResponse.json({ message: 'Profile picture updated successfully', partner: updatedPartner }, { headers: corsHeaders });
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders });
+  }
+}
+
 // OPTIONS handler for CORS preflight
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });

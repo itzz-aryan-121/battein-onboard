@@ -170,7 +170,7 @@ export default function AvatarUploadPage() {
       }
       
       // Navigate to the next step
-      router.push('/kyc-upload');
+      router.push('/profile-pic');
     } catch (error: any) {
       console.error('Error saving avatar:', error);
       alert(`Error saving avatar: ${error.message || 'Unknown error'}`);

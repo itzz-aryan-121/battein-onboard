@@ -8,7 +8,7 @@ import WaveBackground from '../components/WaveBackground';
 
 const PartnerDetailsForm = () => {
     const [formData, setFormData] = useState({
-        spokenLanguage: 'English',
+        spokenLanguages: [] as string[],
         hobbies: [] as string[],
         bio: '',
         audioIntro: null as File | null
@@ -21,6 +21,7 @@ const PartnerDetailsForm = () => {
     const [animatedFields, setAnimatedFields] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isHobbiesDropdownOpen, setIsHobbiesDropdownOpen] = useState(false);
+    const [isLanguagesDropdownOpen, setIsLanguagesDropdownOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -28,9 +29,30 @@ const PartnerDetailsForm = () => {
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<BlobPart[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const dropdownRef = useRef<HTMLDivElement | null>(null);
+    const hobbiesDropdownRef = useRef<HTMLDivElement | null>(null);
+    const languagesDropdownRef = useRef<HTMLDivElement | null>(null);
 
     const router = useRouter();
+
+    const languageOptions = [
+        { name: 'English', active: false },
+        { name: 'Hindi', active: false },
+        { name: 'Punjabi', active: false },
+        { name: 'Bengali', active: false },
+        { name: 'Gujarati', active: false },
+        { name: 'Marathi', active: false },
+        { name: 'Tamil', active: false },
+        { name: 'Telugu', active: false },
+        { name: 'Kannada', active: false },
+        { name: 'Malayalam', active: false },
+        { name: 'Urdu', active: false },
+        { name: 'Odia', active: false },
+        { name: 'Assamese', active: false },
+        { name: 'Maithili', active: false },
+        { name: 'Sanskrit', active: false }
+    ];
+    
+    const [languagesList, setLanguagesList] = useState(languageOptions);
 
     const hobbiesOptions = [
         { name: 'Cooking', active: false },
@@ -82,11 +104,14 @@ const PartnerDetailsForm = () => {
         };
     }, [audioUrl]);
 
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            if (hobbiesDropdownRef.current && !hobbiesDropdownRef.current.contains(event.target as Node)) {
                 setIsHobbiesDropdownOpen(false);
+            }
+            if (languagesDropdownRef.current && !languagesDropdownRef.current.contains(event.target as Node)) {
+                setIsLanguagesDropdownOpen(false);
             }
         }
 
@@ -95,6 +120,22 @@ const PartnerDetailsForm = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    const handleSelectLanguage = (index: number) => {
+        const updatedLanguages = [...languagesList];
+        updatedLanguages[index].active = !updatedLanguages[index].active;
+        setLanguagesList(updatedLanguages);
+
+        // Update formData with selected languages
+        setFormData(prev => ({
+            ...prev,
+            spokenLanguages: updatedLanguages.filter(language => language.active).map(language => language.name)
+        }));
+    };
+
+    const toggleLanguagesDropdown = () => {
+        setIsLanguagesDropdownOpen(!isLanguagesDropdownOpen);
+    };
 
     const handleSelectHobby = (index: number) => {
         const updatedHobbies = [...hobbiesList];
@@ -244,8 +285,8 @@ const PartnerDetailsForm = () => {
             return;
         }
         
-        if (!formData.spokenLanguage) {
-            alert("Spoken Language is required.");
+        if (formData.spokenLanguages.length === 0) {
+            alert("Please select at least one spoken language.");
             setIsSubmitting(false);
             return;
         }
@@ -304,7 +345,7 @@ const PartnerDetailsForm = () => {
                 name,
                 phoneNumber,
                 gender,
-                spokenLanguage: formData.spokenLanguage,
+                spokenLanguages: formData.spokenLanguages,
                 hobbies: formData.hobbies,
                 bio: formData.bio,
                 audioIntro: audioUrl
@@ -356,21 +397,60 @@ const PartnerDetailsForm = () => {
 
                         {/* Form content - scrollable area */}
                         <div className="flex-1 space-y-4 overflow-auto pr-2 pb-4">
-                            {/* Spoken Language */}
+                            {/* Spoken Languages - Dropdown */}
                             <div className={`transition-all duration-500 delay-100 ${animatedFields ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                                 <label className="block text-[#2D2D2D] font-medium mb-1 text-sm" style={{ fontFamily: 'Inter' }}>
-                                    Spoken Language <span className="text-[red]">*</span>
+                                    Spoken Languages <span className="text-[red]">*</span>
                                 </label>
-                                <input
-                                    type="text"
-                                    name="spokenLanguage"
-                                    value={formData.spokenLanguage}
-                                    onChange={handleChange}
-                                    placeholder="English"
-                                    className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 text-sm"
-                                    style={{ fontFamily: 'Inter' }}
-                                    required
-                                />
+                                <div className="relative" ref={languagesDropdownRef}>
+                                    <button
+                                        type="button"
+                                        onClick={toggleLanguagesDropdown}
+                                        className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate z-1000"
+                                        style={{ fontFamily: 'Inter' }}
+                                    >
+                                        <span className={`${formData.spokenLanguages.length > 0 ? 'text-[#2D2D2D] font-medium' : 'text-gray-500'} truncate mr-2`}>
+                                            {formData.spokenLanguages.length > 0
+                                                ? formData.spokenLanguages.join(', ')
+                                                : 'Select languages you speak'}
+                                        </span>
+                                        <svg
+                                            width="12"
+                                            height="6"
+                                            viewBox="0 0 12 6"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className={`transition-transform ${isLanguagesDropdownOpen ? 'rotate-180' : ''} flex-shrink-0`}
+                                        >
+                                            <path d="M1 1L6 5L11 1" stroke="#F5BC1C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Languages dropdown menu */}
+                                    {isLanguagesDropdownOpen && (
+                                       <div className="relative z-1000 mt-1 w-full bg-white border border-[#F5BC1C] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                            <div className="p-2">
+                                                {languagesList.map((language, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center py-1.5 px-2 hover:bg-[#FFF9E9] rounded cursor-pointer z-1000"
+                                                        onClick={() => handleSelectLanguage(index)}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={language.active}
+                                                            onChange={() => {}}
+                                                            className="mr-2 h-4 w-4 accent-[#F5BC1C]"
+                                                        />
+                                                        <span className="text-xs text-[#2D2D2D]" style={{ fontFamily: 'Inter' }}>
+                                                            {language.name}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Hobbies & Interests - Dropdown */}
@@ -378,7 +458,7 @@ const PartnerDetailsForm = () => {
                                 <label className="block text-[#2D2D2D] font-medium mb-1 text-sm" style={{ fontFamily: 'Inter' }}>
                                     Hobbies & Interests <span className="text-[red]">*</span>
                                 </label>
-                                <div className="relative" ref={dropdownRef}>
+                                <div className="relative" ref={hobbiesDropdownRef}>
                                     <button
                                         type="button"
                                         onClick={toggleHobbiesDropdown}
@@ -402,7 +482,7 @@ const PartnerDetailsForm = () => {
                                         </svg>
                                     </button>
 
-                                    {/* Dropdown menu */}
+                                    {/* Hobbies dropdown menu */}
                                     {isHobbiesDropdownOpen && (
                                         <div className="relative z-10 mt-1 w-full bg-white border border-[#F5BC1C] rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                             <div className="p-2">
@@ -620,12 +700,12 @@ const PartnerDetailsForm = () => {
                             <button
                                 type="submit"
                                 className={`w-[373px] mx-auto py-3 rounded-lg transition-colors font-medium text-md ${
-                                    audioRecorded 
+                                    audioRecorded && formData.spokenLanguages.length > 0
                                     ? 'bg-[#F5BC1C] text-white cursor-pointer' 
                                     : 'bg-[#F5BC1C] bg-opacity-50 text-white cursor-not-allowed'
                                 } ${isSubmitting || isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 style={{ fontFamily: 'Inter' }}
-                                disabled={!audioRecorded || isSubmitting || isUploading}
+                                disabled={!audioRecorded || formData.spokenLanguages.length === 0 || isSubmitting || isUploading}
                             >
                                 {isSubmitting || isUploading ? (
                                     <span className="flex items-center justify-center gap-2">

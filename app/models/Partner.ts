@@ -53,6 +53,10 @@ const partnerSchema = new mongoose.Schema({
   // avatar-upload
   avatarUrl: { type: String },
 
+  // profile-pic
+
+  profilePicture: { type: String },
+
   // kyc-upload
   kyc: {
     panNumber: { type: String },

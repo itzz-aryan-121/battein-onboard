@@ -38,7 +38,7 @@ export default function FacialSuccessPage() {
 
   const handleContinue = () => {
     // Route to kyc-upload as the first step in the flow
-    router.push('/kyc-upload');
+    router.push('/profile-pic');
   };
 
   return (
