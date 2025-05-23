@@ -26,6 +26,7 @@ export default function BankDetails() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
     bankAccountNumber?: string;
     accountHolderName?: string;
@@ -141,34 +142,44 @@ export default function BankDetails() {
       return;
     }
 
-    // 1. Upload the cancel cheque file if needed
-    let cancelChequeUrl = '';
-    if (formData.cancelCheque) {
-      const formDataFile = new FormData();
-      formDataFile.append('file', formData.cancelCheque);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataFile });
-      const uploadData = await uploadRes.json();
-      cancelChequeUrl = uploadData.url;
+    setIsSubmitting(true);
+
+    try {
+      // 1. Upload the cancel cheque file if needed
+      let cancelChequeUrl = '';
+      if (formData.cancelCheque) {
+        const formDataFile = new FormData();
+        formDataFile.append('file', formData.cancelCheque);
+        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataFile });
+        const uploadData = await uploadRes.json();
+        cancelChequeUrl = uploadData.url;
+      }
+
+      // 2. PATCH the partner document with bank details
+      await fetch(`/api/partners/${partnerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bankDetails: {
+            bankAccountNumber: formData.bankAccountNumber,
+            accountHolderName: formData.accountHolderName,
+            ifscCode: formData.ifscCode,
+            branchName: formData.branchName,
+            upiId: formData.upiId,
+            cancelCheque: cancelChequeUrl
+          }
+        })
+      });
+
+      // Navigate to rules and regulations page as the next step in the flow
+      router.push('/rules-regulations');
+    } catch (error) {
+      console.error('Error submitting bank details:', error);
+      setErrors({ general: 'An error occurred while submitting your details. Please try again.' });
+      setShowErrorModal(true);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // 2. PATCH the partner document with bank details
-    await fetch(`/api/partners/${partnerId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        bankDetails: {
-          bankAccountNumber: formData.bankAccountNumber,
-          accountHolderName: formData.accountHolderName,
-          ifscCode: formData.ifscCode,
-          branchName: formData.branchName,
-          upiId: formData.upiId,
-          cancelCheque: cancelChequeUrl
-        }
-      })
-    });
-
-    // Navigate to rules and regulations page as the next step in the flow
-    router.push('/rules-regulations');
   };
 
   const errorCount = Object.keys(errors).length;
@@ -419,9 +430,18 @@ export default function BankDetails() {
             <div className="flex justify-center mb-2 sm:mb-0">
               <button
                 type="submit"
-                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-md transition duration-300 text-sm sm:text-base button-animate"
+                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-md transition duration-300 text-sm sm:text-base button-animate flex items-center justify-center"
+                disabled={isSubmitting}
               >
-                Proceed
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Uploading...
+                  </>
+                ) : 'Proceed'}
               </button>
             </div>
           </form>

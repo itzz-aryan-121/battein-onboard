@@ -21,42 +21,42 @@ export default function KYCVerification() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
 
-  // Initialize video modal on page load
-  useEffect(() => {
-    setShowVideoModal(true);
+  // // Initialize video modal on page load
+  // useEffect(() => {
+  //   setShowVideoModal(true);
     
-    const handleBeforeUnload = () => {
-      return undefined;
-    };
+  //   const handleBeforeUnload = () => {
+  //     return undefined;
+  //   };
     
-    window.addEventListener('beforeunload', handleBeforeUnload);
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
     
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //   };
+  // }, []);
 
-  // Handle video playback
-  useEffect(() => {
-    if (showVideoModal && videoRef.current) {
-      videoRef.current.play()
-        .catch(e => console.log('Video autoplay prevented:', e));
-      setIsVideoPlaying(true);
-    }
-  }, [showVideoModal]);
+  // // Handle video playback
+  // useEffect(() => {
+  //   if (showVideoModal && videoRef.current) {
+  //     videoRef.current.play()
+  //       .catch(e => console.log('Video autoplay prevented:', e));
+  //     setIsVideoPlaying(true);
+  //   }
+  // }, [showVideoModal]);
 
-  // Toggle video play/pause
-  const toggleVideoPlayback = () => {
-    if (videoRef.current) {
-      if (isVideoPlaying) {
-        videoRef.current.pause();
-        setIsVideoPlaying(false);
-      } else {
-        videoRef.current.play();
-        setIsVideoPlaying(true);
-      }
-    }
-  };
+  // // Toggle video play/pause
+  // const toggleVideoPlayback = () => {
+  //   if (videoRef.current) {
+  //     if (isVideoPlaying) {
+  //       videoRef.current.pause();
+  //       setIsVideoPlaying(false);
+  //     } else {
+  //       videoRef.current.play();
+  //       setIsVideoPlaying(true);
+  //     }
+  //   }
+  // };
 
   // Validate PAN number
   const validatePanNumber = (pan: string): boolean => {
@@ -441,16 +441,16 @@ export default function KYCVerification() {
       </Head>
 
       {/* Video Modal */}
-      {showVideoModal && (
+      {/* {showVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div 
             className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm"
-            onClick={() => setShowVideoModal(false)}
+           
           ></div>
           
           <div className="relative bg-white w-full max-w-2xl mx-auto z-10 rounded-xl overflow-hidden shadow-2xl">
             <button 
-              onClick={() => setShowVideoModal(false)}
+              
               className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -473,7 +473,7 @@ export default function KYCVerification() {
                 <video 
                   ref={videoRef}
                   className="w-full h-full object-cover"
-                  onClick={toggleVideoPlayback}
+                  
                   controls={false}
                   muted
                   autoPlay
@@ -485,7 +485,7 @@ export default function KYCVerification() {
                 {!isVideoPlaying && (
                   <div 
                     className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                    onClick={toggleVideoPlayback}
+                    
                   >
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
@@ -498,7 +498,7 @@ export default function KYCVerification() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <main className="w-full max-w-4xl z-10">
         <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mx-auto">
