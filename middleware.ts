@@ -10,9 +10,9 @@ export function middleware(request: NextRequest) {
     return new NextResponse(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version',
+        'Access-Control-Allow-Headers': '*',
         'Access-Control-Max-Age': '86400',
       },
     });
@@ -39,9 +39,12 @@ export function middleware(request: NextRequest) {
   // Handle API requests with CORS headers
   if (request.nextUrl.pathname.startsWith('/api')) {
     const response = NextResponse.next();
-    response.headers.set('Access-Control-Allow-Origin', origin);
+    
+    // Set CORS headers for all API responses
+    response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version');
+    response.headers.set('Access-Control-Allow-Headers', '*');
+    
     return response;
   }
 
