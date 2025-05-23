@@ -38,7 +38,7 @@ export default function BaateinEarningsPage() {
   
   const handleContinue = () => {
     if (selectedOption === 'audio') {
-      router.push('/avatar-upload');
+      router.push('/profile-pic');
     } else if (selectedOption === 'video') {
       router.push('/video-upload');
     }
