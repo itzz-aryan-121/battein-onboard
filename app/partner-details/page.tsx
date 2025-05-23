@@ -336,41 +336,21 @@ const PartnerDetailsForm = () => {
                 }
             }
 
-            // Only send the fields we have in the form, plus required fields from registration
-            const name = localStorage.getItem('name');
-            const phoneNumber = localStorage.getItem('phoneNumber');
-            const gender = localStorage.getItem('gender');
-
-            const partnerData = {
-                name,
-                phoneNumber,
-                gender,
+            // Store partner details in localStorage
+            const partnerDetails = {
+                name: localStorage.getItem('name'),
+                phoneNumber: localStorage.getItem('phoneNumber'),
+                gender: localStorage.getItem('gender'),
                 spokenLanguages: formData.spokenLanguages,
                 hobbies: formData.hobbies,
                 bio: formData.bio,
                 audioIntro: audioUrl
             };
 
-            // Create partner
-            const response = await fetch('/api/partners', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(partnerData)
-            });
+            localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to submit partner details');
-            }
-
-            // Get the partner ID from the response and save it to localStorage
-            const partner = await response.json();
-            localStorage.setItem('partnerId', partner._id);
-
-            // Navigate to earn-multiple page on success
-            router.push('/earn-multiple');
+            // Navigate to avatar upload page
+            router.push('/avatar-upload');
         } catch (error: any) {
             console.error('Error submitting partner details:', error);
             alert(`Failed to submit partner details: ${error.message || 'Unknown error'}`);

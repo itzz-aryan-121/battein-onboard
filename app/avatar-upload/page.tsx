@@ -148,25 +148,9 @@ export default function AvatarUploadPage() {
         avatarUrl = customAvatar;
       }
       
-      // Get the partner ID from localStorage
-      const partnerId = localStorage.getItem('partnerId');
-      
-      if (partnerId && avatarUrl) {
-        // Update the partner record with the base64 avatar
-        const response = await fetch(`/api/partners?id=${partnerId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            avatarUrl,
-            isBase64: true // Always true since we're always using base64 now
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to save avatar');
-        }
+      if (avatarUrl) {
+        // Store avatar in localStorage
+        localStorage.setItem('avatarUrl', avatarUrl);
       }
       
       // Navigate to the next step

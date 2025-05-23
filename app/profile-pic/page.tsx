@@ -90,64 +90,15 @@ export default function Page() {
     setIsUploading(true);
     setError(null);
     
-    // Create AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-    
     try {
-      // Get the partner ID from localStorage
-      const partnerId = localStorage.getItem('partnerId');
-      
-      if (!partnerId) {
-        console.error("No partner ID found in localStorage");
-        setError("Error: Could not find your account information. Please start over.");
-        setIsUploading(false);
-        return;
-      }
-      
-      console.log("Sending profile picture to API. Partner ID:", partnerId);
-      
-      // Create a simpler object with just the profile picture
-      const requestData = {
-        profilePicture: uploadedImage
-      };
-      
-      console.log("Request data prepared, sending to API...");
-      console.log("Payload size:", JSON.stringify(requestData).length, "bytes");
-      
-      // Use fetch with explicit serialization and timeout
-      const response = await fetch(`/api/partners/${partnerId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-        signal: controller.signal,
-      });
-      
-      clearTimeout(timeoutId);
-      console.log("API response status:", response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("API error response:", errorData);
-        throw new Error(errorData.error || `Failed to save profile picture: ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      console.log("Profile picture saved successfully", responseData);
+      // Store profile picture in localStorage
+      localStorage.setItem('profilePicture', uploadedImage);
       
       // Navigate to the next page
       router.push('/kyc-upload');
     } catch (error: any) {
-      clearTimeout(timeoutId);
       console.error('Error saving profile picture:', error);
-      
-      if (error.name === 'AbortError') {
-        setError('Request timed out. Please check your connection and try again.');
-      } else {
-        setError(error.message || 'Failed to save your profile picture. Please try again.');
-      }
+      setError(error.message || 'Failed to save profile picture');
     } finally {
       setIsUploading(false);
     }

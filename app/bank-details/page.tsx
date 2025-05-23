@@ -135,12 +135,6 @@ export default function BankDetails() {
       setShowErrorModal(true);
       return;
     }
-    
-    const partnerId = localStorage.getItem('partnerId');
-    if (!partnerId) {
-      alert('No partner ID found!');
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -155,25 +149,60 @@ export default function BankDetails() {
         cancelChequeUrl = uploadData.url;
       }
 
-      // 2. PATCH the partner document with bank details
-      await fetch(`/api/partners/${partnerId}`, {
-        method: 'PATCH',
+      // 2. Store bank details in localStorage
+      const bankDetails = {
+        bankAccountNumber: formData.bankAccountNumber,
+        accountHolderName: formData.accountHolderName,
+        ifscCode: formData.ifscCode,
+        branchName: formData.branchName,
+        upiId: formData.upiId,
+        cancelCheque: cancelChequeUrl
+      };
+      localStorage.setItem('bankDetails', JSON.stringify(bankDetails));
+
+      // 3. Collect all data from localStorage
+      const partnerDetails = JSON.parse(localStorage.getItem('partnerDetails') || '{}');
+      const avatarUrl = localStorage.getItem('avatarUrl');
+      const profilePicture = localStorage.getItem('profilePicture');
+      const kycData = JSON.parse(localStorage.getItem('kycData') || '{}');
+
+      // 4. Create the complete partner record
+      const partnerData = {
+        ...partnerDetails,
+        avatarUrl,
+        profilePicture,
+        kyc: kycData,
+        bankDetails,
+        status: 'Pending'
+      };
+
+      // 5. Create partner record in database
+      const response = await fetch('/api/partners', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bankDetails: {
-            bankAccountNumber: formData.bankAccountNumber,
-            accountHolderName: formData.accountHolderName,
-            ifscCode: formData.ifscCode,
-            branchName: formData.branchName,
-            upiId: formData.upiId,
-            cancelCheque: cancelChequeUrl
-          }
-        })
+        body: JSON.stringify(partnerData)
       });
 
-      // Navigate to rules and regulations page as the next step in the flow
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create partner record');
+      }
+
+      const partner = await response.json();
+      localStorage.setItem('partnerId', partner._id);
+
+      // 6. Clean up localStorage
+      localStorage.removeItem('partnerDetails');
+      localStorage.removeItem('avatarUrl');
+      localStorage.removeItem('profilePicture');
+      localStorage.removeItem('kycData');
+      localStorage.removeItem('bankDetails');
+      localStorage.removeItem('panCardFileUrl');
+      localStorage.removeItem('panCardFileLocation');
+
+      // 7. Navigate to rules and regulations page
       router.push('/rules-regulations');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting bank details:', error);
       setErrors({ general: 'An error occurred while submitting your details. Please try again.' });
       setShowErrorModal(true);

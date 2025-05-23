@@ -342,92 +342,41 @@ export default function KYCVerification() {
 
     // Validate PAN number before submission
     if (!validatePanNumber(panNumber)) {
-      setPanError("Invalid PAN format. It should be 5 letters, 4 numbers, followed by 1 letter (e.g., AAAAA0000A)");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const partnerId = localStorage.getItem('partnerId');
-    if (!partnerId) {
-      alert('No partner ID found!');
-      setIsSubmitting(false);
-      return;
+        setPanError("Invalid PAN format. It should be 5 letters, 4 numbers, followed by 1 letter (e.g., AAAAA0000A)");
+        setIsSubmitting(false);
+        return;
     }
 
     try {
-      let panCardFileUrl = '';
-      const fileLocation = localStorage.getItem('panCardFileLocation');
-      
-      if (fileLocation === 'indexeddb') {
-        panCardFileUrl = await getFromIndexedDB('panCardFile');
-      } else {
-        panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
-      }
-      
-      if (!panCardFileUrl) {
-        alert('Please upload your PAN card first');
-        setIsSubmitting(false);
-        return;
-      }
+        let panCardFileUrl = '';
+        const fileLocation = localStorage.getItem('panCardFileLocation');
+        
+        if (fileLocation === 'indexeddb') {
+            panCardFileUrl = await getFromIndexedDB('panCardFile');
+        } else {
+            panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
+        }
+        
+        if (!panCardFileUrl) {
+            alert('Please upload your PAN card first');
+            setIsSubmitting(false);
+            return;
+        }
 
-      // Create request with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for large files
-
-      const response = await fetch(`/api/partners/${partnerId}`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          kyc: {
+        // Store KYC data in localStorage
+        const kycData = {
             panNumber,
             panCardFile: panCardFileUrl
-          }
-        }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server error: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('KYC submission successful:', result);
-
-      // Clean up stored data
-      if (fileLocation === 'indexeddb') {
-        // Clean up IndexedDB
-        const request = indexedDB.open('KYCStorage', 1);
-        request.onsuccess = (e) => {
-          const db = (e.target as IDBOpenDBRequest).result;
-          const transaction = db.transaction(['files'], 'readwrite');
-          const store = transaction.objectStore('files');
-          store.delete('panCardFile');
         };
-      }
-      localStorage.removeItem('panCardFileUrl');
-      localStorage.removeItem('panCardFileLocation');
+        localStorage.setItem('kycData', JSON.stringify(kycData));
 
-      // Navigate to bank details page
-      router.push('/bank-details');
+        // Navigate to bank details page
+        router.push('/bank-details');
     } catch (error: any) {
-      console.error('Error submitting KYC details:', error);
-      
-      let errorMessage = 'Failed to submit KYC details. Please try again.';
-      
-      if (error.name === 'AbortError') {
-        errorMessage = 'Request timed out. Please check your connection and try again.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      alert(errorMessage);
-      setIsSubmitting(false);
+        console.error('Error saving KYC data:', error);
+        alert(`Error saving KYC data: ${error.message || 'Unknown error'}`);
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
