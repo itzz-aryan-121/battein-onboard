@@ -1,9 +1,8 @@
 'use client'
 
-
 import { SetStateAction, useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 
@@ -15,18 +14,18 @@ export default function KYCVerification() {
   const [showVideoModal, setShowVideoModal] = useState(true);
   const [panError, setPanError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [compressionProgress, setCompressionProgress] = useState(0);
+  const [isCompressing, setIsCompressing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
 
   // Initialize video modal on page load
   useEffect(() => {
-    // Show video modal when component mounts (page loads/refreshes)
     setShowVideoModal(true);
     
-    // Add event listener for page refresh/reload
     const handleBeforeUnload = () => {
-      // This is just to register the event, actual state reset happens on component mount
       return undefined;
     };
     
@@ -61,23 +60,20 @@ export default function KYCVerification() {
 
   // Validate PAN number
   const validatePanNumber = (pan: string): boolean => {
-    // PAN format: AAAAA0000A (5 letters, 4 numbers, 1 letter)
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     return panRegex.test(pan);
   };
 
   // Handle PAN number change
   const handlePanNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase(); // Convert to uppercase
+    const value = e.target.value.toUpperCase();
     setPanNumber(value);
     
-    // Clear error if field is empty
     if (!value.trim()) {
       setPanError(null);
       return;
     }
     
-    // Only validate if length is 10 (complete PAN)
     if (value.length === 10) {
       if (!validatePanNumber(value)) {
         setPanError("Invalid PAN format. It should be 5 letters, 4 numbers, followed by 1 letter (e.g., AAAAA0000A)");
@@ -87,61 +83,257 @@ export default function KYCVerification() {
     } else if (value.length > 10) {
       setPanError("PAN number cannot be more than 10 characters");
     } else {
-      // Don't show error while typing
       setPanError(null);
     }
   };
 
+  // Compress image function with progress tracking
+  const compressImage = (file: File, maxSizeMB: number = 2, quality: number = 0.8): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new window.Image();
+      
+      img.onload = () => {
+        try {
+          // Calculate new dimensions while maintaining aspect ratio
+          const maxWidth = 1920;
+          const maxHeight = 1080;
+          let { width, height } = img;
+          
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width *= ratio;
+            height *= ratio;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw and compress
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Start with the specified quality and reduce if needed
+          let currentQuality = quality;
+          const attemptCompression = () => {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const sizeMB = blob.size / (1024 * 1024);
+                
+                if (sizeMB <= maxSizeMB || currentQuality <= 0.1) {
+                  // Convert to base64
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(reader.result as string);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                } else {
+                  // Reduce quality and try again
+                  currentQuality -= 0.1;
+                  setTimeout(attemptCompression, 100);
+                }
+              } else {
+                reject(new Error('Failed to compress image'));
+              }
+            }, file.type, currentQuality);
+          };
+          
+          attemptCompression();
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Process large files in chunks for better memory management
+  const processLargeFile = async (file: File): Promise<string> => {
+    const maxChunkSize = 50 * 1024 * 1024; // 50MB chunks
+    
+    if (file.size <= maxChunkSize) {
+      // Small file - process normally with compression
+      return await compressImage(file);
+    }
+    
+    // Large file - need special handling
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const blob = new Blob([arrayBuffer], { type: file.type });
+          const tempFile = new File([blob], file.name, { type: file.type });
+          
+          // Compress the large file
+          const compressedBase64 = await compressImage(tempFile, 3); // Allow up to 3MB for large files
+          resolve(compressedBase64);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => reject(new Error('Failed to read large file'));
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Enhanced file validation
+  const validateFile = (file: File): string | null => {
+    // Check file size (increased limit to 50MB for large file support)
+    if (file.size > 50 * 1024 * 1024) {
+      return 'File size must be less than 50MB';
+    }
+
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      return 'Please upload a valid image file (JPEG, PNG, WEBP, HEIC, HEIF)';
+    }
+
+    return null;
+  };
+
+  // Enhanced file upload handler
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setPanCardFile(file);
-      setIsUploaded(false);
+      
+      // Reset previous states
+      setUploadError(null);
       setUploadProgress(0);
+      setCompressionProgress(0);
+      setIsUploaded(false);
+      setIsCompressing(false);
 
-      // Simulate initial upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadProgress(progress);
-        if (progress >= 60) {
-          clearInterval(interval);
+      // Validate file
+      const validationError = validateFile(file);
+      if (validationError) {
+        setUploadError(validationError);
+        return;
+      }
+
+      setPanCardFile(file);
+
+      try {
+        // Show compression progress for large files
+        if (file.size > 5 * 1024 * 1024) { // > 5MB
+          setIsCompressing(true);
           
-          // Now actually upload the file to get the Base64 data URL
-          uploadFileToServer(file);
+          // Simulate compression progress
+          const compressionInterval = setInterval(() => {
+            setCompressionProgress(prev => {
+              if (prev >= 90) {
+                clearInterval(compressionInterval);
+                return 90;
+              }
+              return prev + 10;
+            });
+          }, 200);
         }
-      }, 80);
+
+        // Process the file (compress and convert to base64)
+        const processedData = await processLargeFile(file);
+        
+        if (isCompressing) {
+          setCompressionProgress(100);
+          setTimeout(() => {
+            setIsCompressing(false);
+          }, 500);
+        }
+
+        // Start upload progress animation
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += 15;
+          setUploadProgress(Math.min(progress, 90));
+          if (progress >= 90) {
+            clearInterval(progressInterval);
+          }
+        }, 150);
+
+        // Store the processed data
+        try {
+          // Use IndexedDB for large files, localStorage for smaller ones
+          if (processedData.length > 5000000) { // > ~5MB base64
+            await storeInIndexedDB('panCardFile', processedData);
+            localStorage.setItem('panCardFileLocation', 'indexeddb');
+          } else {
+            localStorage.setItem('panCardFileUrl', processedData);
+            localStorage.setItem('panCardFileLocation', 'localstorage');
+          }
+          
+          clearInterval(progressInterval);
+          setUploadProgress(100);
+          setIsUploaded(true);
+          
+        } catch (storageError) {
+          throw new Error('Failed to store file data');
+        }
+
+      } catch (error: any) {
+        console.error('Error processing file:', error);
+        setUploadError(`Error processing file: ${error.message || 'Please try again'}`);
+        setUploadProgress(0);
+        setCompressionProgress(0);
+        setIsUploaded(false);
+        setIsCompressing(false);
+        setPanCardFile(null);
+      }
     }
   };
 
-  const uploadFileToServer = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
+  // IndexedDB storage for large files
+  const storeInIndexedDB = (key: string, data: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('KYCStorage', 1);
       
-      const uploadResponse = await fetch('/api/upload', { 
-        method: 'POST', 
-        body: formData 
-      });
+      request.onerror = () => reject(new Error('Failed to open IndexedDB'));
       
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload PAN card');
-      }
+      request.onupgradeneeded = (e) => {
+        const db = (e.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains('files')) {
+          db.createObjectStore('files');
+        }
+      };
       
-      const data = await uploadResponse.json();
+      request.onsuccess = (e) => {
+        const db = (e.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction(['files'], 'readwrite');
+        const store = transaction.objectStore('files');
+        
+        const putRequest = store.put(data, key);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = () => reject(new Error('Failed to store in IndexedDB'));
+      };
+    });
+  };
+
+  // Retrieve from IndexedDB
+  const getFromIndexedDB = (key: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('KYCStorage', 1);
       
-      // Store the Base64 data URL for later use
-      localStorage.setItem('panCardFileUrl', data.url);
+      request.onerror = () => reject(new Error('Failed to open IndexedDB'));
       
-      // Complete the progress bar
-      setUploadProgress(100);
-      setIsUploaded(true);
-    } catch (error: any) {
-      console.error('Error uploading PAN card:', error);
-      alert(`Error uploading PAN card: ${error.message || 'Unknown error'}`);
-      setUploadProgress(0);
-      setIsUploaded(false);
-    }
+      request.onsuccess = (e) => {
+        const db = (e.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction(['files'], 'readonly');
+        const store = transaction.objectStore('files');
+        
+        const getRequest = store.get(key);
+        getRequest.onsuccess = () => {
+          if (getRequest.result) {
+            resolve(getRequest.result);
+          } else {
+            reject(new Error('File not found in IndexedDB'));
+          }
+        };
+        getRequest.onerror = () => reject(new Error('Failed to retrieve from IndexedDB'));
+      };
+    });
   };
 
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
@@ -163,8 +355,14 @@ export default function KYCVerification() {
     }
 
     try {
-      // Get the Base64 data URL from localStorage
-      const panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
+      let panCardFileUrl = '';
+      const fileLocation = localStorage.getItem('panCardFileLocation');
+      
+      if (fileLocation === 'indexeddb') {
+        panCardFileUrl = await getFromIndexedDB('panCardFile');
+      } else {
+        panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
+      }
       
       if (!panCardFileUrl) {
         alert('Please upload your PAN card first');
@@ -172,33 +370,68 @@ export default function KYCVerification() {
         return;
       }
 
-      // Update the partner document with KYC data - Fixed API endpoint for mobile compatibility
+      // Create request with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for large files
+
       const response = await fetch(`/api/partners/${partnerId}`, {
-        method: 'PATCH', // Changed from PUT to PATCH to match API structure
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           kyc: {
             panNumber,
             panCardFile: panCardFileUrl
           }
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to update KYC information');
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
-      // Navigate to bank details page as the next step in the flow
+      const result = await response.json();
+      console.log('KYC submission successful:', result);
+
+      // Clean up stored data
+      if (fileLocation === 'indexeddb') {
+        // Clean up IndexedDB
+        const request = indexedDB.open('KYCStorage', 1);
+        request.onsuccess = (e) => {
+          const db = (e.target as IDBOpenDBRequest).result;
+          const transaction = db.transaction(['files'], 'readwrite');
+          const store = transaction.objectStore('files');
+          store.delete('panCardFile');
+        };
+      }
+      localStorage.removeItem('panCardFileUrl');
+      localStorage.removeItem('panCardFileLocation');
+
+      // Navigate to bank details page
       router.push('/bank-details');
     } catch (error: any) {
       console.error('Error submitting KYC details:', error);
-      alert(`Error submitting KYC details: ${error.message || 'Unknown error'}`);
+      
+      let errorMessage = 'Failed to submit KYC details. Please try again.';
+      
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out. Please check your connection and try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
       setIsSubmitting(false);
     }
   };
 
-  const isFormValid = panNumber.trim() !== '' && panCardFile !== null && !panError;
+  const isFormValid = panNumber.trim() !== '' && panCardFile !== null && !panError && !uploadError && isUploaded;
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden overflow-y-auto py-8 px-4">
@@ -210,15 +443,12 @@ export default function KYCVerification() {
       {/* Video Modal */}
       {showVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Blurred Transparent Background */}
           <div 
             className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm"
             onClick={() => setShowVideoModal(false)}
           ></div>
           
-          {/* Video Modal Content */}
           <div className="relative bg-white w-full max-w-2xl mx-auto z-10 rounded-xl overflow-hidden shadow-2xl">
-            {/* Close button */}
             <button 
               onClick={() => setShowVideoModal(false)}
               className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
@@ -230,7 +460,6 @@ export default function KYCVerification() {
             </button>
             
             <div className="p-4 sm:p-6 pb-6 sm:pb-8">
-              {/* Header content */}
               <div className="text-center mb-4 sm:mb-6">
                 <h2 className="text-yellow-500 text-xl sm:text-2xl font-bold mb-1">
                   KYC Verification Guide
@@ -240,7 +469,6 @@ export default function KYCVerification() {
                 </p>
               </div>
               
-              {/* Video container */}
               <div className="relative rounded-lg overflow-hidden w-full aspect-video">
                 <video 
                   ref={videoRef}
@@ -254,7 +482,6 @@ export default function KYCVerification() {
                   Your browser does not support the video tag.
                 </video>
                 
-                {/* Play/Pause Overlay */}
                 {!isVideoPlaying && (
                   <div 
                     className="absolute inset-0 flex items-center justify-center cursor-pointer"
@@ -316,34 +543,76 @@ export default function KYCVerification() {
             <div className="mb-4 w-full max-w-md mx-auto">
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium">Upload your <span className="uppercase">PAN CARD</span> Photo</label>
-                <label htmlFor="panCardUpload" className={`inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white ${uploadProgress > 0 && uploadProgress < 100 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`}>
-                  {uploadProgress > 0 && uploadProgress < 100 ? (
+                <label htmlFor="panCardUpload" className={`inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white ${(uploadProgress > 0 && uploadProgress < 100) || isCompressing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`}>
+                  {isCompressing ? (
                     <span className="flex items-center">
                       <svg className="animate-spin h-3 w-3 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                       </svg>
-                      Uploading...
+                      Compressing...
+                    </span>
+                  ) : (uploadProgress > 0 && uploadProgress < 100) ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin h-3 w-3 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                      Processing...
                     </span>
                   ) : (
                     <>
                       Upload <svg className="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                     </>
                   )}
-                  <input type="file" id="panCardUpload" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploadProgress > 0 && uploadProgress < 100} />
+                  <input 
+                    type="file" 
+                    id="panCardUpload" 
+                    className="hidden" 
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif" 
+                    onChange={handleFileUpload} 
+                    disabled={(uploadProgress > 0 && uploadProgress < 100) || isCompressing} 
+                  />
                 </label>
               </div>
+              
+              {/* Show compression progress for large files */}
+              {isCompressing && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-blue-600">Compressing large file...</span>
+                    <span className="text-xs text-blue-600">{compressionProgress}%</span>
+                  </div>
+                  <div className="w-full bg-blue-100 rounded-full h-1.5">
+                    <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style={{ width: `${compressionProgress}%` }}></div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Show upload error */}
+              {uploadError && (
+                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-xs text-red-600">{uploadError}</p>
+                </div>
+              )}
+              
               {panCardFile && (
                 <div className="border border-yellow-400 rounded-xl px-3 sm:px-4 mx-auto my-auto flex items-center gap-2 sm:gap-4 mt-2 w-full h-auto py-2 sm:py-0 sm:h-[61px]" style={{ boxShadow: '0px 0px 12.3px 0px #00000014' }}>
                   <div className="flex-shrink-0">
-                    {/* File icon */}
                     <img src="/assets/_File upload icon.png" alt="" className='w-[24px] h-[24px] sm:w-[28px] sm:h-[28px]'/>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-light text-sm sm:text-lg text-gray-800 truncate">
                       {panCardFile.name}
                     </div>
-                    <div className="text-gray-500 text-xs sm:text-sm">{Math.round(panCardFile.size / 1024)} KB</div>
+                    <div className="text-gray-500 text-xs sm:text-sm">
+                      {panCardFile.size > 1024 * 1024 
+                        ? `${(panCardFile.size / (1024 * 1024)).toFixed(1)} MB` 
+                        : `${Math.round(panCardFile.size / 1024)} KB`}
+                      {panCardFile.size > 5 * 1024 * 1024 && (
+                        <span className="ml-1 text-blue-600">(Large file - will be compressed)</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
                     <div className="w-16 sm:w-20 bg-yellow-100 rounded-full h-2">
@@ -358,6 +627,10 @@ export default function KYCVerification() {
                   </div>
                 </div>
               )}
+              
+              <p className="mt-2 text-xs text-gray-500">
+                Supported formats: JPEG, PNG, WEBP, HEIC, HEIF (Max size: 50MB - Large files will be automatically compressed)
+              </p>
             </div>
             <div className="mb-4">
               <h3 className="text-center text-sm font-medium mb-1">Reference Video:</h3>
@@ -401,7 +674,6 @@ export default function KYCVerification() {
         </div>
       </main>
 
-      {/* Wave Background Component */}
       <WaveBackground height={250} />
     </div>
   );
