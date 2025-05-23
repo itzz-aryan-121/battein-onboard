@@ -6,7 +6,7 @@ import { Partner } from '@/app/models/Partner';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': '*',
 };
 
 // Helper to extract the ID from the URL
@@ -14,6 +14,14 @@ function getIdFromUrl(request: Request): string | null {
   const url = new URL(request.url);
   const parts = url.pathname.split('/');
   return parts[parts.length - 1] || null;
+}
+
+// Handle OPTIONS request
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
 }
 
 // GET /api/partners/[id]
@@ -116,12 +124,4 @@ export async function PUT(request: Request) {
     console.error('Error updating profile picture:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders });
   }
-}
-
-// OPTIONS handler for CORS preflight
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: corsHeaders,
-  });
 }
