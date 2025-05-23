@@ -86,8 +86,6 @@ export async function DELETE(request: Request) {
 }
 
 // PUT /api/partners/[id]/profile-pic
-// This endpoint is used to update the profile picture of a partner
-
 export async function PUT(request: Request) {
   try {
     await connectDB();
