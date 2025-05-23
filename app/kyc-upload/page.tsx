@@ -200,7 +200,7 @@ export default function KYCVerification() {
   const isFormValid = panNumber.trim() !== '' && panCardFile !== null && !panError;
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden overflow-y-auto py-8 px-4">
       <Head>
         <title>KYC Verification - PAN Card Upload</title>
         <meta name="description" content="Complete your KYC by uploading your PAN Card" />
@@ -208,19 +208,19 @@ export default function KYCVerification() {
 
       {/* Video Modal */}
       {showVideoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Blurred Transparent Background */}
           <div 
-            className="absolute inset-0  bg-opacity-50 backdrop-filter backdrop-blur-sm"
+            className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm"
             onClick={() => setShowVideoModal(false)}
           ></div>
           
           {/* Video Modal Content */}
-          <div className="relative bg-white w-11/12 max-w-2xl mx-auto z-10 rounded-xl overflow-hidden shadow-2xl">
+          <div className="relative bg-white w-full max-w-2xl mx-auto z-10 rounded-xl overflow-hidden shadow-2xl">
             {/* Close button */}
             <button 
               onClick={() => setShowVideoModal(false)}
-              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -228,13 +228,13 @@ export default function KYCVerification() {
               </svg>
             </button>
             
-            <div className="p-6 pb-8">
+            <div className="p-4 sm:p-6 pb-6 sm:pb-8">
               {/* Header content */}
-              <div className="text-center mb-6">
-                <h2 className="text-yellow-500 text-2xl font-bold mb-1">
+              <div className="text-center mb-4 sm:mb-6">
+                <h2 className="text-yellow-500 text-xl sm:text-2xl font-bold mb-1">
                   KYC Verification Guide
                 </h2>
-                <p className="text-gray-700 text-sm">
+                <p className="text-gray-700 text-xs sm:text-sm">
                   Watch this step-by-step guide on how to complete your KYC verification
                 </p>
               </div>
@@ -259,8 +259,8 @@ export default function KYCVerification() {
                     className="absolute inset-0 flex items-center justify-center cursor-pointer"
                     onClick={toggleVideoPlayback}
                   >
-                    <div className="w-16 h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                     </div>
@@ -272,15 +272,15 @@ export default function KYCVerification() {
         </div>
       )}
 
-      <main className="w-[1154px] z-10">
-        <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl mx-auto">
+      <main className="w-full max-w-4xl z-10">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mx-auto">
           <h1 className="text-xl sm:text-2xl font-bold text-center mb-2">
             Complete Your <span className="text-yellow-500">KYC</span> – Upload Your <span className="text-yellow-500">PAN Card</span> Now!
           </h1>
           <p className="text-center text-gray-700 text-xs sm:text-sm mb-3">
             Make sure your details match your <span className="text-yellow-500">PAN</span> card for smooth verification and payouts.
           </p>
-          <div className="bg-gray-50 rounded-lg p-3 mb-4 w-[483px] mx-auto">
+          <div className="bg-gray-50 rounded-lg p-3 mb-4 w-full max-w-md mx-auto">
             <h3 className="font-medium text-center text-sm mb-1">Why PAN Card is Required:</h3>
             <ul className="space-y-1 text-xs">
               <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>KYC Verification – Confirms your identity</li>
@@ -289,14 +289,14 @@ export default function KYCVerification() {
             </ul>
           </div>
           <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-            <div className="mb-3 w-[479px] mx-auto">
+            <div className="mb-3 w-full max-w-md mx-auto">
               <label htmlFor="panNumber" className="block mb-1 text-sm font-medium">
                 PAN Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 id="panNumber"
-                className={`w-[480px] px-3 py-2 text-sm border ${panError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-yellow-500'} rounded-lg focus:outline-none focus:ring-2`}
+                className={`w-full px-3 py-2 text-sm border ${panError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-yellow-500'} rounded-lg focus:outline-none focus:ring-2`}
                 placeholder="Enter your PAN Number (e.g., AAAAA0000A)"
                 value={panNumber}
                 onChange={handlePanNumberChange}
@@ -312,7 +312,7 @@ export default function KYCVerification() {
                 Format: 5 letters, 4 numbers, 1 letter (e.g., AAAAA0000A)
               </p>
             </div>
-            <div className="mb-4 w-[483px] mx-auto">
+            <div className="mb-4 w-full max-w-md mx-auto">
               <div className="flex items-center justify-between mb-1">
                 <label className="text-sm font-medium">Upload your <span className="uppercase">PAN CARD</span> Photo</label>
                 <label htmlFor="panCardUpload" className={`inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white ${uploadProgress > 0 && uploadProgress < 100 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`}>
@@ -333,24 +333,24 @@ export default function KYCVerification() {
                 </label>
               </div>
               {panCardFile && (
-                <div className="border border-yellow-400 rounded-xl px-4  mx-auto my-auto flex items-center gap-4 mt-2 w-[480px] h-[61px] " style={{ boxShadow: '0px 0px 12.3px 0px #00000014' }}>
-                  <div className="flex items-center justify-center   rounded-full   ">
+                <div className="border border-yellow-400 rounded-xl px-3 sm:px-4 mx-auto my-auto flex items-center gap-2 sm:gap-4 mt-2 w-full h-auto py-2 sm:py-0 sm:h-[61px]" style={{ boxShadow: '0px 0px 12.3px 0px #00000014' }}>
+                  <div className="flex-shrink-0">
                     {/* File icon */}
-                    <img src="/assets/_File upload icon.png" alt="" className='w-[28px] h-[28px]'/>
+                    <img src="/assets/_File upload icon.png" alt="" className='w-[24px] h-[24px] sm:w-[28px] sm:h-[28px]'/>
                   </div>
-                  <div className="flex-1 my-auto  ">
-                    <div className="font-light text-lg text-gray-800 max-w-[160px] truncate whitespace-nowrap">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-light text-sm sm:text-lg text-gray-800 truncate">
                       {panCardFile.name}
                     </div>
-                    <div className="text-gray-500 text-sm">{Math.round(panCardFile.size / 1024)} KB</div>
+                    <div className="text-gray-500 text-xs sm:text-sm">{Math.round(panCardFile.size / 1024)} KB</div>
                   </div>
-                  <div className="flex-1 flex items-center gap-2">
-                    <div className="w-full bg-yellow-100 rounded-full h-2">
+                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
+                    <div className="w-16 sm:w-20 bg-yellow-100 rounded-full h-2">
                       <div className="bg-yellow-400 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                     </div>
-                    <span className="ml-2 font-semibold text-gray-700">{uploadProgress}%</span>
+                    <span className="ml-1 font-semibold text-gray-700 text-xs sm:text-sm whitespace-nowrap">{uploadProgress}%</span>
                     {isUploaded && (
-                      <span className="ml-2 flex items-center justify-center w-10 rounded-full ">
+                      <span className="ml-1 flex items-center justify-center">
                         <img src="/assets/_Checkbox base.png" alt="" className='w-[16px] h-[16px]'/>
                       </span>
                     )}
@@ -362,14 +362,14 @@ export default function KYCVerification() {
               <h3 className="text-center text-sm font-medium mb-1">Reference Video:</h3>
               <p className="text-center text-xs text-gray-600 mb-2">Complete Step by Step Process Explained</p>
               <div 
-                className="relative mx-auto rounded-lg overflow-hidden w-[257px] cursor-pointer" 
+                className="relative mx-auto rounded-lg overflow-hidden w-full max-w-[257px] cursor-pointer" 
                 style={{ maxHeight: "150px" }}
                 onClick={() => setShowVideoModal(true)}
               >
                 <img src="/assets/kyc-video-thumbnail.png" alt="KYC Video Thumbnail" className="w-full h-full object-cover" style={{ maxHeight: "150px" }} />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="bg-black bg-opacity-50 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -379,7 +379,7 @@ export default function KYCVerification() {
             </div>
             <button
               type="submit"
-              className={`w-[278px] mx-auto bg-yellow-500 text-white py-2 rounded-lg text-base font-medium transition-colors ${
+              className={`w-full max-w-[278px] mx-auto bg-yellow-500 text-white py-2 rounded-lg text-base font-medium transition-colors ${
                 !isFormValid || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-600'
               } button-animate`}
               disabled={!isFormValid || isSubmitting}

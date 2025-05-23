@@ -117,8 +117,8 @@ export default function RulesRegulationsPage() {
         </div>
       </main>
       
-      {/* Girl Illustration */}
-      <div className="absolute right-4 z-10 pointer-events-none" style={{bottom: '220px', right: '170px'}}>
+      {/* Girl Illustration - Hidden on mobile, visible on md screens and up */}
+      <div className="absolute z-10 pointer-events-none hidden md:block" style={{bottom: '220px', right: '170px'}}>
         <Image 
           src="/assets/rules-girl.png" 
           alt="Person with checklist" 
@@ -133,4 +133,4 @@ export default function RulesRegulationsPage() {
       <WaveBackground height={300} />
     </div>
   );
-} 
+}

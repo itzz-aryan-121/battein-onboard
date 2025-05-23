@@ -182,20 +182,19 @@ export default function BankDetails() {
 
       {/* Error Modal */}
       {showErrorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Overlay */}
           <div 
-            className="absolute inset-0  bg-opacity-50 backdrop-filter backdrop-blur-sm"
+            className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm"
             onClick={() => setShowErrorModal(false)}
           ></div>
           
           {/* Modal Content */}
-          <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md mx-auto z-10 relative" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
-            <div className="p-6">
-              <div className="flex">
-                <div className="w-3/4">
-                  {/* <h2 className="text-gray-400 text-2xl font-bold mb-1">Form Errors</h2> */}
-                  <h3 className="text-[#E75A34] text-lg font-medium mb-4">Please fix the following issues:</h3>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-auto z-10 relative" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row">
+                <div className="w-full sm:w-3/4">
+                  <h3 className="text-[#E75A34] text-base sm:text-lg font-medium mb-3 sm:mb-4">Please fix the following issues:</h3>
                   
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {errors.bankAccountNumber && (
@@ -244,17 +243,17 @@ export default function BankDetails() {
                   
                   <button 
                     onClick={() => setShowErrorModal(false)}
-                    className="w-full bg-[#E75A34] text-white font-medium py-3 rounded-md transition-colors mt-6 button-animate"
+                    className="w-full bg-[#E75A34] text-white font-medium py-2 sm:py-3 rounded-md transition-colors mt-4 sm:mt-6 button-animate"
                   >
                     Fix Errors
                   </button>
                 </div>
-                <div className="w-1/4 flex items-center justify-center">
+                <div className="hidden sm:flex sm:w-1/4 items-center justify-center">
                   <Image 
                     src="/assets/error.png" 
                     alt="Error" 
-                    width={100} 
-                    height={100} 
+                    width={80} 
+                    height={80} 
                     className="object-contain"
                   />
                 </div>
@@ -264,16 +263,16 @@ export default function BankDetails() {
         </div>
       )}
 
-      <main className="max-w-6xl w-[1159px] z-10 px-2">
-        <div className="bg-white rounded-xl shadow-lg p-3 sm:p-4 mx-auto">
-          <h1 className="text-xl sm:text-2xl font-bold text-center mb-3 sm:mb-4">
+      <main className="w-full max-w-6xl z-10 px-4 md:px-6 lg:px-8">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mx-auto">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-3 sm:mb-4">
             Add Your <span className="text-yellow-500">Bank Details</span> to Receive Payouts
           </h1>
-          <p className="text-center text-gray-700 mb-3 sm:mb-4 text-md font-medium sm:text-base">
-            We collect your Bank Details, UPI ID to ensure secure and smooth<br />
-            payouts directly to your account.
+          <p className="text-center text-gray-700 mb-3 sm:mb-4 text-sm md:text-base font-medium px-2">
+            We collect your Bank Details, UPI ID to ensure secure and smooth
+            <span className="hidden sm:inline"><br /></span> payouts directly to your account.
           </p>
-          <div className="bg-gray-50 rounded-md p-3 sm:p-4 mb-3 sm:mb-4 w-[596px] mx-auto">
+          <div className="bg-gray-50 rounded-md p-3 sm:p-4 mb-4 w-full sm:w-[90%] md:w-[80%] lg:w-[596px] mx-auto">
             <h2 className="text-center font-medium mb-2 sm:mb-3 text-sm sm:text-base">Correct bank details needed to send your earnings securely</h2>
             <div className="space-y-1 sm:space-y-2">
               <div className="flex items-center justify-center text-xs sm:text-sm">
@@ -287,8 +286,8 @@ export default function BankDetails() {
             </div>
           </div>
           <form onSubmit={handleSubmit}>
-            <div className="flex justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <div>
+            <div className="flex flex-col md:flex-row md:flex-wrap gap-4 mb-4">
+              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
                 <label htmlFor="bankAccountNumber" className="block font-medium mb-1 text-xs sm:text-sm">
                   Bank Account Number <span className="text-red-500">*</span>
                 </label>
@@ -296,14 +295,14 @@ export default function BankDetails() {
                   type="text"
                   id="bankAccountNumber"
                   name="bankAccountNumber"
-                  className={`w-[226px] border ${errors.bankAccountNumber ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.bankAccountNumber ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
                   value={formData.bankAccountNumber}
                   onChange={handleInputChange}
                   required
                   placeholder="Enter your Bank Account Number"
                 />
               </div>
-              <div>
+              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
                 <label htmlFor="accountHolderName" className="block font-medium mb-1 text-xs sm:text-sm">
                   Account Holder Name <span className="text-red-500">*</span>
                 </label>
@@ -311,14 +310,14 @@ export default function BankDetails() {
                   type="text"
                   id="accountHolderName"
                   name="accountHolderName"
-                  className={`w-[226px] border ${errors.accountHolderName ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.accountHolderName ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
                   value={formData.accountHolderName}
                   onChange={handleInputChange}
                   required
                   placeholder="Enter Account Holder Name"
                 />
               </div>
-              <div>
+              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
                 <label htmlFor="ifscCode" className="block font-medium mb-1 text-xs sm:text-sm">
                   IFSC Code <span className="text-red-500">*</span>
                 </label>
@@ -326,14 +325,14 @@ export default function BankDetails() {
                   type="text"
                   id="ifscCode"
                   name="ifscCode"
-                  className={`w-[226px] border ${errors.ifscCode ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.ifscCode ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
                   value={formData.ifscCode}
                   onChange={handleInputChange}
                   required
                   placeholder="Enter IFSC Code"
                 />
               </div>
-              <div>
+              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
                 <label htmlFor="branchName" className="block font-medium mb-1 text-xs sm:text-sm">
                   Branch Name <span className="text-red-500">*</span>
                 </label>
@@ -341,7 +340,7 @@ export default function BankDetails() {
                   type="text"
                   id="branchName"
                   name="branchName"
-                  className={`w-[226px] border ${errors.branchName ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.branchName ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
                   value={formData.branchName}
                   onChange={handleInputChange}
                   required
@@ -349,7 +348,7 @@ export default function BankDetails() {
                 />
               </div>
             </div>
-            <div className="relative mb-3 sm:mb-4">
+            <div className="relative mb-4 sm:mb-5">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
               </div>
@@ -357,32 +356,34 @@ export default function BankDetails() {
                 
               </div>
             </div>
-            <div className="mb-3 sm:mb-4 flex flex-col  mx-auto">
-              <label htmlFor="upiId" className=" font-medium mb-1  text-xs sm:text-sm mx-auto">
+            <div className="mb-4 sm:mb-5">
+              <label htmlFor="upiId" className="block font-medium mb-1 text-xs sm:text-sm text-center">
                 Your UPI ID <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                id="upiId"
-                name="upiId"
-                className={`w-[348px] max-w-md border ${errors.upiId ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm mx-auto`}
-                value={formData.upiId}
-                onChange={handleInputChange}
-                required
-                placeholder="Enter your UPI ID"
-              />
+              <div className="flex justify-center">
+                <input
+                  type="text"
+                  id="upiId"
+                  name="upiId"
+                  className={`w-full max-w-xs sm:max-w-sm md:max-w-md border ${errors.upiId ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  value={formData.upiId}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter your UPI ID"
+                />
+              </div>
             </div>
-            <div className="mb-3 sm:mb-4">
-              <label htmlFor="cancelCheque" className="block font-medium mb-1 text-center text-xs sm:text-sm">
+            <div className="mb-4 sm:mb-6">
+              <label htmlFor="cancelCheque" className="block font-medium mb-2 text-center text-xs sm:text-sm">
                 Cancel cheque/ passbook <span className="text-red-500">*</span>
               </label>
               <div className="flex flex-col items-center justify-center">
                 <label 
                   htmlFor="cancelCheque" 
-                  className={`flex items-center gap-2 border ${errors.cancelCheque ? 'border-red-500' : 'border-gray-300'} rounded-md px-2 py-2 sm:px-4 sm:py-3 cursor-pointer text-xs sm:text-sm transition-colors duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-gray-100'}`}
+                  className={`flex items-center justify-center gap-2 w-full max-w-xs border ${errors.cancelCheque ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2.5 sm:px-4 sm:py-3 cursor-pointer text-xs sm:text-sm transition-colors duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-gray-100'}`}
                 >
                   <span className="text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                       <line x1="8" y1="4" x2="8" y2="20"></line>
                       <line x1="16" y1="4" x2="16" y2="20"></line>
@@ -390,7 +391,7 @@ export default function BankDetails() {
                       <line x1="4" y1="16" x2="20" y2="16"></line>
                     </svg>
                   </span>
-                  Upload Cancel Cheque / Passbook Front
+                  <span className="text-center">Upload Cancel Cheque / Passbook Front</span>
                 </label>
                 <input
                   type="file"
@@ -402,23 +403,23 @@ export default function BankDetails() {
                 />
                 {formData.cancelCheque && (
                   <>
-                    <div className="mt-2 flex flex-col items-center">
-                      <div className="w-[120px] h-[6px] bg-gray-200 rounded-full overflow-hidden">
+                    <div className="mt-3 flex flex-col items-center w-full max-w-xs">
+                      <div className="w-full max-w-[200px] h-[6px] bg-gray-200 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full transition-all duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-yellow-400'}`} style={{ width: `${uploadProgress}%` }}></div>
                       </div>
                       <span className="text-xs text-gray-600 mt-1">{uploadProgress}%</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-green-600 text-center mt-1">
+                    <p className="text-xs sm:text-sm text-green-600 text-center mt-2 break-all max-w-xs px-2">
                       File selected: {formData.cancelCheque.name}
                     </p>
                   </>
                 )}
               </div>
             </div>
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-2 sm:mb-0">
               <button
                 type="submit"
-                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 sm:py-3 px-4 rounded-md transition duration-300 text-base sm:text-lg button-animate"
+                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-md transition duration-300 text-sm sm:text-base button-animate"
               >
                 Proceed
               </button>

@@ -31,11 +31,8 @@ const RegistrationForm = () => {
   });
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(true); // Show video modal by default
   const [errorMessage, setErrorMessage] = useState("");
   const [showLGBTQErrorModal, setShowLGBTQErrorModal] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,27 +47,6 @@ const RegistrationForm = () => {
     
     return () => timeouts.forEach(timeout => clearTimeout(timeout));
   }, []);
-
-  // Initialize video playback when modal is shown
-  useEffect(() => {
-    if (showVideoModal && videoRef.current) {
-      videoRef.current.play()
-        .catch(e => console.log('Video autoplay prevented:', e));
-      setIsVideoPlaying(true);
-    }
-  }, [showVideoModal]);
-
-  // Handle video play/pause
-  const toggleVideoPlayback = () => {
-    if (videoRef.current) {
-      if (isVideoPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsVideoPlaying(!isVideoPlaying);
-    }
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -174,13 +150,13 @@ const RegistrationForm = () => {
         return;
       }
 
-      // Store user data in localStorage instead of creating a database record
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('name', formData.name);
-        localStorage.setItem('phoneNumber', formData.phoneNumber);
-        localStorage.setItem('gender', formData.gender);
-        localStorage.setItem('referralCode', formData.referralCode || '');
-      }
+      // Store user data in memory instead of localStorage (as requested)
+      const userData = {
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
+        gender: formData.gender,
+        referralCode: formData.referralCode || ''
+      };
 
       // If gender is Male, show success modal without redirection
       if (formData.gender === 'Male') {
@@ -188,7 +164,6 @@ const RegistrationForm = () => {
         setIsLoading(false);
       } else {
         // For female and LGBTQ gender, proceed to OTP verification
-        // Pass the phone number as a query parameter without creating a partner record
         router.push(`/otp-verification?phoneNumber=${formData.phoneNumber}`);
       }
     } catch (error) {
@@ -200,27 +175,23 @@ const RegistrationForm = () => {
   };
 
   return (
-    <div className="bg-white h-screen w-full flex flex-col overflow-hidden">
-      {/* Video Modal */}
-     
-      
-
+    <div className="bg-white min-h-screen w-full flex flex-col relative">
       {/* Generic Error Modal */}
       {showErrorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Dark Overlay */}
           <div 
-            className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm" 
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-sm" 
             onClick={() => setShowErrorModal(false)}
           ></div>
           
           {/* Error Modal Content */}
-          <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md mx-auto z-10 relative" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
-            <div className="p-6">
-              <div className="flex">
-                <div className="w-1/2">
-                  <h2 className="text-gray-400 text-[42px] font-bold mb-1">{t('errors', 'errorCode')}</h2>
-                  <h3 className="text-[#E75A34] text-lg font-medium mb-2">{t('errors', 'errorTitle')}</h3>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-md mx-auto z-10 relative" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row">
+                <div className="w-full sm:w-1/2 mb-4 sm:mb-0">
+                  <h2 className="text-gray-400 text-2xl sm:text-[42px] font-bold mb-1">{t('errors', 'errorCode')}</h2>
+                  <h3 className="text-[#E75A34] text-base sm:text-lg font-medium mb-2">{t('errors', 'errorTitle')}</h3>
                   <p className="text-[#464646] text-sm mb-4">
                     {errorMessage || t('errors', 'errorMessage')}
                   </p>
@@ -231,13 +202,13 @@ const RegistrationForm = () => {
                     {t('errors', 'tryAgain')}
                   </button>
                 </div>
-                <div className="w-1/2 flex items-center justify-center">
+                <div className="w-full sm:w-1/2 flex items-center justify-center">
                   <Image 
                     src="/assets/error.png" 
                     alt="Error" 
-                    width={180} 
-                    height={180} 
-                    className="object-contain"
+                    width={120} 
+                    height={120}
+                    className="object-contain sm:w-[180px] sm:h-[180px]"
                   />
                 </div>
               </div>
@@ -248,20 +219,20 @@ const RegistrationForm = () => {
       
       {/* LGBTQ-specific Error Modal */}
       {showLGBTQErrorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Dark Overlay */}
           <div 
-            className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm" 
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-sm" 
             onClick={() => setShowLGBTQErrorModal(false)}
           ></div>
           
           {/* Error Modal Content */}
-          <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md mx-auto z-10 relative" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
-            <div className="p-6">
-              <div className="flex">
-                <div className="w-1/2">
-                  <h2 className="text-gray-400 text-[42px] font-bold mb-1">LGBTQ</h2>
-                  <h3 className="text-[#E75A34] text-lg font-medium mb-2">Name Validation</h3>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-md mx-auto z-10 relative" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row">
+                <div className="w-full sm:w-1/2 mb-4 sm:mb-0">
+                  <h2 className="text-gray-400 text-2xl sm:text-[42px] font-bold mb-1">LGBTQ</h2>
+                  <h3 className="text-[#E75A34] text-base sm:text-lg font-medium mb-2">Name Validation</h3>
                   <p className="text-[#464646] text-sm mb-4">
                     For LGBTQ selection, please use a feminine name style (ending with a, i, e, etc.) or choose a different gender option.
                   </p>
@@ -272,13 +243,13 @@ const RegistrationForm = () => {
                     Change Details
                   </button>
                 </div>
-                <div className="w-1/2 flex items-center justify-center">
+                <div className="w-full sm:w-1/2 flex items-center justify-center">
                   <Image 
                     src="/assets/error.png" 
                     alt="Error" 
-                    width={180} 
-                    height={180} 
-                    className="object-contain"
+                    width={120} 
+                    height={120}
+                    className="object-contain sm:w-[180px] sm:h-[180px]"
                   />
                 </div>
               </div>
@@ -289,13 +260,13 @@ const RegistrationForm = () => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Dark Overlay */}
-          <div className="absolute inset-0 bg-opacity-30 backdrop-filter backdrop-blur-sm" 
+          <div className="absolute inset-0 bg-black bg-opacity-30 backdrop-filter backdrop-blur-sm" 
                onClick={() => setShowSuccessModal(false)}></div>
           
           {/* Success Modal Content */}
-          <div className="bg-white rounded-2xl shadow-xl w-11/12 max-w-md mx-auto z-10 relative animate-fadeInUp" 
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-md mx-auto z-10 relative animate-fadeInUp" 
                style={{ boxShadow: '0px 4px 24px 0px rgba(0,0,0,0.1)' }}>
             {/* Close button */}
             <button 
@@ -308,21 +279,21 @@ const RegistrationForm = () => {
               </svg>
             </button>
             
-            <div className="p-8 text-center">
+            <div className="p-6 sm:p-8 text-center">
               <div className="flex flex-col items-center">
-                <div className="w-20 h-20 bg-opacity-20 rounded-full flex items-center justify-center mb-4">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center animate-pulse" style={{animationDuration: '2s'}}>
+                <div className="w-16 sm:w-20 h-16 sm:h-20 bg-opacity-20 rounded-full flex items-center justify-center mb-4">
+                  <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-full flex items-center justify-center animate-pulse" style={{animationDuration: '2s'}}>
                     <Image 
                       src="/assets/Baaten Logo 6.png" 
                       alt="Success" 
-                      width={80} 
-                      height={80} 
-                      className="object-contain"
+                      width={60} 
+                      height={60}
+                      className="object-contain sm:w-[80px] sm:h-[80px]"
                     />
                   </div>
                 </div>
-                <h2 className="text-[#F5BC1C] text-2xl font-bold mb-2">Thank you for getting in touch!</h2>
-                <p className="text-[#464646] text-base mb-3">
+                <h2 className="text-[#F5BC1C] text-lg sm:text-2xl font-bold mb-2">Thank you for getting in touch!</h2>
+                <p className="text-[#464646] text-sm sm:text-base mb-3">
                   We're already working on it and will get back to you shortly with something great.
                 </p>
               </div>
@@ -332,27 +303,27 @@ const RegistrationForm = () => {
       )}
       
       {/* Main content container */}
-      <div className="flex flex-col md:flex-row h-full">
+      <div className="flex flex-col md:flex-row h-full relative">
         {/* Left side - Form */}
-        <div className="w-full md:w-1/2 px-4 md:px-10 pt-6 pb-0 flex flex-col">
+        <div className="w-full md:w-1/2 px-4 md:px-10 pt-6 pb-16 flex flex-col relative z-10">
           {/* Logo */}
-          <div className="flex items-center mb-4 animate-fadeInDown">
-            <div className="bg-[#F5BC1C] w-12 h-12 rounded-xl flex items-center justify-center mr-3 animate-pulse" style={{animationDuration: '3s'}}>
-              <Image src="/assets/Baaten Logo 6.png" alt="Baatein Logo" width={32} height={32} />
+          <div className="flex items-center mb-4 sm:mb-6 animate-fadeInDown">
+            <div className="bg-[#F5BC1C] w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center mr-3 animate-pulse" style={{animationDuration: '3s'}}>
+              <Image src="/assets/Baaten Logo 6.png" alt="Baatein Logo" width={28} height={28} className="sm:w-8 sm:h-8" />
             </div>
-            <span className="text-2xl font-bold text-[#F5BC1C]">Baatein</span>
+            <span className="text-xl sm:text-2xl font-bold text-[#F5BC1C]">Baatein</span>
           </div>
           
           {/* Header */}
-          <h1 className="text-2xl font-bold text-[#F5BC1C] mb-1 animate-fadeInUp delay-200">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#F5BC1C] mb-1 animate-fadeInUp delay-200">
             {t('welcome', 'title')}
           </h1>
-          <p className="text-[#2D2D2D] text-sm mb-4 animate-fadeInUp delay-300">{t('welcome', 'subtitle')}</p>
+          <p className="text-[#2D2D2D] text-sm mb-4 sm:mb-6 animate-fadeInUp delay-300">{t('welcome', 'subtitle')}</p>
           
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3 flex-1 max-w-lg">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 flex-1 max-w-full lg:max-w-lg">
             <div className={animatedFields.name ? 'animate-fadeInUp' : 'opacity-0'}>
-              <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
+              <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
                 {t('welcome', 'nameLabel')} <span className="text-[#F5BC1C]">*</span>
               </label>
               <input
@@ -361,29 +332,29 @@ const RegistrationForm = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder={t('welcome', 'namePlaceholder')}
-                className={`w-full border ${errors.name ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2`}
+                className={`w-full border ${errors.name ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-3 text-base`}
                 required
               />
               {errors.name ? (
-                <p className="text-xs text-red-500 mt-0.5">{errors.name}</p>
+                <p className="text-xs text-red-500 mt-1">{errors.name}</p>
               ) : (
-                <p className="text-xs text-[#AFAFAF] mt-0.5">
+                <p className="text-xs text-[#AFAFAF] mt-1">
                   {formData.gender === 'LGBTQ' ? 'Please use a feminine-style name.' : t('welcome', 'nameNote')}
                 </p>
               )}
             </div>
             
-            <div className="flex flex-col md:flex-row gap-3 w-full">
-              <div className={`${animatedFields.phoneNumber ? 'animate-fadeInUp' : 'opacity-0'} w-full md:w-1/2`}>
-                <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className={`${animatedFields.phoneNumber ? 'animate-fadeInUp' : 'opacity-0'} w-full sm:w-1/2`}>
+                <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
                   {t('welcome', 'phoneLabel')} <span className="text-[#F5BC1C]">*</span>
                 </label>
                 <div className="flex gap-2">
-                  <div className="w-16">
+                  <div className="w-16 sm:w-20">
                     <input
                       type="text"
                       value="+91"
-                      className="w-full border border-[#F5BC1C] rounded-lg px-2 py-2 bg-gray-50"
+                      className="w-full border border-[#F5BC1C] rounded-lg px-2 py-3 bg-gray-50 text-center text-base"
                       disabled
                     />
                   </div>
@@ -393,26 +364,26 @@ const RegistrationForm = () => {
                     value={formData.phoneNumber}
                     onChange={handleChange}
                     placeholder={t('welcome', 'phonePlaceholder')}
-                    className={`flex-1 border ${errors.phoneNumber ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2`}
+                    className={`flex-1 border ${errors.phoneNumber ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-3 text-base`}
                     required
                   />
                 </div>
                 {errors.phoneNumber && (
-                  <p className="text-xs text-red-500 mt-0.5">{errors.phoneNumber}</p>
+                  <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>
                 )}
               </div>
               
-              <div className={`${animatedFields.gender ? 'animate-fadeInUp' : 'opacity-0'} w-full md:w-1/2`}>
-                <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
+              <div className={`${animatedFields.gender ? 'animate-fadeInUp' : 'opacity-0'} w-full sm:w-1/2`}>
+                <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
                   {t('welcome', 'genderLabel')} <span className="text-[#F5BC1C]">*</span>
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                   {['Female', 'Male', 'LGBTQ'].map((g, index) => (
                     <button
                       type="button"
                       key={g}
                       onClick={() => handleGenderSelect(g)}
-                      className={`px-3 py-2 rounded-lg border text-xs transition ${
+                      className={`px-3 py-2 sm:py-3 rounded-lg border text-xs sm:text-sm transition flex-1 min-w-0 ${
                         formData.gender === g
                           ? 'bg-[#F5BC1C] text-white border-[#F5BC1C]'
                           : 'bg-white text-gray-700 border-gray-200'
@@ -432,7 +403,7 @@ const RegistrationForm = () => {
             </div>
             
             <div className={animatedFields.referralCode ? 'animate-fadeInUp' : 'opacity-0'}>
-              <label className="block text-[#2D2D2D] font-medium text-sm mb-1">
+              <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
                 {t('welcome', 'referralLabel')} <span className="text-xs text-gray-400 font-normal">{t('welcome', 'referralSubtext')}</span>
               </label>
               <input
@@ -441,35 +412,35 @@ const RegistrationForm = () => {
                 value={formData.referralCode}
                 onChange={handleChange}
                 placeholder={t('welcome', 'referralPlaceholder')}
-                className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2"
+                className="w-full border border-[#F5BC1C] rounded-lg px-3 py-3 text-base"
               />
             </div>
             
             <div className="animate-fadeInUp delay-600">
               {/* Combined Info Section */}
-              <div className="flex mb-3 items-start">
-                <div className="bg-[#F5BC1C] w-12 h-12 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 animate-pulse" style={{animationDuration: '3s'}}>
-                  <img src="/assets/Group 481609.png" alt="Play Icon" className="w-5 h-5" />
+              <div className="flex mb-4 items-start">
+                <div className="bg-[#F5BC1C] w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 animate-pulse" style={{animationDuration: '3s'}}>
+                  <img src="/assets/Group 481609.png" alt="Play Icon" className="w-4 sm:w-5 h-4 sm:h-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">{t('welcome', 'demoTitle')}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-medium text-sm sm:text-base">{t('welcome', 'demoTitle')}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">
                     {t('welcome', 'demoSubtitle')}
                   </p>
                 </div>
               </div>
               
               {/* Privacy Notice */}
-              <div className="flex items-center mb-4">
-                <Image src="/assets/Cloud Security.png" alt="privacy" width={20} height={20} className="mr-2 animate-pulse" style={{animationDuration: '4s'}} />
-                <span className="text-xs text-gray-500">
+              <div className="flex items-center mb-6">
+                <Image src="/assets/Cloud Security.png" alt="privacy" width={18} height={18} className="mr-2 animate-pulse sm:w-5 sm:h-5" style={{animationDuration: '4s'}} />
+                <span className="text-xs sm:text-sm text-gray-500">
                   {t('welcome', 'privacyNote')}
                 </span>
               </div>
               
               <button
                 type="submit"
-                className={`w-full bg-[#F5BC1C] text-white font-medium py-2.5 rounded-lg transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`w-full bg-[#F5BC1C] text-white font-medium py-3 sm:py-4 rounded-lg transition-colors text-base ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -489,22 +460,24 @@ const RegistrationForm = () => {
         </div>
         
         {/* Right side - Illustration */}
-        <div className="hidden md:block md:w-1/2 relative">
+        <div className="hidden md:block md:w-1/2 relative z-10">
           <div className="absolute inset-0 flex items-center justify-center">
             <Image 
               src="/assets/two-girls.png"
               alt="People using Baatein"
-              width={600}
-              height={600}
-              className="object-contain w-full h-full"
+              width={480}
+              height={480}
+              className="object-contain w-4/5 h-4/5"
               priority
             />
           </div>
         </div>
       </div>
       
-      {/* Wave Background */}
-      <WaveBackground height={250} />
+      {/* Wave Background - Shifted even lower */}
+      <div className="absolute bottom-0 left-0 right-0 w-full z-0" style={{ transform: 'translateY(60px)' }}>
+        <WaveBackground height={120} />
+      </div>
     </div>
   );
 };

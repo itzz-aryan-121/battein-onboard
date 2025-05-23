@@ -36,18 +36,23 @@ export default function OtpVerification() {
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  const handleChange = (index: number, value: string) => {
+  interface OtpDigit {
+    index: number;
+    value: string;
+  }
+
+  const handleChange = (index: number, value: string): void => {
     if (value.length > 1) return;
     if (value === '' || /^[0-9]$/.test(value)) {
-      const newOtp = [...otp];
+      const newOtp: string[] = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
       if (value !== '') {
         if (index < 3) {
-          const nextInput = document.getElementById(`otp-${index + 1}`);
+          const nextInput: HTMLElement | null = document.getElementById(`otp-${index + 1}`);
           if (nextInput) nextInput.focus();
         } else if (index === 3) {
-          const allFilled = newOtp.every(digit => digit !== '');
+          const allFilled: boolean = newOtp.every((digit: string) => digit !== '');
           if (allFilled) {
             setTimeout(() => {
               handleVerifyOtp(newOtp.join(''));
@@ -58,7 +63,7 @@ export default function OtpVerification() {
     } else {
       setErrorMessage('Please enter only numeric values (0-9) for OTP verification.');
       setShowErrorModal(true);
-      const currentInput = document.getElementById(`otp-${index}`);
+      const currentInput: HTMLElement | null = document.getElementById(`otp-${index}`);
       if (currentInput) {
         currentInput.classList.add('shake');
         setTimeout(() => {
@@ -71,9 +76,13 @@ export default function OtpVerification() {
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  interface KeyboardEvent {
+    key: string;
+  }
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Backspace' && index > 0 && otp[index] === '') {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
+      const prevInput: HTMLElement | null = document.getElementById(`otp-${index - 1}`);
       if (prevInput) prevInput.focus();
     }
   };
@@ -81,11 +90,6 @@ export default function OtpVerification() {
   const generateOtp = () => {
     return Math.floor(1000 + Math.random() * 9000).toString();
   };
-
-  interface SendOtpRequest {
-    phoneNumber: string;
-    otp: string;
-  }
 
   interface SendOtpResponse {
     success: boolean;
@@ -96,9 +100,8 @@ export default function OtpVerification() {
       const response = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, otp: otpCode } as SendOtpRequest)
+        body: JSON.stringify({ phoneNumber, otp: otpCode })
       });
-
       const result: SendOtpResponse = await response.json();
       return result.success;
     } catch (error) {
@@ -107,7 +110,7 @@ export default function OtpVerification() {
     }
   };
 
-  const handleSendOtp = async (phoneNumber: string | null | undefined = null) => {
+  const handleSendOtp = async (phoneNumber: string | null = null) => {
     const phone = phoneNumber || searchParams.get('phoneNumber');
     if (!phone) {
       setErrorMessage('Phone number not found. Please go back and enter your phone number.');
@@ -128,8 +131,6 @@ export default function OtpVerification() {
       if (success) {
         setOtpSent(true);
         setCountdown(60);
-        console.log('OTP sent successfully to:', phone);
-        console.log('Generated OTP:', newOtp); // Remove in prod
       } else {
         setErrorMessage('Failed to send OTP. Please try again.');
         setShowErrorModal(true);
@@ -143,13 +144,17 @@ export default function OtpVerification() {
     }
   };
 
+  interface VerifyOtpResult {
+    success: boolean;
+    message?: string;
+  }
+
   const handleVerifyOtp = async (enteredOtp: string): Promise<void> => {
     setIsProcessing(true);
-
     try {
-      const storedOtp = sessionStorage.getItem('generatedOtp');
-      const storedPhone = sessionStorage.getItem('otpPhone');
-      const otpTimestamp = sessionStorage.getItem('otpTimestamp');
+      const storedOtp: string | null = sessionStorage.getItem('generatedOtp');
+      const storedPhone: string | null = sessionStorage.getItem('otpPhone');
+      const otpTimestamp: string | null = sessionStorage.getItem('otpTimestamp');
 
       if (!storedOtp || !storedPhone || !otpTimestamp) {
         setErrorMessage('OTP session expired. Please request a new OTP.');
@@ -158,8 +163,8 @@ export default function OtpVerification() {
         return;
       }
 
-      const currentTime = Date.now();
-      const otpAge = currentTime - parseInt(otpTimestamp);
+      const currentTime: number = Date.now();
+      const otpAge: number = currentTime - parseInt(otpTimestamp);
       if (otpAge > 300000) {
         setErrorMessage('OTP has expired. Please request a new OTP.');
         setShowErrorModal(true);
@@ -170,16 +175,13 @@ export default function OtpVerification() {
 
       if (enteredOtp === storedOtp) {
         sessionStorage.clear();
-        console.log('OTP verified successfully');
-        setTimeout(() => {
-          router.push('/partner-details');
-        }, 1500);
+        router.push('/partner-details');
       } else {
         setErrorMessage('Invalid OTP. Please check and try again.');
         setShowErrorModal(true);
         setIsProcessing(false);
         setOtp(['', '', '', '']);
-        const firstInput = document.getElementById('otp-0');
+        const firstInput: HTMLElement | null = document.getElementById('otp-0');
         if (firstInput) firstInput.focus();
       }
     } catch (error) {
@@ -201,92 +203,85 @@ export default function OtpVerification() {
   };
 
   return (
-    <div className="relative min-h-screen bg-white flex flex-col overflow-hidden">
+    <div className="relative min-h-screen bg-white flex flex-col overflow-hidden px-4 md:px-12 py-8">
       <Image 
         src="/assets/yo-girl.png" 
         alt="Illustration" 
-        width={453} 
+        width={316} 
         height={520}
-        className="absolute right-[200px] bottom-32 z-50 object-contain"
+        className="hidden lg:block absolute right-[525px] bottom-32 z-50 object-contain"
         priority
       />
 
-      <div className="flex flex-1 relative z-10 px-44 pt-16">
-        <div className="bg-white rounded-[32px] shadow-lg flex flex-col md:flex-row w-[650px] max-w-4xl overflow-hidden relative z-10 border border-[#F3F3F3] h-[650px]">
-          
-          <div className="flex-1 flex flex-col justify-center px-12 py-14 md:py-10 max-w-[480px]">
-            <h1 className="text-[2rem] w-[511px] md:text-[2.1rem] font-medium text-[#232323] mb-2 leading-tight" style={{ fontFamily: 'Inter' }}>
-              Verify Your Number to Secure<br />Your Account
-            </h1>
-            <h2 className="text-[1.6rem] font-bold text-[#232323] mb-4 mt-4" style={{ fontFamily: 'Inter' }}>OTP Verification</h2>
-            <p className="text-[#232323] mb-1 text-[1.08rem] w-[400px]" style={{ fontFamily: 'Inter' }}>
-              A one-time password {otpSent ? 'has been sent' : 'will be sent'} to this <span className="font-extrabold">Mobile Number</span> for verification.
-            </p>
-            <div className="flex items-center gap-2 mb-8 mt-2">
-              <span className="font-extrabold text-lg" style={{ fontFamily: 'Inter' }}>{mobileNumber}</span>
+      <div className="flex justify-start items-center flex-1">
+        <div className="bg-white rounded-3xl shadow-lg flex flex-col w-full max-w-xl overflow-hidden relative z-10 border border-gray-200 p-8 md:p-14">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium text-gray-900 mb-2 leading-tight font-inter">
+            Verify Your Number to Secure<br />Your Account
+          </h1>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 mt-4 font-inter">OTP Verification</h2>
+          <p className="text-gray-700 mb-1 text-base md:text-lg font-inter">
+            A one-time password {otpSent ? 'has been sent' : 'will be sent'} to this <span className="font-extrabold">Mobile Number</span> for verification.
+          </p>
+          <div className="flex items-center gap-2 mb-6 mt-2">
+            <span className="font-extrabold text-lg font-inter">{mobileNumber}</span>
+          </div>
+
+          {otpSent && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 text-sm font-medium">
+                ✓ OTP sent successfully to your mobile number
+              </p>
             </div>
+          )}
 
-            {otpSent && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-700 text-sm font-medium">
-                  ✓ OTP sent successfully to your mobile number
-                </p>
-              </div>
-            )}
+          <div className="flex gap-4 justify-center mb-6">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                id={`otp-${index}`}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gray-100 text-center text-2xl font-extrabold rounded-full border-2 border-yellow-400 focus:border-yellow-400 focus:outline-none transition-all text-gray-900 placeholder-gray-400 font-inter"
+                value={digit}
+                onChange={(e) => handleChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                disabled={isProcessing}
+              />
+            ))}
+          </div>
 
-            <div className="flex gap-6 mb-8">
-              {otp.map((digit, index) => (
-                <div key={index} className="w-[72px] h-[72px] flex items-center justify-center">
-                  <input
-                    id={`otp-${index}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    className="w-full h-full bg-gray-100 text-center text-2xl font-extrabold rounded-full border-2 border-[#F5BC1C] focus:border-[#F5BC1C] focus:outline-none transition-all text-[#232323] placeholder:text-[#C7C7C7]"
-                    value={digit}
-                    onChange={(e) => handleChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    disabled={isProcessing}
-                    style={{ fontFamily: 'Inter', fontSize: '2rem' }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center mb-8">
-              <span className="text-[#232323] mr-2 text-[1.08rem]" style={{ fontFamily: 'Inter' }}>
-                {otpSent ? "Didn't receive OTP?" : "Need to send OTP?"}
-              </span>
-              <button 
-                className={`text-[#FF9900] font-bold hover:underline text-[1.08rem] button-animate ${
-                  (isSendingOtp || countdown > 0) ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                onClick={() => handleSendOtp()}
-                disabled={isSendingOtp || countdown > 0}
-                style={{ fontFamily: 'Inter' }}
-              >
-                {isSendingOtp ? 'Sending...' : countdown > 0 ? `Resend in ${countdown}s` : 'Send OTP'}
-              </button>
-            </div>
-
+          <div className="flex items-center justify-center mb-6">
+            <span className="text-gray-700 mr-2 text-sm md:text-base font-inter">
+              {otpSent ? "Didn't receive OTP?" : "Need to send OTP?"}
+            </span>
             <button 
-              className={`bg-[#F5BC1C] hover:bg-[#FFB800] text-white font-extrabold py-3 px-6 rounded-[8px] w-[220px] transition-colors text-[1.15rem] shadow-sm ${
-                (isProcessing || otp.join('').length !== 4) ? 'opacity-80 cursor-not-allowed' : ''
-              } button-animate`}
-              onClick={handleContinue}
-              disabled={isProcessing || otp.join('').length !== 4}
-              style={{ fontFamily: 'Inter' }}
+              className={`text-orange-500 font-bold hover:underline text-sm md:text-base button-animate ${
+                (isSendingOtp || countdown > 0) ? 'opacity-50 cursor-not-allowed' : ''
+              } font-inter`}
+              onClick={() => handleSendOtp()}
+              disabled={isSendingOtp || countdown > 0}
             >
-              {isProcessing ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                  Verifying...
-                </div>
-              ) : (
-                'Continue'
-              )}
+              {isSendingOtp ? 'Sending...' : countdown > 0 ? `Resend in ${countdown}s` : 'Send OTP'}
             </button>
           </div>
+
+          <button 
+            className={`bg-[#F5BC1C] hover:bg-yellow-500 text-white font-extrabold py-3 px-6 rounded-lg w-full transition-colors text-base md:text-lg shadow-sm ${
+              (isProcessing || otp.join('').length !== 4) ? 'opacity-80 cursor-not-allowed' : ''
+            } font-inter`}
+            onClick={handleContinue}
+            disabled={isProcessing || otp.join('').length !== 4}
+          >
+            {isProcessing ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                Verifying...
+              </div>
+            ) : (
+              'Continue'
+            )}
+          </button>
         </div>
       </div>
 
@@ -308,7 +303,7 @@ export default function OtpVerification() {
             <div className="flex justify-end">
               <button 
                 onClick={() => setShowErrorModal(false)}
-                className="bg-[#F5BC1C] text-white px-4 py-2 rounded font-medium"
+                className="bg-yellow-400 text-white px-4 py-2 rounded font-medium"
               >
                 OK
               </button>

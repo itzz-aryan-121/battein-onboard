@@ -205,18 +205,18 @@ export default function AvatarUploadPage() {
   };
 
   return (
-    <div className="flex flex-col bg-white h-screen relative overflow-hidden">
+    <div className="flex flex-col bg-white min-h-screen relative overflow-x-hidden overflow-y-auto">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
-        <div className="bg-white rounded-3xl shadow-lg p-6 relative z-10 w-full max-w-4xl mx-auto">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 md:py-8">
+        <div className="bg-white rounded-3xl shadow-lg p-4 sm:p-6 relative z-10 w-full max-w-4xl mx-auto">
           {/* Heading */}
-          <h1 className="text-center text-3xl font-bold mb-4">
-            <span className="text-[#F5BC1C]">Congratulations!</span> You've Chosen the Audio Call<br />
+          <h1 className="text-center text-2xl sm:text-3xl font-bold mb-4">
+            <span className="text-[#F5BC1C]">Congratulations!</span> You've Chosen the Audio Call<br className="hidden sm:block" />
             Option to Grow Your Career!
           </h1>
           
           {/* Avatar Selection */}
-          <div className="bg-gray-50 rounded-2xl p-5 mx-auto max-w-2xl mb-5">
+          <div className="bg-gray-50 rounded-2xl p-4 sm:p-5 mx-auto max-w-2xl mb-5">
             <p className="text-center text-lg text-gray-700 mb-4">Just upload your favourite Avtar</p>
             
             {/* Upload Box */}
@@ -265,7 +265,7 @@ export default function AvatarUploadPage() {
             </div>
             
             {/* Upload Own Avatar Button */}
-            <div className="flex justify-center items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap justify-center items-center gap-2">
               <button 
                 className="text-[#4CAF50] font-medium flex items-center"
                 onClick={handleAvatarClick}
