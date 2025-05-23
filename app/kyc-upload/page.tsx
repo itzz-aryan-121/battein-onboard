@@ -172,9 +172,9 @@ export default function KYCVerification() {
         return;
       }
 
-      // Update the partner document with KYC data
-      const response = await fetch(`/api/partners?id=${partnerId}`, {
-        method: 'PUT',
+      // Update the partner document with KYC data - Fixed API endpoint for mobile compatibility
+      const response = await fetch(`/api/partners/${partnerId}`, {
+        method: 'PATCH', // Changed from PUT to PATCH to match API structure
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           kyc: {
@@ -185,7 +185,8 @@ export default function KYCVerification() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update KYC information');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update KYC information');
       }
 
       // Navigate to bank details page as the next step in the flow
