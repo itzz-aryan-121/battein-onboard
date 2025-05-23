@@ -235,7 +235,7 @@ export default function Page() {
           </button>
           
           {/* Debug Button - For testing only */}
-          <button 
+          {/* <button 
             onClick={() => {
               console.log("Current Partner ID:", localStorage.getItem('partnerId'));
               console.log("Image loaded:", !!uploadedImage);
@@ -247,7 +247,7 @@ export default function Page() {
             className="text-xs text-gray-400 mt-2 hover:underline"
           >
             Debug
-          </button>
+          </button> */}
         </div>
       </div>
       
