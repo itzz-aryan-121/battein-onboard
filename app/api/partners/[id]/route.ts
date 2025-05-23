@@ -120,5 +120,8 @@ export async function PUT(request: Request) {
 
 // OPTIONS handler for CORS preflight
 export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
 }
