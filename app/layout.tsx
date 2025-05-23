@@ -18,6 +18,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Baatein - Voice Calling App",
   description: "Join Baatein as a partner and earn ₹40,000-₹80,000 monthly",
+  icons: {
+    icon: '/assets/Baaten Logo 6.ico',
+    apple: '/assets/Baaten Logo 6.png',
+    shortcut: '/assets/Baaten Logo 6.png',
+  },
 };
 
 export const viewport: Viewport = {

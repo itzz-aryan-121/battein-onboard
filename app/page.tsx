@@ -10,7 +10,7 @@ export default function Home() {
             <Head>
                 <title>Baatein - India's Leading Voice Platform</title>
                 <meta name="description" content="Join Baatein as a partner and earn ₹40,000-₹80,000 monthly" />
-                <link rel="icon" href="/favicon.ico" />
+                <link rel="icon" href="/Baaten Logo 6.ico" />
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
                     rel="stylesheet"
