@@ -150,13 +150,13 @@ const RegistrationForm = () => {
         return;
       }
 
-      // Store user data in memory instead of localStorage (as requested)
-      const userData = {
-        name: formData.name,
-        phoneNumber: formData.phoneNumber,
-        gender: formData.gender,
-        referralCode: formData.referralCode || ''
-      };
+      // Store user data in localStorage
+      localStorage.setItem('name', formData.name);
+      localStorage.setItem('phoneNumber', formData.phoneNumber);
+      localStorage.setItem('gender', formData.gender);
+      if (formData.referralCode) {
+        localStorage.setItem('referralCode', formData.referralCode);
+      }
 
       // If gender is Male, show success modal without redirection
       if (formData.gender === 'Male') {
