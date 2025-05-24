@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 
@@ -11,6 +11,10 @@ export default function VideoUploadPage() {
     // Navigate to the camera verification page
     router.push('/camera-verification');
   };
+
+  useEffect(() => {
+    localStorage.setItem('lastVisitedPage', '/video-upload');
+  }, []);
 
   return (
     <div className="flex flex-col bg-white min-h-screen relative overflow-hidden">

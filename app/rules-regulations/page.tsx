@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import WaveBackground from '../components/WaveBackground';
@@ -21,6 +21,10 @@ export default function RulesRegulationsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    localStorage.setItem('lastVisitedPage', '/rules-regulations');
+  }, []);
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden py-32">

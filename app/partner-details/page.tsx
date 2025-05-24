@@ -24,6 +24,7 @@ const PartnerDetailsForm = () => {
     const [isLanguagesDropdownOpen, setIsLanguagesDropdownOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isSamplePlaying, setIsSamplePlaying] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -31,6 +32,7 @@ const PartnerDetailsForm = () => {
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const hobbiesDropdownRef = useRef<HTMLDivElement | null>(null);
     const languagesDropdownRef = useRef<HTMLDivElement | null>(null);
+    const sampleAudioRef = useRef<HTMLAudioElement | null>(null);
 
     const router = useRouter();
 
@@ -121,6 +123,34 @@ const PartnerDetailsForm = () => {
         };
     }, []);
 
+    // Restore form progress from localStorage on mount
+    useEffect(() => {
+        const saved = localStorage.getItem('partnerDetailsProgress');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.formData) setFormData(parsed.formData);
+                if (parsed.audioRecorded) setAudioRecorded(parsed.audioRecorded);
+                if (parsed.audioUrl) setAudioUrl(parsed.audioUrl);
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+    }, []);
+
+    // Autosave form progress to localStorage on change
+    useEffect(() => {
+        localStorage.setItem('partnerDetailsProgress', JSON.stringify({
+            formData,
+            audioRecorded,
+            audioUrl
+        }));
+    }, [formData, audioRecorded, audioUrl]);
+
+    useEffect(() => {
+        localStorage.setItem('lastVisitedPage', '/partner-details');
+    }, []);
+
     const handleSelectLanguage = (index: number) => {
         const updatedLanguages = [...languagesList];
         updatedLanguages[index].active = !updatedLanguages[index].active;
@@ -168,11 +198,20 @@ const PartnerDetailsForm = () => {
     };
 
     const handleHearSample = () => {
-        // Logic to play sample audio
-        const sampleAudio = new Audio('/assets/sample-intro.mp3');
-        sampleAudio.play();
-        setIsPlaying(true);
-        sampleAudio.onended = () => setIsPlaying(false);
+        if (!sampleAudioRef.current) {
+            sampleAudioRef.current = new Audio('/assets/sample-intro.mp3');
+        }
+
+        if (isSamplePlaying) {
+            sampleAudioRef.current.pause();
+            setIsSamplePlaying(false);
+        } else {
+            sampleAudioRef.current.play();
+            setIsSamplePlaying(true);
+            sampleAudioRef.current.onended = () => {
+                setIsSamplePlaying(false);
+            };
+        }
     };
 
     const handlePlayRecording = () => {
@@ -349,8 +388,6 @@ const PartnerDetailsForm = () => {
 
             localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
 
-            // Navigate to avatar upload page
-            router.push('/avatar-upload');
         } catch (error: any) {
             console.error('Error submitting partner details:', error);
             alert(`Failed to submit partner details: ${error.message || 'Unknown error'}`);
@@ -523,11 +560,14 @@ const PartnerDetailsForm = () => {
                                                         onClick={handleHearSample}
                                                         className="flex items-center text-[#2D2D2D] text-xs font-medium button-animate"
                                                         style={{ fontFamily: 'Inter' }}
-                                                        disabled={isPlaying}
                                                     >
                                                         <span className="mr-3">Hear sample intro</span>
-                                                        <div className="w-9 h-9 rounded-full flex items-center justify-center ">
-                                                            <img src="/assets/play.png" alt="Play" className="w-9 h-9" />
+                                                        <div className="w-9 h-9 rounded-full flex items-center justify-center">
+                                                            <img 
+                                                                src={isSamplePlaying ? "/assets/pause.png" : "/assets/play.png"} 
+                                                                alt={isSamplePlaying ? "Pause" : "Play"} 
+                                                                className="w-9 h-9" 
+                                                            />
                                                         </div>
                                                     </button>
                                                 </div>

@@ -382,6 +382,10 @@ export default function KYCVerification() {
 
   const isFormValid = panNumber.trim() !== '' && panCardFile !== null && !panError && !uploadError && isUploaded;
 
+  useEffect(() => {
+    localStorage.setItem('lastVisitedPage', '/kyc-upload');
+  }, []);
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden overflow-y-auto py-8 px-4">
       <Head>

@@ -4,6 +4,7 @@ import "./globals.css";
 import "./animations.css"; 
 import { LanguageProvider } from "./context/LanguageContext";
 import { Toaster } from 'react-hot-toast';
+import ResumeLastPage from './ResumeLastPage';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,6 +53,7 @@ export default function RootLayout({
       >
         <Toaster position="top-right" />
         <LanguageProvider>
+          <ResumeLastPage />
           <div className="page-fade">{children}</div>
         </LanguageProvider>
       </body>

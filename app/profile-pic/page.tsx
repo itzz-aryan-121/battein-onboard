@@ -104,6 +104,10 @@ export default function Page() {
     }
   };
 
+  useEffect(() => {
+    localStorage.setItem('lastVisitedPage', '/profile-pic');
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
       {/* Heading above the white box */}

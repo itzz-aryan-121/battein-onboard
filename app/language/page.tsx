@@ -41,6 +41,10 @@ export default function LanguageSelection() {
     }
   };
 
+  useEffect(() => {
+    localStorage.setItem('lastVisitedPage', '/language');
+  }, []);
+
   return (
     <div className="bg-white flex flex-col items-center justify-between min-h-screen overflow-hidden">
       {/* Main content - with responsive padding and spacing */}

@@ -36,6 +36,10 @@ export default function OtpVerification() {
     return () => clearTimeout(timer);
   }, [countdown]);
 
+  useEffect(() => {
+    localStorage.setItem('lastVisitedPage', '/otp-verification');
+  }, []);
+
   interface OtpDigit {
     index: number;
     value: string;

@@ -1,7 +1,6 @@
 'use client'
 
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -37,6 +36,10 @@ export default function BankDetails() {
     general?: string;
   }>({});
   const router = useRouter();
+
+  useEffect(() => {
+    localStorage.setItem('lastVisitedPage', '/bank-details');
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
