@@ -388,6 +388,9 @@ const PartnerDetailsForm = () => {
 
             localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
 
+            // Navigate to earn-multiple page after successful submission
+            router.push('/earn-multiple');
+
         } catch (error: any) {
             console.error('Error submitting partner details:', error);
             alert(`Failed to submit partner details: ${error.message || 'Unknown error'}`);
