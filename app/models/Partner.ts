@@ -79,6 +79,9 @@ const partnerSchema = new mongoose.Schema({
   // approval status
   status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
 
+  // earning preference
+  earningPreference: { type: String, enum: ['audio', 'video'], required: true },
+
   createdAt: { type: Date, default: Date.now }
 });
 

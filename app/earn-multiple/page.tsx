@@ -36,11 +36,40 @@ export default function BaateinEarningsPage() {
     setSelectedOption('video');
   };
   
-  const handleContinue = () => {
-    if (selectedOption === 'audio') {
-      router.push('/profile-pic');
-    } else if (selectedOption === 'video') {
-      router.push('/video-upload');
+  const handleContinue = async () => {
+    try {
+      // Get partner ID from localStorage
+      const partnerId = localStorage.getItem('partnerId');
+      
+      if (!partnerId) {
+        console.error('No partner ID found');
+        return;
+      }
+
+      // Update partner's earning preference in database
+      const response = await fetch(`/api/partners/${partnerId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          earningPreference: selectedOption
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save earning preference');
+      }
+
+      // Navigate based on selection
+      if (selectedOption === 'audio') {
+        router.push('/profile-pic');
+      } else if (selectedOption === 'video') {
+        router.push('/video-upload');
+      }
+    } catch (error) {
+      console.error('Error saving earning preference:', error);
+      alert('Failed to save your selection. Please try again.');
     }
   };
   
