@@ -179,6 +179,8 @@ export default function OtpVerification() {
 
       if (enteredOtp === storedOtp) {
         sessionStorage.clear();
+        localStorage.removeItem('partnerId');
+        localStorage.removeItem('partnerDetails');
         router.push('/partner-details');
       } else {
         setErrorMessage('Invalid OTP. Please check and try again.');

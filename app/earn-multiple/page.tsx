@@ -46,46 +46,38 @@ export default function BaateinEarningsPage() {
   
   const handleContinue = async () => {
     if (!selectedOption) return;
-    setIsLoading(true);
+
     try {
-      // Get partner ID from localStorage
+      setIsLoading(true);
       const partnerId = localStorage.getItem('partnerId');
-      
       if (!partnerId) {
-        alert('Please complete your profile and bank details before selecting earning options.');
-        router.push('/profile-pic');
-        return;
+        throw new Error('Partner ID not found');
       }
 
-      // Save earning preference in localStorage
+      // Save to local storage
       const partnerDetails = JSON.parse(localStorage.getItem('partnerDetails') || '{}');
       partnerDetails.earningPreference = selectedOption;
       localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
 
-      // Update partner's earning preference in database
+      // Update partner in DB
       const response = await fetch(`/api/partners/${partnerId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          earningPreference: selectedOption
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ earningPreference: selectedOption })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save earning preference');
+        throw new Error('Failed to save selection');
       }
 
       // Navigate based on selection
       if (selectedOption === 'audio') {
         router.push('/profile-pic');
-      } else if (selectedOption === 'video') {
+      } else {
         router.push('/video-upload');
       }
-    } catch (error) {
-      console.error('Error saving earning preference:', error);
-      alert('Failed to save your selection. Please try again.');
+    } catch (error: any) {
+      alert(error.message || 'Failed to save selection');
     } finally {
       setIsLoading(false);
     }

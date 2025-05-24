@@ -40,19 +40,7 @@ const PartnerDetailsForm = () => {
     useEffect(() => {
         const partnerId = localStorage.getItem('partnerId');
         if (partnerId) {
-            // Check if they have an earning preference
-            const partnerDetails = JSON.parse(localStorage.getItem('partnerDetails') || '{}');
-            if (partnerDetails.earningPreference) {
-                if (partnerDetails.earningPreference === 'audio') {
-                    router.push('/profile-pic');
-                } else if (partnerDetails.earningPreference === 'video') {
-                    router.push('/video-upload');
-                } else {
-                    router.push('/earn-multiple');
-                }
-            } else {
-                router.push('/earn-multiple');
-            }
+            router.push('/earn-multiple');
         }
     }, [router]);
 
@@ -383,7 +371,8 @@ const PartnerDetailsForm = () => {
                 spokenLanguages: formData.spokenLanguages,
                 hobbies: formData.hobbies,
                 bio: formData.bio,
-                audioIntro: audioUrl
+                audioIntro: audioUrl,
+                status: 'Pending'
             };
 
             const response = await fetch('/api/partners', {
