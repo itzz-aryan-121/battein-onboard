@@ -55,6 +55,15 @@ export async function POST(request: Request) {
     await connectDB();
     const data = await request.json();
 
+    // Check if a partner with the same phone number already exists
+    const existing = await Partner.findOne({ phoneNumber: data.phoneNumber });
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Partner with this phone number already exists' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     // Create new partner
     const partner = await Partner.create({
       ...data,

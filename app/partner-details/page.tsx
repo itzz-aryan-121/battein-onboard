@@ -36,6 +36,26 @@ const PartnerDetailsForm = () => {
 
     const router = useRouter();
 
+    // Check if user is already registered
+    useEffect(() => {
+        const partnerId = localStorage.getItem('partnerId');
+        if (partnerId) {
+            // Check if they have an earning preference
+            const partnerDetails = JSON.parse(localStorage.getItem('partnerDetails') || '{}');
+            if (partnerDetails.earningPreference) {
+                if (partnerDetails.earningPreference === 'audio') {
+                    router.push('/profile-pic');
+                } else if (partnerDetails.earningPreference === 'video') {
+                    router.push('/video-upload');
+                } else {
+                    router.push('/earn-multiple');
+                }
+            } else {
+                router.push('/earn-multiple');
+            }
+        }
+    }, [router]);
+
     const languageOptions = [
         { name: 'English', active: false },
         { name: 'Hindi', active: false },
@@ -323,19 +343,16 @@ const PartnerDetailsForm = () => {
             setIsSubmitting(false);
             return;
         }
-        
         if (formData.spokenLanguages.length === 0) {
             alert("Please select at least one spoken language.");
             setIsSubmitting(false);
             return;
         }
-        
         if (formData.hobbies.length === 0) {
             alert("Please select at least one hobby.");
             setIsSubmitting(false);
             return;
         }
-        
         if (!formData.bio) {
             alert("Bio is required.");
             setIsSubmitting(false);
@@ -344,38 +361,21 @@ const PartnerDetailsForm = () => {
 
         try {
             let audioUrl = '';
-            
             // Upload audio file if exists
             if (formData.audioIntro) {
                 setIsUploading(true);
                 const audioFormData = new FormData();
                 audioFormData.append('file', formData.audioIntro);
-
-                try {
-                    const uploadResponse = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: audioFormData
-                    });
-
-                    if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json();
-                        throw new Error(errorData.error || 'Failed to upload audio file');
-                    }
-
-                    const data = await uploadResponse.json();
-                    audioUrl = data.url;
-                } catch (uploadError: any) {
-                    console.error('Error uploading audio:', uploadError);
-                    alert(`Error uploading audio: ${uploadError.message || 'Unknown error'}`);
-                    setIsSubmitting(false);
-                    setIsUploading(false);
-                    return;
-                } finally {
-                    setIsUploading(false);
-                }
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: audioFormData
+                });
+                const data = await uploadResponse.json();
+                audioUrl = data.url;
+                setIsUploading(false);
             }
 
-            // Store partner details in localStorage
+            // Create partner in DB
             const partnerDetails = {
                 name: localStorage.getItem('name'),
                 phoneNumber: localStorage.getItem('phoneNumber'),
@@ -386,13 +386,30 @@ const PartnerDetailsForm = () => {
                 audioIntro: audioUrl
             };
 
+            const response = await fetch('/api/partners', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(partnerDetails)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                if (response.status === 400 && errorData.error?.includes('phone number already exists')) {
+                    alert('A partner with this phone number already exists. Please use a different number or log in.');
+                    setIsSubmitting(false);
+                    return;
+                }
+                throw new Error(errorData.error || 'Failed to create partner');
+            }
+
+            const partner = await response.json();
+            localStorage.setItem('partnerId', partner._id); // Save partnerId for future steps
             localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
 
-            // Navigate to earn-multiple page after successful submission
+            // Navigate to earn-multiple page
             router.push('/earn-multiple');
 
         } catch (error: any) {
-            console.error('Error submitting partner details:', error);
             alert(`Failed to submit partner details: ${error.message || 'Unknown error'}`);
         } finally {
             setIsSubmitting(false);
@@ -719,10 +736,10 @@ const PartnerDetailsForm = () => {
                         </div>
 
                         {/* Submit Button - Fixed at bottom */}
-                        <div className="mt-4 mb-32 z-20 mx-auto">
+                        <div className="mt-4 mb-32 z-20 w-full flex justify-center">
                             <button
                                 type="submit"
-                                className={`w-[373px] mx-auto py-3 rounded-lg transition-colors font-medium text-md ${
+                                className={`w-full max-w-[373px] py-3 rounded-lg transition-colors font-medium text-md ${
                                     audioRecorded && formData.spokenLanguages.length > 0
                                     ? 'bg-[#F5BC1C] text-white cursor-pointer' 
                                     : 'bg-[#F5BC1C] bg-opacity-50 text-white cursor-not-allowed'

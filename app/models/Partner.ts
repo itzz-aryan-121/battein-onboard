@@ -80,7 +80,7 @@ const partnerSchema = new mongoose.Schema({
   status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
 
   // earning preference
-  earningPreference: { type: String, enum: ['audio', 'video'], required: true },
+  earningPreference: { type: String, enum: ['audio', 'video'], default: null },
 
   createdAt: { type: Date, default: Date.now }
 });

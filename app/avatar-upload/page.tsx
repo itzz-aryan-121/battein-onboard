@@ -97,12 +97,13 @@ export default function AvatarUploadPage() {
     if (file) {
       try {
         setIsUploading(true);
-        
-        // Convert the file to base64 directly
-        const base64Image = await fileToBase64(file);
-        
-        // Set the base64 image as custom avatar
-        setCustomAvatar(base64Image);
+        // Upload to Cloudinary
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!data.url) throw new Error('Upload failed');
+        setCustomAvatar(data.url);
         setSelectedAvatar(null);
       } catch (error: any) {
         console.error('Error processing avatar:', error);
@@ -165,26 +166,14 @@ export default function AvatarUploadPage() {
 
   // Function to handle generating an avatar from the API
   const handleGenerateAvatar = async () => {
-    if (!generationPrompt.trim()) return;
-    
     setIsGenerating(true);
     try {
-      const result = await generateAvatarFromAPI(generationPrompt);
-      if (result.success && result.imageUrl) {
-        // Convert the generated avatar URL to base64
-        const base64Image = await imageUrlToBase64(result.imageUrl);
-        setCustomAvatar(base64Image);
-        setSelectedAvatar(null);
-        setShowGenerateInput(false);
-      } else {
-        alert('Failed to generate avatar. Please try again.');
-      }
+      // Add your avatar generation logic here
+      setShowGenerateInput(!showGenerateInput);
     } catch (error) {
       console.error('Error generating avatar:', error);
-      alert('An error occurred while generating the avatar.');
     } finally {
       setIsGenerating(false);
-      setGenerationPrompt('');
     }
   };
 
@@ -264,13 +253,28 @@ export default function AvatarUploadPage() {
               
               {/* Generate Avatar Option - will be connected to API in future */}
               <button 
-                className="text-[#4CAF50] font-medium flex items-center"
-                onClick={() => setShowGenerateInput(!showGenerateInput)}
+                className={`text-[#4CAF50] font-medium flex items-center ${
+                  isGenerating ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+                onClick={handleGenerateAvatar}
+                disabled={isGenerating}
               >
-                Generate Avatar
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
+                {isGenerating ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    Generating...
+                  </span>
+                ) : (
+                  <>
+                    Generate Avatar
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                  </>
+                )}
               </button>
             </div>
             

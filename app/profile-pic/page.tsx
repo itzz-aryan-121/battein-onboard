@@ -55,27 +55,24 @@ export default function Page() {
   const handleFileUpload = async (event: FileUploadEvent): Promise<void> => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
-    console.log("File selected:", file.name, "Size:", file.size);
     setIsUploading(true);
     setError(null);
-    
     // Check file size - limit to 5MB
     if (file.size > 5 * 1024 * 1024) {
       setError("File is too large. Please select an image under 5MB.");
       setIsUploading(false);
       return;
     }
-    
     try {
-      // Compress the image before converting to base64
-      const compressedImage = await compressImage(file, 600, 0.7);
-      console.log("Image compressed. Original size:", file.size, "Compressed length:", compressedImage.length);
-      
-      setUploadedImage(compressedImage);
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!data.url) throw new Error('Upload failed');
+      setUploadedImage(data.url); // Save Cloudinary URL in state
     } catch (error) {
-      console.error("Error processing image:", error);
-      setError("Error processing image. Please try again.");
+      setError("Error uploading image. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -86,14 +83,11 @@ export default function Page() {
       setError("Please upload a profile picture first");
       return;
     }
-
     setIsUploading(true);
     setError(null);
-    
     try {
       // Store profile picture in localStorage
       localStorage.setItem('profilePicture', uploadedImage);
-      
       // Navigate to the next page
       router.push('/kyc-upload');
     } catch (error: any) {

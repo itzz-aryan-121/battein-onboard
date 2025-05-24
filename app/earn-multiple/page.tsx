@@ -10,6 +10,7 @@ export default function BaateinEarningsPage() {
   const [showMoneyImage, setShowMoneyImage] = useState(false);
   const videoColumnRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   
   // Handle scroll to show/hide money image
   useEffect(() => {
@@ -28,6 +29,13 @@ export default function BaateinEarningsPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
+  useEffect(() => {
+    const partnerId = localStorage.getItem('partnerId');
+    if (!partnerId) {
+      router.push('/profile-pic'); // Redirect to start of flow if missing
+    }
+  }, [router]);
+  
   const handleAudioSelect = () => {
     setSelectedOption('audio');
   };
@@ -37,14 +45,22 @@ export default function BaateinEarningsPage() {
   };
   
   const handleContinue = async () => {
+    if (!selectedOption) return;
+    setIsLoading(true);
     try {
       // Get partner ID from localStorage
       const partnerId = localStorage.getItem('partnerId');
       
       if (!partnerId) {
-        console.error('No partner ID found');
+        alert('Please complete your profile and bank details before selecting earning options.');
+        router.push('/profile-pic');
         return;
       }
+
+      // Save earning preference in localStorage
+      const partnerDetails = JSON.parse(localStorage.getItem('partnerDetails') || '{}');
+      partnerDetails.earningPreference = selectedOption;
+      localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
 
       // Update partner's earning preference in database
       const response = await fetch(`/api/partners/${partnerId}`, {
@@ -70,6 +86,8 @@ export default function BaateinEarningsPage() {
     } catch (error) {
       console.error('Error saving earning preference:', error);
       alert('Failed to save your selection. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -226,12 +244,22 @@ export default function BaateinEarningsPage() {
           <div className="flex justify-center mt-6 md:mt-8">
             <button 
               onClick={handleContinue}
-              disabled={!selectedOption}
+              disabled={!selectedOption || isLoading}
               className={`p-2 md:p-3 px-4 md:px-6 flex transition-all font-medium rounded-lg md:rounded-xl text-sm md:text-base ${
-                selectedOption ? 'bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600] transform hover:scale-105' : 'bg-gray-300 cursor-not-allowed opacity-50'
+                selectedOption && !isLoading ? 'bg-[#FDC62B] cursor-pointer hover:bg-[#f0b600] transform hover:scale-105' : 'bg-gray-300 cursor-not-allowed opacity-50'
               } button-animate`}
             >
-              Start Earning
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                'Start Earning'
+              )}
             </button>
           </div>
         </div>

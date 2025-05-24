@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import cloudinary from '@/app/lib/cloudinary';
 
 export async function POST(request: Request) {
     try {
@@ -12,18 +13,22 @@ export async function POST(request: Request) {
             );
         }
 
-        // Convert file to base64
+        // Convert file to buffer
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        const base64Data = buffer.toString('base64');
-        
-        // Create a data URL with the file's MIME type
-        const dataUrl = `data:${file.type};base64,${base64Data}`;
-        
-        // Return the data URL that can be stored in the database
-        return NextResponse.json({ 
-            url: dataUrl
+
+        // Upload to Cloudinary
+        const uploadResult = await new Promise<any>((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+                { resource_type: 'auto' },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            ).end(buffer);
         });
+
+        return NextResponse.json({ url: uploadResult.secure_url });
     } catch (error) {
         console.error('Error processing file:', error);
         return NextResponse.json(

@@ -35,6 +35,7 @@ export default function BankDetails() {
     cancelCheque?: string;
     general?: string;
   }>({});
+  const [uploadedFileSize, setUploadedFileSize] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -49,24 +50,26 @@ export default function BankDetails() {
     });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({
-        ...formData,
-        cancelCheque: e.target.files[0]
-      });
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
       setIsUploaded(false);
       setUploadProgress(0);
-      // Simulate upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadProgress(progress);
-        if (progress >= 100) {
-          clearInterval(interval);
-          setIsUploaded(true);
-        }
-      }, 80);
+      setUploadedFileSize(file.size);
+      setFormData({
+        ...formData,
+        cancelCheque: file
+      });
+      // Upload to Cloudinary immediately
+      const formDataFile = new FormData();
+      formDataFile.append('file', file);
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataFile });
+      const uploadData = await uploadRes.json();
+      if (uploadData.url) {
+        localStorage.setItem('cancelChequeUrl', uploadData.url);
+        setIsUploaded(true);
+        setUploadProgress(100);
+      }
     }
   };
 
@@ -142,14 +145,12 @@ export default function BankDetails() {
     setIsSubmitting(true);
 
     try {
-      // 1. Upload the cancel cheque file if needed
-      let cancelChequeUrl = '';
-      if (formData.cancelCheque) {
-        const formDataFile = new FormData();
-        formDataFile.append('file', formData.cancelCheque);
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataFile });
-        const uploadData = await uploadRes.json();
-        cancelChequeUrl = uploadData.url;
+      // Always use Cloudinary URL from localStorage
+      const cancelChequeUrl = localStorage.getItem('cancelChequeUrl') || '';
+      if (!cancelChequeUrl) {
+        alert('Please upload your cancel cheque first');
+        setIsSubmitting(false);
+        return;
       }
 
       // 2. Store bank details in localStorage
@@ -452,9 +453,13 @@ export default function BankDetails() {
                       </div>
                       <span className="text-xs text-gray-600 mt-1">{uploadProgress}%</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-green-600 text-center mt-2 break-all max-w-xs px-2">
-                      File selected: {formData.cancelCheque.name}
-                    </p>
+                    {uploadedFileSize !== null && (
+                      <div className="text-gray-500 text-xs sm:text-sm">
+                        {uploadedFileSize > 1024 * 1024 
+                          ? `${(uploadedFileSize / (1024 * 1024)).toFixed(1)} MB` 
+                          : `${Math.round(uploadedFileSize / 1024)} KB`}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -463,7 +468,7 @@ export default function BankDetails() {
               <button
                 type="submit"
                 className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-md transition duration-300 text-sm sm:text-base button-animate flex items-center justify-center"
-                disabled={isSubmitting}
+                disabled={!isUploaded || isSubmitting}
               >
                 {isSubmitting ? (
                   <>

@@ -6,6 +6,18 @@ import Webcam from 'react-webcam';
 import WaveBackground from '../components/WaveBackground';
 import FaceErrorModal from './FaceErrorModal';
 
+function base64ToFile(base64: string, filename: string): File {
+  const arr = base64.split(',');
+  const mime = arr[0].match(/:(.*?);/)![1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
+
 export default function CameraVerificationPage() {
   const router = useRouter();
   const webcamRef = useRef<Webcam>(null);
@@ -18,6 +30,8 @@ export default function CameraVerificationPage() {
   const [scanning, setScanning] = useState(false);
   const [showFaceErrorModal, setShowFaceErrorModal] = useState(false);
   const [processingComplete, setProcessingComplete] = useState(false);
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   
   // Show entry animation
   useEffect(() => {
@@ -65,9 +79,18 @@ export default function CameraVerificationPage() {
           // Face detected successfully
           setProcessingComplete(true);
           
-          // Save captured photo to localStorage
+          // Upload captured photo to Cloudinary and store URL in localStorage
           if (typeof window !== 'undefined') {
-            localStorage.setItem('capturedPhoto', capturedPhoto);
+            (async () => {
+              const file = base64ToFile(capturedPhoto, 'captured-photo.jpg');
+              const formData = new FormData();
+              formData.append('file', file);
+              const res = await fetch('/api/upload', { method: 'POST', body: formData });
+              const data = await res.json();
+              if (data.url) {
+                localStorage.setItem('capturedPhoto', data.url);
+              }
+            })();
           }
           
           // Display the captured photo for a moment before proceeding
@@ -194,6 +217,28 @@ export default function CameraVerificationPage() {
     facingMode: facingMode,
   };
 
+  const handleSwitchCamera = async () => {
+    setIsSwitchingCamera(true);
+    try {
+      await switchCamera();
+    } catch (error) {
+      console.error('Error switching camera:', error);
+    } finally {
+      setIsSwitchingCamera(false);
+    }
+  };
+
+  const handleCapturePhoto = async () => {
+    setIsCapturing(true);
+    try {
+      await capturePhoto();
+    } catch (error) {
+      console.error('Error capturing photo:', error);
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
   return (
     <div className="flex flex-col bg-white min-h-screen relative overflow-hidden">
       {/* Main Content */}
@@ -300,24 +345,44 @@ export default function CameraVerificationPage() {
             {cameraActive && !capturedPhoto && !error && !scanning && (
               <>
                 <button
-                  onClick={switchCamera}
-                  className="bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition-colors"
+                  onClick={handleSwitchCamera}
+                  disabled={isSwitchingCamera}
+                  className={`bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition-colors ${
+                    isSwitchingCamera ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                   aria-label="Switch Camera"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
+                  {isSwitchingCamera ? (
+                    <svg className="animate-spin h-6 w-6 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  )}
                 </button>
                 
                 <button
-                  onClick={capturePhoto}
-                  className="bg-[#F5BC1C] p-4 rounded-full hover:bg-[#e5ac0f] transition-colors"
+                  onClick={handleCapturePhoto}
+                  disabled={isCapturing}
+                  className={`bg-[#F5BC1C] p-4 rounded-full hover:bg-[#e5ac0f] transition-colors ${
+                    isCapturing ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                   aria-label="Take Photo"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                  {isCapturing ? (
+                    <svg className="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  )}
                 </button>
               </>
             )}

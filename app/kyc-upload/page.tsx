@@ -8,7 +8,7 @@ import WaveBackground from '../components/WaveBackground';
 
 export default function KYCVerification() {
   const [panNumber, setPanNumber] = useState('');
-  const [panCardFile, setPanCardFile] = useState<File | null>(null);
+  const [panCardFile, setPanCardFile] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(true);
@@ -20,6 +20,7 @@ export default function KYCVerification() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
+  const [uploadedFileSize, setUploadedFileSize] = useState<number | null>(null);
 
   // // Initialize video modal on page load
   // useEffect(() => {
@@ -198,89 +199,29 @@ export default function KYCVerification() {
 
   // Enhanced file upload handler
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      
-      // Reset previous states
-      setUploadError(null);
-      setUploadProgress(0);
-      setCompressionProgress(0);
-      setIsUploaded(false);
-      setIsCompressing(false);
-
-      // Validate file
-      const validationError = validateFile(file);
-      if (validationError) {
-        setUploadError(validationError);
-        return;
-      }
-
-      setPanCardFile(file);
-
+    const file = e.target.files?.[0];
+    if (file) {
       try {
-        // Show compression progress for large files
-        if (file.size > 5 * 1024 * 1024) { // > 5MB
-          setIsCompressing(true);
-          
-          // Simulate compression progress
-          const compressionInterval = setInterval(() => {
-            setCompressionProgress(prev => {
-              if (prev >= 90) {
-                clearInterval(compressionInterval);
-                return 90;
-              }
-              return prev + 10;
-            });
-          }, 200);
-        }
-
-        // Process the file (compress and convert to base64)
-        const processedData = await processLargeFile(file);
-        
-        if (isCompressing) {
-          setCompressionProgress(100);
-          setTimeout(() => {
-            setIsCompressing(false);
-          }, 500);
-        }
-
-        // Start upload progress animation
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-          progress += 15;
-          setUploadProgress(Math.min(progress, 90));
-          if (progress >= 90) {
-            clearInterval(progressInterval);
-          }
-        }, 150);
-
-        // Store the processed data
-        try {
-          // Use IndexedDB for large files, localStorage for smaller ones
-          if (processedData.length > 5000000) { // > ~5MB base64
-            await storeInIndexedDB('panCardFile', processedData);
-            localStorage.setItem('panCardFileLocation', 'indexeddb');
-          } else {
-            localStorage.setItem('panCardFileUrl', processedData);
-            localStorage.setItem('panCardFileLocation', 'localstorage');
-          }
-          
-          clearInterval(progressInterval);
-          setUploadProgress(100);
-          setIsUploaded(true);
-          
-        } catch (storageError) {
-          throw new Error('Failed to store file data');
-        }
-
-      } catch (error: any) {
-        console.error('Error processing file:', error);
-        setUploadError(`Error processing file: ${error.message || 'Please try again'}`);
         setUploadProgress(0);
-        setCompressionProgress(0);
+        setUploadError(null);
         setIsUploaded(false);
-        setIsCompressing(false);
-        setPanCardFile(null);
+        setUploadedFileSize(file.size);
+
+        // Upload to Cloudinary
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!data.url) throw new Error('Upload failed');
+
+        // Save the Cloudinary URL
+        setPanCardFile(data.url);
+        localStorage.setItem('panCardFileUrl', data.url);
+        localStorage.setItem('panCardFileLocation', 'localstorage');
+        setUploadProgress(100);
+        setIsUploaded(true);
+      } catch (error: any) {
+        setUploadError(error.message || 'Upload failed');
       }
     }
   };
@@ -348,15 +289,8 @@ export default function KYCVerification() {
     }
 
     try {
-        let panCardFileUrl = '';
-        const fileLocation = localStorage.getItem('panCardFileLocation');
-        
-        if (fileLocation === 'indexeddb') {
-            panCardFileUrl = await getFromIndexedDB('panCardFile');
-        } else {
-            panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
-        }
-        
+        // Always use Cloudinary URL from localStorage
+        const panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
         if (!panCardFileUrl) {
             alert('Please upload your PAN card first');
             setIsSubmitting(false);
@@ -556,16 +490,15 @@ export default function KYCVerification() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-light text-sm sm:text-lg text-gray-800 truncate">
-                      {panCardFile.name}
+                      {panCardFile}
                     </div>
-                    <div className="text-gray-500 text-xs sm:text-sm">
-                      {panCardFile.size > 1024 * 1024 
-                        ? `${(panCardFile.size / (1024 * 1024)).toFixed(1)} MB` 
-                        : `${Math.round(panCardFile.size / 1024)} KB`}
-                      {panCardFile.size > 5 * 1024 * 1024 && (
-                        <span className="ml-1 text-blue-600">(Large file - will be compressed)</span>
-                      )}
-                    </div>
+                    {uploadedFileSize !== null && (
+                      <div className="text-gray-500 text-xs sm:text-sm">
+                        {uploadedFileSize > 1024 * 1024 
+                          ? `${(uploadedFileSize / (1024 * 1024)).toFixed(1)} MB` 
+                          : `${Math.round(uploadedFileSize / 1024)} KB`}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
                     <div className="w-16 sm:w-20 bg-yellow-100 rounded-full h-2">

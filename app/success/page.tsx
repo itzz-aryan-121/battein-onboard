@@ -4,9 +4,28 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import FloatingParticles from '../components/FloatingParticles';
 import WaveBackground from '../components/WaveBackground';
+import { useEffect, useState } from 'react';
 
 export default function SuccessPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  
+  useEffect(() => {
+    // Clear all user-related state
+    localStorage.clear();
+    sessionStorage.clear();
+  }, []);
+  
+  const handleGoHome = async () => {
+    setIsLoading(true);
+    try {
+      await router.push('/');
+    } catch (error) {
+      console.error('Error navigating to home:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   return (
     <div className="flex flex-col bg-white relative overflow-hidden min-h-screen">
@@ -65,6 +84,27 @@ export default function SuccessPage() {
               </a>
             </div>
           </div>
+
+          {/* Go to Home button */}
+          <button
+            onClick={handleGoHome}
+            disabled={isLoading}
+            className={`mt-4 px-8 py-3 bg-[#F5BC1C] text-white rounded-lg font-semibold text-lg hover:bg-[#e5ac0f] transition ${
+              isLoading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              'Go to Home'
+            )}
+          </button>
         </div>
       </div>
       
