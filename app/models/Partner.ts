@@ -45,7 +45,7 @@ const partnerSchema = new mongoose.Schema({
   referralCode: { type: String },
 
   // partner-details
-  spokenLanguage: { type: String },
+  spokenLanguages: [{ type: String }],
   hobbies: [{ type: String }],
   bio: { type: String },
   audioIntro: { type: String },
