@@ -164,47 +164,32 @@ export default function BankDetails() {
       };
       localStorage.setItem('bankDetails', JSON.stringify(bankDetails));
 
-      // 3. Collect all data from localStorage
-      const partnerDetails = JSON.parse(localStorage.getItem('partnerDetails') || '{}');
-      const avatarUrl = localStorage.getItem('avatarUrl');
-      const profilePicture = localStorage.getItem('profilePicture');
-      const kycData = JSON.parse(localStorage.getItem('kycData') || '{}');
+      // 3. Get partnerId from localStorage
+      const partnerId = localStorage.getItem('partnerId');
+      if (!partnerId) {
+        alert('Session expired. Please start the registration process again.');
+        setIsSubmitting(false);
+        router.push('/');
+        return;
+      }
 
-      // 4. Create the complete partner record
-      const partnerData = {
-        ...partnerDetails,
-        avatarUrl,
-        profilePicture,
-        kyc: kycData,
-        bankDetails,
-        status: 'Pending'
-      };
-
-      // 5. Create partner record in database
-      const response = await fetch('/api/partners', {
-        method: 'POST',
+      // 4. Update partner record in database (PATCH)
+      const response = await fetch(`/api/partners/${partnerId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(partnerData)
+        body: JSON.stringify({ bankDetails })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create partner record');
+        throw new Error(errorData.error || 'Failed to update partner record');
       }
 
-      const partner = await response.json();
-      localStorage.setItem('partnerId', partner._id);
-
-      // 6. Clean up localStorage
-      localStorage.removeItem('partnerDetails');
-      localStorage.removeItem('avatarUrl');
-      localStorage.removeItem('profilePicture');
-      localStorage.removeItem('kycData');
+      // 5. Clean up localStorage
       localStorage.removeItem('bankDetails');
-      localStorage.removeItem('panCardFileUrl');
-      localStorage.removeItem('panCardFileLocation');
+      localStorage.removeItem('cancelChequeUrl');
 
-      // 7. Navigate to rules and regulations page
+      // 6. Navigate to rules and regulations page
       router.push('/rules-regulations');
     } catch (error: any) {
       console.error('Error submitting bank details:', error);
