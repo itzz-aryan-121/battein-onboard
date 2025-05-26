@@ -26,6 +26,7 @@ export default function BankDetails() {
   });
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(!!userData.bankDetails.cancelCheque);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
@@ -71,22 +72,77 @@ export default function BankDetails() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setIsUploaded(false);
-      setUploadProgress(0);
-      setUploadedFileSize(file.size);
-      setFormData({
-        ...formData,
-        cancelCheque: file
-      });
-      // Upload to Cloudinary immediately
-      const formDataFile = new FormData();
-      formDataFile.append('file', file);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataFile });
-      const uploadData = await uploadRes.json();
-      if (uploadData.url) {
+      try {
+        setIsUploaded(false);
+        setUploadProgress(0);
+        setUploadError(null);
+        setUploadedFileSize(file.size);
+        
+        // Validate file first
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/pdf'];
+        
+        if (file.size > maxSize) {
+          setUploadError('File size must be less than 10MB');
+          return;
+        }
+        
+        if (!allowedTypes.includes(file.type.toLowerCase())) {
+          setUploadError('Please upload a valid file (JPEG, PNG, PDF)');
+          return;
+        }
+
+        setFormData({
+          ...formData,
+          cancelCheque: file
+        });
+
+        // Show initial progress
+        setUploadProgress(10);
+
+        // Simulate progress updates during upload
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev < 90) return prev + 10;
+            return prev;
+          });
+        }, 200);
+
+        // Upload to Cloudinary immediately
+        const formDataFile = new FormData();
+        formDataFile.append('file', file);
+        
+        const uploadRes = await fetch('/api/upload', { 
+          method: 'POST', 
+          body: formDataFile 
+        });
+
+        clearInterval(progressInterval);
+
+        if (!uploadRes.ok) {
+          throw new Error('Upload failed. Please try again.');
+        }
+
+        const uploadData = await uploadRes.json();
+        if (!uploadData.url) {
+          throw new Error('Upload failed. No URL returned.');
+        }
+
+        // Complete the progress
+        setUploadProgress(100);
         updateBankDetails({ cancelCheque: uploadData.url });
         setIsUploaded(true);
-        setUploadProgress(100);
+
+        // Show success message briefly
+        setTimeout(() => {
+          setUploadProgress(100);
+        }, 500);
+
+      } catch (error: any) {
+        console.error('Upload error:', error);
+        setUploadError(error.message || 'Upload failed. Please try again.');
+        setUploadProgress(0);
+        setIsUploaded(false);
       }
     }
   };
@@ -394,18 +450,36 @@ export default function BankDetails() {
               <div className="flex flex-col items-center justify-center">
                 <label 
                   htmlFor="cancelCheque" 
-                  className={`flex items-center justify-center gap-2 w-full max-w-xs border ${errors.cancelCheque ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2.5 sm:px-4 sm:py-3 cursor-pointer text-xs sm:text-sm transition-colors duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-gray-100'}`}
+                  className={`flex items-center justify-center gap-2 w-full max-w-xs border ${errors.cancelCheque ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2.5 sm:px-4 sm:py-3 cursor-pointer text-xs sm:text-sm transition-colors duration-300 ${
+                    uploadProgress > 0 && uploadProgress < 100 ? 'opacity-50 cursor-not-allowed bg-gray-100' :
+                    isUploaded ? 'bg-green-50 border-green-300' : 'bg-gray-100 hover:bg-gray-50'
+                  }`}
                 >
                   <span className="text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                      <line x1="8" y1="4" x2="8" y2="20"></line>
-                      <line x1="16" y1="4" x2="16" y2="20"></line>
-                      <line x1="4" y1="8" x2="20" y2="8"></line>
-                      <line x1="4" y1="16" x2="20" y2="16"></line>
-                    </svg>
+                    {uploadProgress > 0 && uploadProgress < 100 ? (
+                      <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                    ) : isUploaded ? (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="8" y1="4" x2="8" y2="20"></line>
+                        <line x1="16" y1="4" x2="16" y2="20"></line>
+                        <line x1="4" y1="8" x2="20" y2="8"></line>
+                        <line x1="4" y1="16" x2="20" y2="16"></line>
+                      </svg>
+                    )}
                   </span>
-                  <span className="text-center">Upload Cancel Cheque / Passbook Front</span>
+                  <span className="text-center">
+                    {uploadProgress > 0 && uploadProgress < 100 ? 'Uploading...' :
+                     isUploaded ? 'File Uploaded Successfully' : 
+                     'Upload Cancel Cheque / Passbook Front'}
+                  </span>
                 </label>
                 <input
                   type="file"
@@ -414,15 +488,68 @@ export default function BankDetails() {
                   className="hidden"
                   onChange={handleFileUpload}
                   accept="image/*,.pdf"
+                  disabled={uploadProgress > 0 && uploadProgress < 100}
                 />
-                {formData.cancelCheque && (
-                  <>
-                    <div className="mt-3 flex flex-col items-center w-full max-w-xs">
-                      <div className="w-full max-w-[200px] h-[6px] bg-gray-200 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-yellow-400'}`} style={{ width: `${uploadProgress}%` }}></div>
+
+                {/* Upload Error */}
+                {uploadError && (
+                  <div className="mt-3 w-full max-w-xs">
+                    <div className="flex items-center p-2 bg-red-50 border border-red-200 rounded-md">
+                      <svg className="h-4 w-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <div>
+                        <p className="text-sm text-red-600 font-medium">Upload Failed</p>
+                        <p className="text-xs text-red-600">{uploadError}</p>
                       </div>
-                      <span className="text-xs text-gray-600 mt-1">{uploadProgress}%</span>
                     </div>
+                  </div>
+                )}
+
+                {/* Upload Progress */}
+                {uploadProgress > 0 && uploadProgress < 100 && !uploadError && (
+                  <div className="mt-3 w-full max-w-xs">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-black font-medium">
+                        {uploadProgress < 20 ? 'Preparing upload...' : 
+                         uploadProgress < 50 ? 'Uploading to cloud...' : 
+                         uploadProgress < 90 ? 'Processing file...' : 
+                         'Finalizing upload...'}
+                      </span>
+                      <span className="text-xs text-black font-semibold">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#F5BC1C] rounded-full transition-all duration-300 ease-out" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Success State */}
+                {isUploaded && uploadProgress === 100 && !uploadError && (
+                  <div className="mt-3 w-full max-w-xs">
+                    <div className="flex items-center justify-center p-2 bg-green-50 border border-green-200 rounded-md">
+                      <svg className="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      <span className="text-sm text-green-600 font-medium">Upload completed successfully!</span>
+                    </div>
+                    {uploadedFileSize !== null && (
+                      <div className="text-center text-gray-500 text-xs mt-1">
+                        File size: {uploadedFileSize > 1024 * 1024 
+                          ? `${(uploadedFileSize / (1024 * 1024)).toFixed(1)} MB` 
+                          : `${Math.round(uploadedFileSize / 1024)} KB`}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* File Info for uploaded files */}
+                {formData.cancelCheque && !isUploaded && uploadProgress === 0 && (
+                  <div className="mt-3 flex flex-col items-center w-full max-w-xs">
+                    <div className="w-full max-w-[200px] h-[6px] bg-gray-200 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-yellow-400'}`} style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                    <span className="text-xs text-gray-600 mt-1">{uploadProgress}%</span>
                     {uploadedFileSize !== null && (
                       <div className="text-gray-500 text-xs sm:text-sm">
                         {uploadedFileSize > 1024 * 1024 
@@ -430,8 +557,12 @@ export default function BankDetails() {
                           : `${Math.round(uploadedFileSize / 1024)} KB`}
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
+
+                <p className="mt-2 text-xs text-gray-500 text-center">
+                  Supported formats: JPEG, PNG, PDF (Max size: 10MB)
+                </p>
               </div>
             </div>
             <div className="flex justify-center mb-2 sm:mb-0">

@@ -209,20 +209,61 @@ export default function KYCVerification() {
         setIsUploaded(false);
         setUploadedFileSize(file.size);
 
-        // Upload to Cloudinary
+        // Validate file first
+        const validationError = validateFile(file);
+        if (validationError) {
+          setUploadError(validationError);
+          return;
+        }
+
+        // Show initial progress
+        setUploadProgress(10);
+
+        // Create FormData and upload to Cloudinary with progress tracking
         const formData = new FormData();
         formData.append('file', file);
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        
+        // Simulate progress updates during upload
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev < 90) return prev + 10;
+            return prev;
+          });
+        }, 200);
+
+        const res = await fetch('/api/upload', { 
+          method: 'POST', 
+          body: formData 
+        });
+
+        clearInterval(progressInterval);
+
+        if (!res.ok) {
+          throw new Error('Upload failed. Please try again.');
+        }
+
         const data = await res.json();
-        if (!data.url) throw new Error('Upload failed');
+        if (!data.url) {
+          throw new Error('Upload failed. No URL returned.');
+        }
+
+        // Complete the progress
+        setUploadProgress(100);
 
         // Save the Cloudinary URL to context
         setPanCardFile(data.url);
         updateKycData({ panCardFile: data.url });
-        setUploadProgress(100);
         setIsUploaded(true);
+
+        // Show success message briefly
+        setTimeout(() => {
+          setUploadProgress(100);
+        }, 500);
+
       } catch (error: any) {
-        setUploadError(error.message || 'Upload failed');
+        setUploadError(error.message || 'Upload failed. Please try again.');
+        setUploadProgress(0);
+        setIsUploaded(false);
       }
     }
   };
@@ -476,8 +517,50 @@ export default function KYCVerification() {
               
               {/* Show upload error */}
               {uploadError && (
-                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-xs text-red-600">{uploadError}</p>
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <div className="flex items-center">
+                    <svg className="h-4 w-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p className="text-sm text-red-600 font-medium">Upload Failed</p>
+                  </div>
+                  <p className="text-xs text-red-600 mt-1">{uploadError}</p>
+                </div>
+              )}
+
+              {/* Show upload progress */}
+              {uploadProgress > 0 && uploadProgress < 100 && !uploadError && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <svg className="animate-spin h-4 w-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                      <span className="text-sm text-black font-medium">
+                        {uploadProgress < 20 ? 'Preparing upload...' : 
+                         uploadProgress < 50 ? 'Uploading to cloud...' : 
+                         uploadProgress < 90 ? 'Processing file...' : 
+                         'Finalizing upload...'}
+                      </span>
+                    </div>
+                    <span className="text-sm text-black font-semibold">{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div className="bg-[#F5BC1C] h-2 rounded-full transition-all duration-300 ease-out" style={{ width: `${uploadProgress}%` }}></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Show success state */}
+              {isUploaded && uploadProgress === 100 && !uploadError && (
+                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <div className="flex items-center">
+                    <svg className="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span className="text-sm text-green-600 font-medium">Upload completed successfully!</span>
+                  </div>
                 </div>
               )}
               
@@ -499,14 +582,22 @@ export default function KYCVerification() {
                     )}
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
-                    <div className="w-16 sm:w-20 bg-yellow-100 rounded-full h-2">
-                      <div className="bg-yellow-400 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
-                    </div>
-                    <span className="ml-1 font-semibold text-gray-700 text-xs sm:text-sm whitespace-nowrap">{uploadProgress}%</span>
-                    {isUploaded && (
-                      <span className="ml-1 flex items-center justify-center">
-                        <img src="/assets/_Checkbox base.png" alt="" className='w-[16px] h-[16px]'/>
-                      </span>
+                    {isUploaded ? (
+                      <div className="flex items-center">
+                        <span className="text-green-600 text-xs sm:text-sm font-medium mr-2">Uploaded</span>
+                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 sm:w-20 bg-yellow-100 rounded-full h-2">
+                          <div className="bg-yellow-400 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                        </div>
+                        <span className="font-semibold text-gray-700 text-xs sm:text-sm whitespace-nowrap">{uploadProgress}%</span>
+                      </div>
                     )}
                   </div>
                 </div>
