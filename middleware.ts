@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   // Check if we're on the production domain
-  const isProductionDomain = request.headers.get('host') === 'https://battein-onboard-brown.vercel.app/';
+  const isProductionDomain = request.headers.get('host') === 'battein-onboard-brown.vercel.app';
 
   // Only enable maintenance mode on production domain
   if (isProductionDomain) {
