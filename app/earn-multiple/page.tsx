@@ -13,6 +13,7 @@ export default function BaateinEarningsPage() {
   const videoColumnRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Handle scroll to show/hide money image
   useEffect(() => {
@@ -47,10 +48,14 @@ export default function BaateinEarningsPage() {
   };
   
   const handleContinue = async () => {
-    if (!selectedOption) return;
+    if (!selectedOption) {
+      setError('Please select an earning option to continue');
+      return;
+    }
 
     try {
       setIsLoading(true);
+      setError(null);
       
       // Save earning preference to context
       updateUserData({ earningPreference: selectedOption });
@@ -62,7 +67,7 @@ export default function BaateinEarningsPage() {
         router.push('/video-upload');
       }
     } catch (error: any) {
-      alert(error.message || 'Failed to save selection');
+      setError(error.message || 'Failed to save selection');
     } finally {
       setIsLoading(false);
     }
@@ -218,7 +223,19 @@ export default function BaateinEarningsPage() {
           </div>
           
           {/* Proceed Button */}
-          <div className="flex justify-center mt-6 md:mt-8">
+          <div className="flex flex-col items-center mt-6 md:mt-8">
+            {/* Error Message */}
+            {error && (
+              <div className="w-full max-w-md mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="flex items-center">
+                  <svg className="h-4 w-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p className="text-sm text-red-600 font-medium">{error}</p>
+                </div>
+              </div>
+            )}
+            
             <button 
               onClick={handleContinue}
               disabled={!selectedOption || isLoading}

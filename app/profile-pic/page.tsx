@@ -57,22 +57,36 @@ export default function Page() {
   const handleFileUpload = async (event: FileUploadEvent): Promise<void> => {
     const file = event.target.files?.[0];
     if (!file) return;
+    
     setIsUploading(true);
     setError(null);
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      setError("Please upload a valid image file (JPEG, PNG, or WebP)");
+      setIsUploading(false);
+      return;
+    }
+    
     // Check file size - limit to 5MB
     if (file.size > 5 * 1024 * 1024) {
       setError("File is too large. Please select an image under 5MB.");
       setIsUploading(false);
       return;
     }
+    
     try {
       // Upload to Cloudinary
       const formData = new FormData();
       formData.append('file', file);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
+      
       if (!data.url) throw new Error('Upload failed');
+      
       setUploadedImage(data.url); // Save Cloudinary URL in state
+      setError(null); // Clear any previous errors
     } catch (error) {
       setError("Error uploading image. Please try again.");
     } finally {

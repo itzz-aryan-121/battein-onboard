@@ -209,38 +209,54 @@ export default function OtpVerification() {
   };
 
   return (
-    <div className="relative min-h-screen bg-white flex flex-col overflow-hidden px-4 md:px-12 py-8">
+    <div className="relative min-h-screen bg-white flex flex-col overflow-hidden px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+      {/* Desktop illustration - hidden on mobile and tablet */}
       <Image 
         src="/assets/yo-girl.png" 
         alt="Illustration" 
         width={316} 
         height={520}
-        className="hidden lg:block absolute right-[525px] bottom-32 z-50 object-contain"
+        className="hidden xl:block absolute right-[525px] bottom-32 z-50 object-contain"
         priority
       />
 
-      <div className="flex justify-start items-center flex-1">
-        <div className="bg-white rounded-3xl shadow-lg flex flex-col w-full max-w-xl overflow-hidden relative z-10 border border-gray-200 p-8 md:p-14">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium text-gray-900 mb-2 leading-tight font-inter">
-            Verify Your Number to Secure<br />Your Account
+      <div className="flex justify-center lg:justify-start items-center flex-1">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg flex flex-col w-full max-w-sm sm:max-w-md lg:max-w-xl overflow-hidden relative z-10 border border-gray-200 p-6 sm:p-8 lg:p-14">
+          {/* Header */}
+          <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-medium text-gray-900 mb-2 sm:mb-3 leading-tight font-inter">
+            Verify Your Number to Secure<br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>Your Account
           </h1>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 mt-4 font-inter">OTP Verification</h2>
-          <p className="text-gray-700 mb-1 text-base md:text-lg font-inter">
-            A one-time password {otpSent ? 'has been sent' : 'will be sent'} to this <span className="font-extrabold">Mobile Number</span> for verification.
+          
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 mt-2 sm:mt-4 font-inter">
+            OTP Verification
+          </h2>
+          
+          <p className="text-gray-700 mb-1 text-sm sm:text-base lg:text-lg font-inter leading-relaxed">
+            A one-time password {otpSent ? 'has been sent' : 'will be sent'} to this{' '}
+            <span className="font-extrabold">Mobile Number</span> for verification.
           </p>
-          <div className="flex items-center gap-2 mb-6 mt-2">
-            <span className="font-extrabold text-lg font-inter">{mobileNumber}</span>
+          
+          <div className="flex items-center gap-2 mb-4 sm:mb-6 mt-2">
+            <span className="font-extrabold text-base sm:text-lg font-inter break-all">
+              {mobileNumber}
+            </span>
           </div>
 
+          {/* Success message */}
           {otpSent && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm font-medium">
-                ✓ OTP sent successfully to your mobile number
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 text-xs sm:text-sm font-medium flex items-center">
+                <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                OTP sent successfully to your mobile number
               </p>
             </div>
           )}
 
-          <div className="flex gap-4 justify-center mb-6">
+          {/* OTP Input Fields */}
+          <div className="flex gap-3 sm:gap-4 justify-center mb-6 sm:mb-8">
             {otp.map((digit, index) => (
               <input
                 key={index}
@@ -248,7 +264,7 @@ export default function OtpVerification() {
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
-                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gray-100 text-center text-2xl font-extrabold rounded-full border-2 border-yellow-400 focus:border-yellow-400 focus:outline-none transition-all text-gray-900 placeholder-gray-400 font-inter"
+                className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gray-100 text-center text-xl sm:text-2xl font-extrabold rounded-xl sm:rounded-2xl border-2 border-yellow-400 focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-200 transition-all text-gray-900 placeholder-gray-400 font-inter touch-manipulation"
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
@@ -257,12 +273,13 @@ export default function OtpVerification() {
             ))}
           </div>
 
-          <div className="flex items-center justify-center mb-6">
-            <span className="text-gray-700 mr-2 text-sm md:text-base font-inter">
+          {/* Resend OTP */}
+          <div className="flex flex-col sm:flex-row items-center justify-center mb-6 sm:mb-8 gap-2 sm:gap-0">
+            <span className="text-gray-700 sm:mr-2 text-sm sm:text-base font-inter text-center sm:text-left">
               {otpSent ? "Didn't receive OTP?" : "Need to send OTP?"}
             </span>
             <button 
-              className={`text-orange-500 font-bold hover:underline text-sm md:text-base button-animate ${
+              className={`text-orange-500 font-bold hover:underline text-sm sm:text-base button-animate min-h-[44px] px-2 touch-manipulation ${
                 (isSendingOtp || countdown > 0) ? 'opacity-50 cursor-not-allowed' : ''
               } font-inter`}
               onClick={() => handleSendOtp()}
@@ -272,9 +289,10 @@ export default function OtpVerification() {
             </button>
           </div>
 
+          {/* Continue Button */}
           <button 
-            className={`bg-[#F5BC1C] hover:bg-yellow-500 text-white font-extrabold py-3 px-6 rounded-lg w-full transition-colors text-base md:text-lg shadow-sm ${
-              (isProcessing || otp.join('').length !== 4) ? 'opacity-80 cursor-not-allowed' : ''
+            className={`bg-[#F5BC1C] hover:bg-yellow-500 text-white font-extrabold py-3 sm:py-4 px-6 rounded-lg w-full transition-all duration-200 text-base sm:text-lg shadow-sm min-h-[48px] touch-manipulation ${
+              (isProcessing || otp.join('').length !== 4) ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-md'
             } font-inter`}
             onClick={handleContinue}
             disabled={isProcessing || otp.join('').length !== 4}
@@ -291,25 +309,29 @@ export default function OtpVerification() {
         </div>
       </div>
 
+      {/* Error Modal */}
       {showErrorModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowErrorModal(false)}></div>
-          <div className="bg-white rounded-lg p-6 shadow-xl relative z-10 max-w-md mx-4 animate-fadeIn">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={() => setShowErrorModal(false)}></div>
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl relative z-10 max-w-sm sm:max-w-md mx-auto w-full animate-fadeIn">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-red-500">Error</h3>
-              <button onClick={() => setShowErrorModal(false)} className="text-gray-500 hover:text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <h3 className="text-lg sm:text-xl font-bold text-red-500">Error</h3>
+              <button 
+                onClick={() => setShowErrorModal(false)} 
+                className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             <div className="mb-6">
-              <p className="text-gray-700">{errorMessage}</p>
+              <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{errorMessage}</p>
             </div>
             <div className="flex justify-end">
               <button 
                 onClick={() => setShowErrorModal(false)}
-                className="bg-yellow-400 text-white px-4 py-2 rounded font-medium"
+                className="bg-[#F5BC1C] hover:bg-yellow-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors min-h-[44px] touch-manipulation"
               >
                 OK
               </button>
@@ -318,7 +340,8 @@ export default function OtpVerification() {
         </div>
       )}
 
-      <WaveBackground height={180} />
+      {/* Wave Background */}
+      <WaveBackground height={120} />
     </div>
   );
 }

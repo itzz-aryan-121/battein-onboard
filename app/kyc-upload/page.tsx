@@ -332,7 +332,7 @@ export default function KYCVerification() {
 
     try {
         if (!panCardFile) {
-            alert('Please upload your PAN card first');
+            setPanError('Please upload your PAN card first');
             setIsSubmitting(false);
             return;
         }
@@ -347,7 +347,7 @@ export default function KYCVerification() {
         router.push('/bank-details');
     } catch (error: any) {
         console.error('Error saving KYC data:', error);
-        alert(`Error saving KYC data: ${error.message || 'Unknown error'}`);
+        setPanError(`Error saving KYC data: ${error.message || 'Unknown error'}`);
     } finally {
         setIsSubmitting(false);
     }

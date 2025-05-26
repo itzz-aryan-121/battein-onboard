@@ -35,24 +35,33 @@ export default function RegistrationProgress({
   }
 
   return (
-    <div className="w-full max-w-md mx-auto mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">Registration Progress</span>
+    <div className="w-full max-w-md mx-auto mb-4 sm:mb-6 px-4 sm:px-0">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <span className="text-sm sm:text-base font-medium text-gray-700">Registration Progress</span>
         {showPercentage && (
-          <span className="text-sm font-medium text-[#F5BC1C]">{percentage}%</span>
+          <span className="text-sm sm:text-base font-semibold text-[#F5BC1C] bg-[#F5BC1C]/10 px-2 py-1 rounded-full">
+            {percentage}%
+          </span>
         )}
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-gray-200 rounded-full h-2 sm:h-2.5 overflow-hidden">
         <div 
-          className="bg-[#F5BC1C] h-2 rounded-full transition-all duration-300 ease-in-out"
+          className="bg-gradient-to-r from-[#F5BC1C] to-yellow-400 h-full rounded-full transition-all duration-500 ease-out"
           style={{ width: `${percentage}%` }}
         ></div>
       </div>
       {currentStep && (
-        <p className="text-xs text-gray-500 mt-1">Current: {currentStep}</p>
+        <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">
+          <span className="font-medium">Current:</span> {currentStep}
+        </p>
       )}
       {percentage === 100 && (
-        <p className="text-xs text-green-600 mt-1 font-medium">✓ Ready to submit!</p>
+        <p className="text-xs sm:text-sm text-green-600 mt-1 sm:mt-2 font-medium flex items-center">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          Ready to submit!
+        </p>
       )}
     </div>
   );

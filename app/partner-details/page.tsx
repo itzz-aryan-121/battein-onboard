@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import './styles.css';
 import WaveBackground from '../components/WaveBackground';
 import { useUserData } from '../context/UserDataContext';
+import ErrorModal from '../components/ErrorModal';
 
 const PartnerDetailsForm = () => {
     const { userData, updateUserData } = useUserData();
@@ -15,6 +16,16 @@ const PartnerDetailsForm = () => {
         bio: userData.bio || '',
         audioIntro: null as File | null
     });
+    
+    // Add comprehensive error state for all fields
+    const [errors, setErrors] = useState({
+        spokenLanguages: '',
+        hobbies: '',
+        bio: '',
+        audioIntro: '',
+        general: ''
+    });
+    
     const [audioRecorded, setAudioRecorded] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
@@ -27,6 +38,7 @@ const PartnerDetailsForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [isSamplePlaying, setIsSamplePlaying] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -166,6 +178,9 @@ const PartnerDetailsForm = () => {
 
         // Save to context
         updateUserData({ spokenLanguages: selectedLanguages });
+        
+        // Validate languages field
+        validateField('spokenLanguages', selectedLanguages);
     };
 
     const toggleLanguagesDropdown = () => {
@@ -187,6 +202,9 @@ const PartnerDetailsForm = () => {
 
         // Save to context
         updateUserData({ hobbies: selectedHobbies });
+        
+        // Validate hobbies field
+        validateField('hobbies', selectedHobbies);
     };
 
     const toggleHobbiesDropdown = () => {
@@ -203,6 +221,8 @@ const PartnerDetailsForm = () => {
         // Save bio to context
         if (name === 'bio') {
             updateUserData({ bio: value });
+            // Validate bio field
+            validateField('bio', value);
         }
     };
 
@@ -303,6 +323,9 @@ const PartnerDetailsForm = () => {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
             }
+            
+            // Validate audio field
+            validateField('audioIntro', true);
         }
     };
 
@@ -317,6 +340,9 @@ const PartnerDetailsForm = () => {
             ...prev,
             audioIntro: null
         }));
+        
+        // Validate audio field
+        validateField('audioIntro', false);
     };
 
     const handleReRecord = () => {
@@ -328,31 +354,69 @@ const PartnerDetailsForm = () => {
         }, 100);
     };
 
+    // Validation function for individual fields
+    const validateField = (fieldName: string, value: any) => {
+        let newErrors = { ...errors };
+        
+        switch (fieldName) {
+            case 'spokenLanguages':
+                if (!value || value.length === 0) {
+                    newErrors.spokenLanguages = 'Please select at least one spoken language';
+                } else {
+                    newErrors.spokenLanguages = '';
+                }
+                break;
+                
+            case 'hobbies':
+                if (!value || value.length === 0) {
+                    newErrors.hobbies = 'Please select at least one hobby or interest';
+                } else {
+                    newErrors.hobbies = '';
+                }
+                break;
+                
+            case 'bio':
+                if (!value || value.trim() === '') {
+                    newErrors.bio = 'Please write a bio about yourself';
+                } else if (value.trim().length < 10) {
+                    newErrors.bio = 'Bio should be at least 10 characters long';
+                } else if (value.trim().length > 500) {
+                    newErrors.bio = 'Bio should not exceed 500 characters';
+                } else {
+                    newErrors.bio = '';
+                }
+                break;
+                
+            case 'audioIntro':
+                if (!audioRecorded && !userData.audioIntro) {
+                    newErrors.audioIntro = 'Please record an audio introduction';
+                } else {
+                    newErrors.audioIntro = '';
+                }
+                break;
+        }
+        
+        setErrors(newErrors);
+        return newErrors[fieldName as keyof typeof newErrors] === '';
+    };
+
+    // Validate all fields
+    const validateAllFields = () => {
+        const isLanguagesValid = validateField('spokenLanguages', formData.spokenLanguages);
+        const isHobbiesValid = validateField('hobbies', formData.hobbies);
+        const isBioValid = validateField('bio', formData.bio);
+        const isAudioValid = validateField('audioIntro', audioRecorded || userData.audioIntro);
+        
+        return isLanguagesValid && isHobbiesValid && isBioValid && isAudioValid;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         // Validation
-        if (formData.spokenLanguages.length === 0) {
-            alert('Please select at least one spoken language');
-            setIsSubmitting(false);
-            return;
-        }
-
-        if (formData.hobbies.length === 0) {
-            alert('Please select at least one hobby');
-            setIsSubmitting(false);
-            return;
-        }
-
-        if (formData.bio.trim() === '') {
-            alert('Please write a bio');
-            setIsSubmitting(false);
-            return;
-        }
-
-        if (!audioRecorded) {
-            alert('Please record an audio introduction');
+        if (!validateAllFields()) {
+            setShowErrorModal(true);
             setIsSubmitting(false);
             return;
         }
@@ -387,7 +451,8 @@ const PartnerDetailsForm = () => {
             router.push('/earn-multiple');
         } catch (error: any) {
             console.error('Error saving partner details:', error);
-            alert(`Error saving details: ${error.message || 'Unknown error'}`);
+            setErrors(prev => ({ ...prev, general: `Error saving details: ${error.message || 'Unknown error'}` }));
+            setShowErrorModal(true);
         } finally {
             setIsSubmitting(false);
         }
@@ -395,6 +460,21 @@ const PartnerDetailsForm = () => {
 
     return (
         <div className="min-h-screen bg-white flex flex-col justify-between relative overflow-hidden">
+            {/* Error Modal */}
+            <ErrorModal
+                isOpen={showErrorModal}
+                onClose={() => setShowErrorModal(false)}
+                title="Please complete all required fields:"
+                errors={errors}
+                fieldLabels={{
+                    spokenLanguages: 'Spoken Languages',
+                    hobbies: 'Hobbies & Interests',
+                    bio: 'Bio',
+                    audioIntro: 'Audio Introduction',
+                    general: 'General Error'
+                }}
+            />
+            
             {/* Main content */}
             <div className="flex flex-1 h-full">
                 {/* Left side - Form */}
@@ -420,7 +500,7 @@ const PartnerDetailsForm = () => {
                                     <button
                                         type="button"
                                         onClick={toggleLanguagesDropdown}
-                                        className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate z-1000"
+                                        className={`w-full border ${errors.spokenLanguages ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate z-1000`}
                                         style={{ fontFamily: 'Inter' }}
                                     >
                                         <span className={`${formData.spokenLanguages.length > 0 ? 'text-[#2D2D2D] font-medium' : 'text-gray-500'} truncate mr-2`}>
@@ -465,6 +545,12 @@ const PartnerDetailsForm = () => {
                                         </div>
                                     )}
                                 </div>
+                                {/* Error message for spoken languages */}
+                                {errors.spokenLanguages && (
+                                    <p className="text-xs text-red-500 mt-1" style={{ fontFamily: 'Inter' }}>
+                                        {errors.spokenLanguages}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Hobbies & Interests - Dropdown */}
@@ -476,7 +562,7 @@ const PartnerDetailsForm = () => {
                                     <button
                                         type="button"
                                         onClick={toggleHobbiesDropdown}
-                                        className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate"
+                                        className={`w-full border ${errors.hobbies ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate`}
                                         style={{ fontFamily: 'Inter' }}
                                     >
                                         <span className={`${formData.hobbies.length > 0 ? 'text-[#2D2D2D] font-medium' : 'text-gray-500'} truncate mr-2`}>
@@ -521,6 +607,12 @@ const PartnerDetailsForm = () => {
                                         </div>
                                     )}
                                 </div>
+                                {/* Error message for hobbies */}
+                                {errors.hobbies && (
+                                    <p className="text-xs text-red-500 mt-1" style={{ fontFamily: 'Inter' }}>
+                                        {errors.hobbies}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Bio */}
@@ -533,10 +625,23 @@ const PartnerDetailsForm = () => {
                                     value={formData.bio}
                                     onChange={handleChange}
                                     placeholder="Typing..."
-                                    className="w-full border border-[#F5BC1C] rounded-lg px-3 py-2 h-24 resize-none text-sm"
+                                    className={`w-full border ${errors.bio ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2 h-24 resize-none text-sm`}
                                     style={{ fontFamily: 'Inter' }}
                                     required
                                 />
+                                {/* Character count and error message */}
+                                <div className="flex justify-between items-start mt-1">
+                                    <div>
+                                        {errors.bio && (
+                                            <p className="text-xs text-red-500" style={{ fontFamily: 'Inter' }}>
+                                                {errors.bio}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-500" style={{ fontFamily: 'Inter' }}>
+                                        {formData.bio.length}/500
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Audio Intro */}
@@ -545,7 +650,7 @@ const PartnerDetailsForm = () => {
                                     Record Your Intro <span className="text-[#F5BC1C]">*</span>
                                 </label>
                                 {!audioRecorded && !isRecording ? (
-                                    <div className="bg-[#FFF9E9] rounded-lg p-4 border border-[#F5BC1C] border-opacity-30">
+                                    <div className={`bg-[#FFF9E9] rounded-lg p-4 border ${errors.audioIntro ? 'border-red-500' : 'border-[#F5BC1C]'} border-opacity-30`}>
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1 pr-3">
                                                 <p className="text-xs text-[#2D2D2D]" style={{ fontFamily: 'Inter' }}>
@@ -583,6 +688,14 @@ const PartnerDetailsForm = () => {
                                                 </button>
                                             </div>
                                         </div>
+                                        {/* Error message for audio intro */}
+                                        {errors.audioIntro && (
+                                            <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-md">
+                                                <p className="text-xs text-red-600" style={{ fontFamily: 'Inter' }}>
+                                                    {errors.audioIntro}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : isRecording ? (
                                     // Recording in progress view

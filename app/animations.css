@@ -1,5 +1,4 @@
 /* Base Animations */
-/* Base Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -61,6 +60,17 @@
   100% { width: 100%; }
 }
 
+/* Mobile-optimized animations */
+@keyframes fadeInUpMobile {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatYMobile {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
 /* Animation Utility Classes */
 .animate-fadeIn {
   animation: fadeIn 0.8s ease-in forwards;
@@ -108,6 +118,21 @@
 
 .animate-progress {
   animation: progress linear forwards;
+}
+
+/* Responsive animations - use mobile-optimized versions on small screens */
+@media (max-width: 768px) {
+  .animate-fadeInUp {
+    animation: fadeInUpMobile 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
+  
+  .animate-floatY {
+    animation: floatYMobile 3s ease-in-out infinite;
+  }
+  
+  .animate-pulse {
+    animation: pulse 2.5s ease-in-out infinite;
+  }
 }
 
 /* Animation Delays */
@@ -164,6 +189,17 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+/* Touch-friendly hover effects for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .hover-scale:active {
+    transform: scale(0.98);
+  }
+  
+  .hover-lift:active {
+    transform: translateY(2px);
+  }
+}
+
 /* Special animations for specific elements */
 .button-animate {
   position: relative;
@@ -189,6 +225,11 @@
   animation: ripple 1s ease-out;
 }
 
+/* Touch ripple effect for mobile */
+.button-animate:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
 @keyframes ripple {
   0% {
     transform: scale(0, 0);
@@ -200,6 +241,37 @@
   }
 }
 
+/* Page transition animations */
 .page-fade {
-  animation: fadeIn 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .mobile\:animate-none {
+    animation: none !important;
+  }
+  
+  .mobile\:transition-none {
+    transition: none !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-floatY,
+  .animate-pulse,
+  .animate-spin,
+  .animate-waveMove {
+    animation: none !important;
+  }
 }
