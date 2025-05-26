@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  // Maintenance mode is currently disabled
+  // To re-enable maintenance mode, uncomment the code below
+  
+  /*
   // Check if we're on the production domain
   const isProductionDomain = request.headers.get('host') === 'battein-onboard-brown.vercel.app';
 
@@ -15,8 +19,9 @@ export function middleware(request: NextRequest) {
     // Redirect all other traffic to maintenance page
     return NextResponse.redirect(new URL('/maintenance', request.url));
   }
+  */
 
-  // In development or other domains, allow all requests to pass through
+  // Allow all requests to pass through
   return NextResponse.next();
 }
 
