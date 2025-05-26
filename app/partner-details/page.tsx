@@ -39,46 +39,42 @@ const PartnerDetailsForm = () => {
     const router = useRouter();
 
     const languageOptions = [
-        { name: 'English', active: false },
         { name: 'Hindi', active: false },
-        { name: 'Punjabi', active: false },
-        { name: 'Bengali', active: false },
-        { name: 'Gujarati', active: false },
-        { name: 'Marathi', active: false },
+        { name: 'English', active: false },
         { name: 'Tamil', active: false },
+        { name: 'Punjabi', active: false },
+        { name: 'Bhojpuri', active: false },
+        { name: 'Rajasthani', active: false },
+        { name: 'Marathi', active: false },
+        { name: 'Malayalam', active: false },
+        { name: 'Bengali', active: false },
         { name: 'Telugu', active: false },
         { name: 'Kannada', active: false },
-        { name: 'Malayalam', active: false },
-        { name: 'Urdu', active: false },
-        { name: 'Odia', active: false },
-        { name: 'Assamese', active: false },
-        { name: 'Maithili', active: false },
-        { name: 'Sanskrit', active: false }
+        { name: 'Gujarati', active: false },
+        { name: 'Assamese', active: false }
     ];
     
     const [languagesList, setLanguagesList] = useState(languageOptions);
 
     const hobbiesOptions = [
-        { name: 'Cooking', active: false },
-        { name: 'Painting', active: false },
-        { name: 'Sports', active: false },
-        { name: 'Gaming', active: false },
-        { name: 'Planting', active: false },
-        { name: 'Gardening', active: false },
-        { name: 'Photography', active: false },
-        { name: 'Traveling', active: false },
-        { name: 'Sketching', active: false },
-        { name: 'Reading', active: false },
-        { name: 'Writing', active: false },
-        { name: 'Dancing', active: false },
-        { name: 'Singing', active: false },
-        { name: 'Hiking', active: false },
-        { name: 'Yoga', active: false },
-        { name: 'Chess', active: false },
-        { name: 'Cycling', active: false },
-        { name: 'Swimming', active: false },
-        { name: 'Crafting', active: false },
-        { name: 'Baking', active: false }
+        { name: 'Foodie 🍕', active: false },
+        { name: 'Travel Junkie ✈️', active: false },
+        { name: 'Dog Lover 🐶', active: false },
+        { name: 'Movie Buff 🎬', active: false },
+        { name: 'Looking for my partner-in-crime 😉', active: false },
+        { name: 'Coffee addict ☕', active: false },
+        { name: 'Fluent in sarcasm 😉', active: false },
+        { name: 'Bookworm 📚', active: false },
+        { name: 'Gym freak 💪', active: false },
+        { name: 'Let\'s make memories together! 💖', active: false },
+        { name: 'Dancer by heart 💃', active: false },
+        { name: 'Music is my therapy 🎶', active: false },
+        { name: 'Beach over mountains 🌊', active: false },
+        { name: 'Adventurer ⛺', active: false },
+        { name: 'Love deep convos 🌙', active: false },
+        { name: 'Passionate about life ❤️', active: false },
+        { name: 'Love cozy cafés ☕', active: false },
+        { name: 'K-drama obsessed 🧸', active: false }
     ];
 
     const [hobbiesList, setHobbiesList] = useState(hobbiesOptions);
