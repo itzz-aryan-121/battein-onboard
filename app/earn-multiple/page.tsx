@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 import Image from 'next/image';
+import { useUserData } from '../context/UserDataContext';
 
 export default function BaateinEarningsPage() {
-  const [selectedOption, setSelectedOption] = useState<'audio' | 'video' | null>(null);
+  const { userData, updateUserData } = useUserData();
+  const [selectedOption, setSelectedOption] = useState<'audio' | 'video' | null>(userData.earningPreference);
   const [showMoneyImage, setShowMoneyImage] = useState(false);
   const videoColumnRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -30,11 +32,11 @@ export default function BaateinEarningsPage() {
   }, []);
   
   useEffect(() => {
-    const partnerId = localStorage.getItem('partnerId');
-    if (!partnerId) {
-      router.push('/profile-pic'); // Redirect to start of flow if missing
+    // Check if user has completed the welcome and partner-details steps
+    if (!userData.name || !userData.phoneNumber || userData.spokenLanguages.length === 0) {
+      router.push('/welcome'); // Redirect to start if basic data is missing
     }
-  }, [router]);
+  }, [router, userData]);
   
   const handleAudioSelect = () => {
     setSelectedOption('audio');
@@ -49,26 +51,9 @@ export default function BaateinEarningsPage() {
 
     try {
       setIsLoading(true);
-      const partnerId = localStorage.getItem('partnerId');
-      if (!partnerId) {
-        throw new Error('Partner ID not found');
-      }
-
-      // Save to local storage
-      const partnerDetails = JSON.parse(localStorage.getItem('partnerDetails') || '{}');
-      partnerDetails.earningPreference = selectedOption;
-      localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
-
-      // Update partner in DB
-      const response = await fetch(`/api/partners/${partnerId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ earningPreference: selectedOption })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save selection');
-      }
+      
+      // Save earning preference to context
+      updateUserData({ earningPreference: selectedOption });
 
       // Navigate based on selection
       if (selectedOption === 'audio') {

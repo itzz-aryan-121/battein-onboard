@@ -5,16 +5,20 @@ import { useRouter } from 'next/navigation';
 import FloatingParticles from '../components/FloatingParticles';
 import WaveBackground from '../components/WaveBackground';
 import { useEffect, useState } from 'react';
+import { useUserData } from '../context/UserDataContext';
 
 export default function SuccessPage() {
   const router = useRouter();
+  const { clearUserData } = useUserData();
   const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
-    // Clear all user-related state
+    // Clear all user-related state after successful submission
+    clearUserData();
+    // Also clear any remaining localStorage items
     localStorage.clear();
     sessionStorage.clear();
-  }, []);
+  }, [clearUserData]);
   
   const handleGoHome = async () => {
     setIsLoading(true);

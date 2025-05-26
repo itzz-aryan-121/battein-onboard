@@ -49,7 +49,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/partners - Create new partner application
+// POST /api/partners - Create new partner application or update existing one
 export async function POST(request: Request) {
   try {
     await connectDB();
@@ -57,14 +57,24 @@ export async function POST(request: Request) {
 
     // Check if a partner with the same phone number already exists
     const existing = await Partner.findOne({ phoneNumber: data.phoneNumber });
+    
     if (existing) {
-      return NextResponse.json(
-        { error: 'Partner with this phone number already exists' },
-        { status: 400, headers: corsHeaders }
+      // Update existing partner instead of throwing an error
+      const updatedPartner = await Partner.findByIdAndUpdate(
+        existing._id,
+        { ...data, status: 'Pending' }, // Reset status to Pending for re-review
+        { new: true, runValidators: true }
       );
+      
+      return NextResponse.json({
+        ...updatedPartner.toObject(),
+        message: 'Partner information updated successfully'
+      }, {
+        headers: corsHeaders
+      });
     }
 
-    // Create new partner
+    // Create new partner if doesn't exist
     const partner = await Partner.create({
       ...data,
       status: 'Pending'
@@ -74,7 +84,7 @@ export async function POST(request: Request) {
       headers: corsHeaders
     });
   } catch (error) {
-    console.error('Error creating partner:', error);
+    console.error('Error creating/updating partner:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { 

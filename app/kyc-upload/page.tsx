@@ -5,12 +5,14 @@ import Head from 'next/head';
 import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
+import { useUserData } from '../context/UserDataContext';
 
 export default function KYCVerification() {
-  const [panNumber, setPanNumber] = useState('');
-  const [panCardFile, setPanCardFile] = useState<string | null>(null);
+  const { userData, updateKycData } = useUserData();
+  const [panNumber, setPanNumber] = useState(userData.kyc.panNumber || '');
+  const [panCardFile, setPanCardFile] = useState<string | null>(userData.kyc.panCardFile || null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploaded, setIsUploaded] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(!!userData.kyc.panCardFile);
   const [showVideoModal, setShowVideoModal] = useState(true);
   const [panError, setPanError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -214,10 +216,9 @@ export default function KYCVerification() {
         const data = await res.json();
         if (!data.url) throw new Error('Upload failed');
 
-        // Save the Cloudinary URL
+        // Save the Cloudinary URL to context
         setPanCardFile(data.url);
-        localStorage.setItem('panCardFileUrl', data.url);
-        localStorage.setItem('panCardFileLocation', 'localstorage');
+        updateKycData({ panCardFile: data.url });
         setUploadProgress(100);
         setIsUploaded(true);
       } catch (error: any) {
@@ -289,20 +290,17 @@ export default function KYCVerification() {
     }
 
     try {
-        // Always use Cloudinary URL from localStorage
-        const panCardFileUrl = localStorage.getItem('panCardFileUrl') || '';
-        if (!panCardFileUrl) {
+        if (!panCardFile) {
             alert('Please upload your PAN card first');
             setIsSubmitting(false);
             return;
         }
 
-        // Store KYC data in localStorage
-        const kycData = {
+        // Store KYC data in context
+        updateKycData({
             panNumber,
-            panCardFile: panCardFileUrl
-        };
-        localStorage.setItem('kycData', JSON.stringify(kycData));
+            panCardFile
+        });
 
         // Navigate to bank details page
         router.push('/bank-details');

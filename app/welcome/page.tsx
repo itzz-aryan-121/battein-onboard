@@ -5,15 +5,22 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import '../animations.css'; // Import animations
 import { useLanguage } from '../context/LanguageContext';
+import { useUserData } from '../context/UserDataContext';
 import WaveBackground from '../components/WaveBackground';
 
 const RegistrationForm = () => {
   const { t } = useLanguage();
-  const [formData, setFormData] = useState({
-    name: '',
-    phoneNumber: '',
-    gender: 'Female',
-    referralCode: ''
+  const { userData, updateUserData } = useUserData();
+  const [formData, setFormData] = useState<{
+    name: string;
+    phoneNumber: string;
+    gender: 'Female' | 'Male' | 'LGBTQ';
+    referralCode: string;
+  }>({
+    name: userData.name || '',
+    phoneNumber: userData.phoneNumber || '',
+    gender: userData.gender || 'Female',
+    referralCode: userData.referralCode || ''
   });
   
   // Validation errors for each field
@@ -59,7 +66,7 @@ const RegistrationForm = () => {
     validateField(name, value);
   };
 
-  const handleGenderSelect = (gender: string) => {
+  const handleGenderSelect = (gender: 'Female' | 'Male' | 'LGBTQ') => {
     setFormData(prevState => ({
       ...prevState,
       gender
@@ -150,13 +157,13 @@ const RegistrationForm = () => {
         return;
       }
 
-      // Store user data in localStorage
-      localStorage.setItem('name', formData.name);
-      localStorage.setItem('phoneNumber', formData.phoneNumber);
-      localStorage.setItem('gender', formData.gender);
-      if (formData.referralCode) {
-        localStorage.setItem('referralCode', formData.referralCode);
-      }
+      // Store user data in context instead of localStorage
+      updateUserData({
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
+        gender: formData.gender as 'Female' | 'Male' | 'LGBTQ',
+        referralCode: formData.referralCode
+      });
 
       // If gender is Male, show success modal without redirection
       if (formData.gender === 'Male') {
@@ -382,7 +389,7 @@ const RegistrationForm = () => {
                     <button
                       type="button"
                       key={g}
-                      onClick={() => handleGenderSelect(g)}
+                      onClick={() => handleGenderSelect(g as 'Female' | 'Male' | 'LGBTQ')}
                       className={`px-3 py-2 sm:py-3 rounded-lg border text-xs sm:text-sm transition flex-1 min-w-0 ${
                         formData.gender === g
                           ? 'bg-[#F5BC1C] text-white border-[#F5BC1C]'

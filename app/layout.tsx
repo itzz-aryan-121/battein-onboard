@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./animations.css"; 
 import { LanguageProvider } from "./context/LanguageContext";
+import { UserDataProvider } from "./context/UserDataContext";
 import { Toaster } from 'react-hot-toast';
 import ResumeLastPage from './ResumeLastPage';
 
@@ -52,10 +53,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster position="top-right" />
-        <LanguageProvider>
-          <ResumeLastPage />
-          <div className="page-fade">{children}</div>
-        </LanguageProvider>
+        <UserDataProvider>
+          <LanguageProvider>
+            <ResumeLastPage />
+            <div className="page-fade">{children}</div>
+          </LanguageProvider>
+        </UserDataProvider>
       </body>
     </html>
   );

@@ -5,12 +5,14 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import './styles.css';
 import WaveBackground from '../components/WaveBackground';
+import { useUserData } from '../context/UserDataContext';
 
 const PartnerDetailsForm = () => {
+    const { userData, updateUserData } = useUserData();
     const [formData, setFormData] = useState({
-        spokenLanguages: [] as string[],
-        hobbies: [] as string[],
-        bio: '',
+        spokenLanguages: userData.spokenLanguages || [],
+        hobbies: userData.hobbies || [],
+        bio: userData.bio || '',
         audioIntro: null as File | null
     });
     const [audioRecorded, setAudioRecorded] = useState(false);
@@ -35,14 +37,6 @@ const PartnerDetailsForm = () => {
     const sampleAudioRef = useRef<HTMLAudioElement | null>(null);
 
     const router = useRouter();
-
-    // Check if user is already registered
-    useEffect(() => {
-        const partnerId = localStorage.getItem('partnerId');
-        if (partnerId) {
-            router.push('/earn-multiple');
-        }
-    }, [router]);
 
     const languageOptions = [
         { name: 'English', active: false },
@@ -89,11 +83,6 @@ const PartnerDetailsForm = () => {
 
     const [hobbiesList, setHobbiesList] = useState(hobbiesOptions);
 
-    // Monitoring audioRecorded state changes
-    useEffect(() => {
-        console.log('audioRecorded state changed:', audioRecorded);
-    }, [audioRecorded]);
-
     // Animation timing
     useEffect(() => {
         setTimeout(() => setAnimatedFields(true), 300);
@@ -131,29 +120,36 @@ const PartnerDetailsForm = () => {
         };
     }, []);
 
-    // Restore form progress from localStorage on mount
+    // Restore form progress from context on mount
     useEffect(() => {
-        const saved = localStorage.getItem('partnerDetailsProgress');
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                if (parsed.formData) setFormData(parsed.formData);
-                if (parsed.audioRecorded) setAudioRecorded(parsed.audioRecorded);
-                if (parsed.audioUrl) setAudioUrl(parsed.audioUrl);
-            } catch (e) {
-                // Ignore parse errors
-            }
+        setFormData({
+            spokenLanguages: userData.spokenLanguages || [],
+            hobbies: userData.hobbies || [],
+            bio: userData.bio || '',
+            audioIntro: null
+        });
+        
+        // Sync language list with saved data
+        if (userData.spokenLanguages && userData.spokenLanguages.length > 0) {
+            setLanguagesList(prev => prev.map(lang => ({
+                ...lang,
+                active: userData.spokenLanguages.includes(lang.name)
+            })));
         }
-    }, []);
-
-    // Autosave form progress to localStorage on change
-    useEffect(() => {
-        localStorage.setItem('partnerDetailsProgress', JSON.stringify({
-            formData,
-            audioRecorded,
-            audioUrl
-        }));
-    }, [formData, audioRecorded, audioUrl]);
+        
+        // Sync hobby list with saved data
+        if (userData.hobbies && userData.hobbies.length > 0) {
+            setHobbiesList(prev => prev.map(hobby => ({
+                ...hobby,
+                active: userData.hobbies.includes(hobby.name)
+            })));
+        }
+        
+        if (userData.audioIntro) {
+            setAudioRecorded(true);
+            setAudioUrl(userData.audioIntro);
+        }
+    }, [userData]); // Add userData as dependency to reload when context changes
 
     useEffect(() => {
         localStorage.setItem('lastVisitedPage', '/partner-details');
@@ -164,11 +160,16 @@ const PartnerDetailsForm = () => {
         updatedLanguages[index].active = !updatedLanguages[index].active;
         setLanguagesList(updatedLanguages);
 
+        const selectedLanguages = updatedLanguages.filter(language => language.active).map(language => language.name);
+        
         // Update formData with selected languages
         setFormData(prev => ({
             ...prev,
-            spokenLanguages: updatedLanguages.filter(language => language.active).map(language => language.name)
+            spokenLanguages: selectedLanguages
         }));
+
+        // Save to context
+        updateUserData({ spokenLanguages: selectedLanguages });
     };
 
     const toggleLanguagesDropdown = () => {
@@ -180,11 +181,16 @@ const PartnerDetailsForm = () => {
         updatedHobbies[index].active = !updatedHobbies[index].active;
         setHobbiesList(updatedHobbies);
 
+        const selectedHobbies = updatedHobbies.filter(hobby => hobby.active).map(hobby => hobby.name);
+        
         // Update formData with selected hobbies
         setFormData(prev => ({
             ...prev,
-            hobbies: updatedHobbies.filter(hobby => hobby.active).map(hobby => hobby.name)
+            hobbies: selectedHobbies
         }));
+
+        // Save to context
+        updateUserData({ hobbies: selectedHobbies });
     };
 
     const toggleHobbiesDropdown = () => {
@@ -197,6 +203,11 @@ const PartnerDetailsForm = () => {
             ...prev,
             [name]: value
         }));
+
+        // Save bio to context
+        if (name === 'bio') {
+            updateUserData({ bio: value });
+        }
     };
 
     const formatTime = (seconds: number) => {
@@ -325,32 +336,36 @@ const PartnerDetailsForm = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Validate form
-        if (!audioRecorded || !formData.audioIntro) {
-            alert("Please record your audio introduction before submitting.");
-            setIsSubmitting(false);
-            return;
-        }
+        // Validation
         if (formData.spokenLanguages.length === 0) {
-            alert("Please select at least one spoken language.");
+            alert('Please select at least one spoken language');
             setIsSubmitting(false);
             return;
         }
+
         if (formData.hobbies.length === 0) {
-            alert("Please select at least one hobby.");
+            alert('Please select at least one hobby');
             setIsSubmitting(false);
             return;
         }
-        if (!formData.bio) {
-            alert("Bio is required.");
+
+        if (formData.bio.trim() === '') {
+            alert('Please write a bio');
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!audioRecorded) {
+            alert('Please record an audio introduction');
             setIsSubmitting(false);
             return;
         }
 
         try {
-            let audioUrl = '';
-            // Upload audio file if exists
-            if (formData.audioIntro) {
+            let audioUrl = userData.audioIntro;
+            
+            // Upload audio file if exists and not already uploaded
+            if (formData.audioIntro && !userData.audioIntro) {
                 setIsUploading(true);
                 const audioFormData = new FormData();
                 audioFormData.append('file', formData.audioIntro);
@@ -363,43 +378,20 @@ const PartnerDetailsForm = () => {
                 setIsUploading(false);
             }
 
-            // Create partner in DB
-            const partnerDetails = {
-                name: localStorage.getItem('name'),
-                phoneNumber: localStorage.getItem('phoneNumber'),
-                gender: localStorage.getItem('gender'),
+            // Update context with all partner details including audio URL
+            const updateData = {
                 spokenLanguages: formData.spokenLanguages,
                 hobbies: formData.hobbies,
                 bio: formData.bio,
-                audioIntro: audioUrl,
-                status: 'Pending'
+                audioIntro: audioUrl
             };
+            updateUserData(updateData);
 
-            const response = await fetch('/api/partners', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(partnerDetails)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                if (response.status === 400 && errorData.error?.includes('phone number already exists')) {
-                    alert('A partner with this phone number already exists. Please use a different number or log in.');
-                    setIsSubmitting(false);
-                    return;
-                }
-                throw new Error(errorData.error || 'Failed to create partner');
-            }
-
-            const partner = await response.json();
-            localStorage.setItem('partnerId', partner._id); // Save partnerId for future steps
-            localStorage.setItem('partnerDetails', JSON.stringify(partnerDetails));
-
-            // Navigate to earn-multiple page
+            // Navigate to earning preference page
             router.push('/earn-multiple');
-
         } catch (error: any) {
-            alert(`Failed to submit partner details: ${error.message || 'Unknown error'}`);
+            console.error('Error saving partner details:', error);
+            alert(`Error saving details: ${error.message || 'Unknown error'}`);
         } finally {
             setIsSubmitting(false);
         }

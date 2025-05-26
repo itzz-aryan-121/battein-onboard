@@ -2,9 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ContinueOrFreshModal from './components/ContinueOrFreshModal';
+import { useUserData } from './context/UserDataContext';
 
 export default function ResumeLastPage() {
   const router = useRouter();
+  const { clearUserData } = useUserData();
   const [showModal, setShowModal] = useState(false);
   const [lastPage, setLastPage] = useState<string | null>(null);
 
@@ -24,6 +26,9 @@ export default function ResumeLastPage() {
   };
 
   const handleStartFresh = () => {
+    // Clear all data using the context
+    clearUserData();
+    // Also clear localStorage and sessionStorage
     localStorage.clear();
     sessionStorage.clear();
     setShowModal(false);

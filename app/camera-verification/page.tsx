@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Webcam from 'react-webcam';
 import WaveBackground from '../components/WaveBackground';
 import FaceErrorModal from './FaceErrorModal';
+import { useUserData } from '../context/UserDataContext';
 
 function base64ToFile(base64: string, filename: string): File {
   const arr = base64.split(',');
@@ -19,10 +20,11 @@ function base64ToFile(base64: string, filename: string): File {
 }
 
 export default function CameraVerificationPage() {
+  const { userData, updateUserData } = useUserData();
   const router = useRouter();
   const webcamRef = useRef<Webcam>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
-  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(userData.capturedPhoto || null);
   const [showAnimation, setShowAnimation] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
@@ -32,6 +34,9 @@ export default function CameraVerificationPage() {
   const [processingComplete, setProcessingComplete] = useState(false);
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   
   // Show entry animation
   useEffect(() => {
@@ -79,7 +84,7 @@ export default function CameraVerificationPage() {
           // Face detected successfully
           setProcessingComplete(true);
           
-          // Upload captured photo to Cloudinary and store URL in localStorage
+          // Upload captured photo to Cloudinary and store URL in context
           if (typeof window !== 'undefined') {
             (async () => {
               const file = base64ToFile(capturedPhoto, 'captured-photo.jpg');
@@ -88,7 +93,7 @@ export default function CameraVerificationPage() {
               const res = await fetch('/api/upload', { method: 'POST', body: formData });
               const data = await res.json();
               if (data.url) {
-                localStorage.setItem('capturedPhoto', data.url);
+                updateUserData({ capturedPhoto: data.url });
               }
             })();
           }
@@ -109,7 +114,7 @@ export default function CameraVerificationPage() {
       
       return () => clearTimeout(timer);
     }
-  }, [capturedPhoto, router, processingComplete]);
+  }, [capturedPhoto, router, processingComplete, updateUserData]);
   
   // Handle camera errors
   const handleCameraError = (error: string | DOMException) => {

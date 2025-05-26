@@ -4,19 +4,43 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import WaveBackground from '../components/WaveBackground';
+import { useUserData } from '../context/UserDataContext';
 
 export default function RulesRegulationsPage() {
   const router = useRouter();
+  const { userData, submitAllData, isDataComplete, clearUserData } = useUserData();
   const [isAgreed, setIsAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAgreed) return;
+    
     setIsLoading(true);
+    setError(null);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      router.push('/success');
+      // Check if all required data is complete
+      if (!isDataComplete()) {
+        setError('Please complete all required fields before submitting.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Submit all data to database
+      const result = await submitAllData();
+      
+      if (result.success) {
+        // Clear the form data after successful submission
+        // Note: We keep the partnerId for potential future use
+        router.push('/success');
+      } else {
+        setError(result.error || 'Failed to submit registration data. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error submitting registration:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -25,6 +49,33 @@ export default function RulesRegulationsPage() {
   useEffect(() => {
     localStorage.setItem('lastVisitedPage', '/rules-regulations');
   }, []);
+
+  // Show data completion status for debugging (remove in production)
+  const dataCompletionStatus = () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Data completion status:', {
+        name: !!userData.name,
+        phoneNumber: !!userData.phoneNumber,
+        gender: !!userData.gender,
+        spokenLanguages: userData.spokenLanguages.length > 0,
+        hobbies: userData.hobbies.length > 0,
+        bio: !!userData.bio,
+        earningPreference: !!userData.earningPreference,
+        profilePicture: !!userData.profilePicture,
+        panNumber: !!userData.kyc.panNumber,
+        panCardFile: !!userData.kyc.panCardFile,
+        bankAccountNumber: !!userData.bankDetails.bankAccountNumber,
+        accountHolderName: !!userData.bankDetails.accountHolderName,
+        ifscCode: !!userData.bankDetails.ifscCode,
+        branchName: !!userData.bankDetails.branchName,
+        cancelCheque: !!userData.bankDetails.cancelCheque,
+      });
+    }
+  };
+
+  useEffect(() => {
+    dataCompletionStatus();
+  }, [userData]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden py-32">
@@ -40,6 +91,21 @@ export default function RulesRegulationsPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Rules & Regulations</h1>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {/* Data completion warning */}
+          {!isDataComplete() && (
+            <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+              Please complete all previous steps before submitting your registration.
+            </div>
+          )}
+
           {/* Rules Content */}
           <div className="max-w-3xl mx-auto text-left">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -87,6 +153,7 @@ export default function RulesRegulationsPage() {
               </p>
             </div>
           </div>
+          
           {/* Agreement checkbox */}
           <div className="mt-3 flex items-center text-sm text-gray-700">
             <input 
@@ -99,11 +166,12 @@ export default function RulesRegulationsPage() {
               I agree to the <span className="underline">Terms & Conditions</span> and confirm that the information provided is accurate.
             </span>
           </div>
+          
           {/* Submit button */}
           <div className="mt-4 flex justify-center">
             <button
               type="button"
-              disabled={!isAgreed || isLoading}
+              disabled={!isAgreed || isLoading || !isDataComplete()}
               onClick={handleSubmit}
               className="w-[280px] bg-[#F5BC1C] text-white py-2.5 rounded-lg text-base font-medium hover:bg-[#e5ac0f] transition-colors flex items-center justify-center disabled:bg-[#f5bc1c99] disabled:cursor-not-allowed button-animate"
             >
@@ -113,9 +181,9 @@ export default function RulesRegulationsPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Processing...
+                  Submitting Registration...
                 </>
-              ) : "Submit"}
+              ) : "Submit Registration"}
             </button>
           </div>
         </div>

@@ -5,8 +5,10 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
+import { useUserData } from '../context/UserDataContext';
 
 export default function BankDetails() {
+  const { userData, updateBankDetails } = useUserData();
   const [formData, setFormData] = useState<{
     bankAccountNumber: string;
     accountHolderName: string;
@@ -15,15 +17,15 @@ export default function BankDetails() {
     upiId: string;
     cancelCheque: File | null;
   }>({
-    bankAccountNumber: '',
-    accountHolderName: '',
-    ifscCode: '',
-    branchName: '',
-    upiId: '',
+    bankAccountNumber: userData.bankDetails.bankAccountNumber || '',
+    accountHolderName: userData.bankDetails.accountHolderName || '',
+    ifscCode: userData.bankDetails.ifscCode || '',
+    branchName: userData.bankDetails.branchName || '',
+    upiId: userData.bankDetails.upiId || '',
     cancelCheque: null
   });
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploaded, setIsUploaded] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(!!userData.bankDetails.cancelCheque);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
@@ -42,12 +44,28 @@ export default function BankDetails() {
     localStorage.setItem('lastVisitedPage', '/bank-details');
   }, []);
 
+  // Sync form data with context data
+  useEffect(() => {
+    setFormData({
+      bankAccountNumber: userData.bankDetails.bankAccountNumber || '',
+      accountHolderName: userData.bankDetails.accountHolderName || '',
+      ifscCode: userData.bankDetails.ifscCode || '',
+      branchName: userData.bankDetails.branchName || '',
+      upiId: userData.bankDetails.upiId || '',
+      cancelCheque: null
+    });
+    setIsUploaded(!!userData.bankDetails.cancelCheque);
+  }, [userData.bankDetails]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
     });
+    
+    // Save to context in real-time
+    updateBankDetails({ [name]: value });
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +84,7 @@ export default function BankDetails() {
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataFile });
       const uploadData = await uploadRes.json();
       if (uploadData.url) {
-        localStorage.setItem('cancelChequeUrl', uploadData.url);
+        updateBankDetails({ cancelCheque: uploadData.url });
         setIsUploaded(true);
         setUploadProgress(100);
       }
@@ -126,7 +144,7 @@ export default function BankDetails() {
     }
 
     // Validate Cancel Cheque
-    if (!formData.cancelCheque) {
+    if (!formData.cancelCheque && !userData.bankDetails.cancelCheque) {
       newErrors.cancelCheque = "Please upload a cancel cheque or passbook front image";
       isValid = false;
     }
@@ -135,8 +153,9 @@ export default function BankDetails() {
     return isValid;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!validateDetails()) {
       setShowErrorModal(true);
       return;
@@ -145,55 +164,21 @@ export default function BankDetails() {
     setIsSubmitting(true);
 
     try {
-      // Always use Cloudinary URL from localStorage
-      const cancelChequeUrl = localStorage.getItem('cancelChequeUrl') || '';
-      if (!cancelChequeUrl) {
-        alert('Please upload your cancel cheque first');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // 2. Store bank details in localStorage
-      const bankDetails = {
+      // Store bank details in context
+      updateBankDetails({
         bankAccountNumber: formData.bankAccountNumber,
         accountHolderName: formData.accountHolderName,
         ifscCode: formData.ifscCode,
         branchName: formData.branchName,
         upiId: formData.upiId,
-        cancelCheque: cancelChequeUrl
-      };
-      localStorage.setItem('bankDetails', JSON.stringify(bankDetails));
-
-      // 3. Get partnerId from localStorage
-      const partnerId = localStorage.getItem('partnerId');
-      if (!partnerId) {
-        alert('Session expired. Please start the registration process again.');
-        setIsSubmitting(false);
-        router.push('/');
-        return;
-      }
-
-      // 4. Update partner record in database (PATCH)
-      const response = await fetch(`/api/partners/${partnerId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bankDetails })
+        cancelCheque: userData.bankDetails.cancelCheque
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update partner record');
-      }
-
-      // 5. Clean up localStorage
-      localStorage.removeItem('bankDetails');
-      localStorage.removeItem('cancelChequeUrl');
-
-      // 6. Navigate to rules and regulations page
+      // Navigate to rules and regulations page
       router.push('/rules-regulations');
     } catch (error: any) {
-      console.error('Error submitting bank details:', error);
-      setErrors({ general: 'An error occurred while submitting your details. Please try again.' });
+      console.error('Error saving bank details:', error);
+      setErrors({ general: 'An error occurred while saving your details. Please try again.' });
       setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);

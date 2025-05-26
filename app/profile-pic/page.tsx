@@ -5,9 +5,11 @@ import { Upload, Plus } from 'lucide-react';
 import Image from 'next/image';
 import WaveBackground from '../components/WaveBackground';
 import { useRouter } from 'next/navigation';
+import { useUserData } from '../context/UserDataContext';
 
 export default function Page() {
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const { userData, updateUserData } = useUserData();
+  const [uploadedImage, setUploadedImage] = useState<string | null>(userData.profilePicture || null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -86,8 +88,8 @@ export default function Page() {
     setIsUploading(true);
     setError(null);
     try {
-      // Store profile picture in localStorage
-      localStorage.setItem('profilePicture', uploadedImage);
+      // Store profile picture in context
+      updateUserData({ profilePicture: uploadedImage });
       // Navigate to the next page
       router.push('/kyc-upload');
     } catch (error: any) {
