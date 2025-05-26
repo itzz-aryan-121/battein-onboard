@@ -500,7 +500,7 @@ const PartnerDetailsForm = () => {
                                     <button
                                         type="button"
                                         onClick={toggleLanguagesDropdown}
-                                        className={`w-full border ${errors.spokenLanguages ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate z-1000`}
+                                        className={`w-full border ${errors.spokenLanguages ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white z-1000`}
                                         style={{ fontFamily: 'Inter' }}
                                     >
                                         <span className={`${formData.spokenLanguages.length > 0 ? 'text-[#2D2D2D] font-medium' : 'text-gray-500'} truncate mr-2`}>
@@ -562,7 +562,7 @@ const PartnerDetailsForm = () => {
                                     <button
                                         type="button"
                                         onClick={toggleHobbiesDropdown}
-                                        className={`w-full border ${errors.hobbies ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white button-animate`}
+                                        className={`w-full border ${errors.hobbies ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-2 text-sm flex justify-between items-center bg-white`}
                                         style={{ fontFamily: 'Inter' }}
                                     >
                                         <span className={`${formData.hobbies.length > 0 ? 'text-[#2D2D2D] font-medium' : 'text-gray-500'} truncate mr-2`}>
@@ -660,7 +660,7 @@ const PartnerDetailsForm = () => {
                                                     <button
                                                         type="button"
                                                         onClick={handleHearSample}
-                                                        className="flex items-center text-[#2D2D2D] text-xs font-medium button-animate"
+                                                        className="flex items-center text-[#2D2D2D] text-xs font-medium"
                                                         style={{ fontFamily: 'Inter' }}
                                                     >
                                                         <span className="mr-3">Hear sample intro</span>
