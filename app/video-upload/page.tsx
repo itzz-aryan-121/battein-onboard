@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function VideoUploadPage() {
+  const { t } = useLanguage();
   const router = useRouter();
 
   const handleOpenCamera = () => {
@@ -23,61 +25,60 @@ export default function VideoUploadPage() {
         <div className="bg-white rounded-3xl shadow-lg p-8 relative z-10 w-full max-w-5xl mx-auto">
           {/* Heading */}
           <h1 className="text-center text-4xl font-bold mb-4">
-            <span className="text-[#F5BC1C]">Congratulations!</span>
+            <span className="text-[#F5BC1C]">{t('videoUpload', 'congratulations')}</span>
           </h1>
 
           <h2 className="text-center text-3xl font-bold text-gray-800 mb-8">
-            You've unlocked the Video Call feature to elevate your career journey.
+            {t('videoUpload', 'title')}
           </h2>
           
           {/* Pro Tip */}
           <p className="text-center mb-8">
-            <span className="font-semibold text-[#F5BC1C]">Pro Tip:</span> Partners using video calls earn up to <span className="font-bold">₹60,000 - ₹1,00,000/month!</span>
+            <span className="font-semibold text-[#F5BC1C]">{t('videoUpload', 'proTip')}</span> {t('videoUpload', 'earningPotential')}
           </p>
           
           {/* Upload Instructions */}
           <div className="max-w-3xl mx-auto mb-8 text-center">
             <p className="text-xl mb-6">
-              Upload your <span className="text-[#F5BC1C] font-medium">real photo</span> to unlock video call access
+              {t('videoUpload', 'uploadInstruction')}
             </p>
             
             <button 
               onClick={handleOpenCamera}
               className="bg-[#4CAF50] text-white font-medium px-6 py-3 rounded-lg hover:bg-[#3d9940] transition-colors mb-10 button-animate"
             >
-              Click here for open Camera
+              {t('videoUpload', 'openCamera')}
             </button>
             
             <p className="text-gray-600 mb-10">
-              Make sure your profile video, lighting, and background are set up to create<br />
-              a professional and welcoming experience.
+              {t('videoUpload', 'setupNote')}
             </p>
           </div>
           
           {/* Why You Need to Upload */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 max-w-3xl mx-auto">
-            <h3 className="text-center font-bold text-xl mb-4">Why You Need to Upload a Real Picture</h3>
+            <h3 className="text-center font-bold text-xl mb-4">{t('videoUpload', 'whyUploadTitle')}</h3>
             
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[#4CAF50] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span>Real image builds trust and shows you're genuine</span>
+                <span>{t('videoUpload', 'buildsTrust')}</span>
               </div>
               
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[#4CAF50] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span>Verified profiles attract more calls</span>
+                <span>{t('videoUpload', 'attractsCalls')}</span>
               </div>
               
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[#4CAF50] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span>Used for verification tag and KYC</span>
+                <span>{t('videoUpload', 'verificationKyc')}</span>
               </div>
             </div>
           </div>

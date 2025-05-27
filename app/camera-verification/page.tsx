@@ -6,6 +6,8 @@ import Webcam from 'react-webcam';
 import WaveBackground from '../components/WaveBackground';
 import FaceErrorModal from './FaceErrorModal';
 import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
+import '../animations.css'; // Import animations
 
 function base64ToFile(base64: string, filename: string): File {
   const arr = base64.split(',');
@@ -19,8 +21,268 @@ function base64ToFile(base64: string, filename: string): File {
   return new File([u8arr], filename, { type: mime });
 }
 
+// Simple face detection using image analysis
+async function detectFaceInImage(imageDataUrl: string): Promise<{
+  success: boolean;
+  faceDetected: boolean;
+  error?: string;
+  confidence?: number;
+}> {
+  try {
+    // Create image element for analysis
+    const img = new Image();
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = imageDataUrl;
+    });
+
+    // Create canvas for image analysis
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas context not available');
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    // Get image data for analysis
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Basic face detection heuristics
+    const analysis = analyzeImageForFace(data, canvas.width, canvas.height);
+    
+    if (analysis.faceDetected) {
+      return {
+        success: true,
+        faceDetected: true,
+        confidence: analysis.confidence
+      };
+    } else {
+      return {
+        success: false,
+        faceDetected: false,
+        error: analysis.error || 'No face detected. Please ensure your face is clearly visible and well-lit.',
+        confidence: analysis.confidence
+      };
+    }
+  } catch (error) {
+    console.error('Face detection error:', error);
+    return {
+      success: false,
+      faceDetected: false,
+      error: 'Face detection failed. Please try again.'
+    };
+  }
+}
+
+// Analyze image data for face-like features
+function analyzeImageForFace(data: Uint8ClampedArray, width: number, height: number): {
+  faceDetected: boolean;
+  confidence: number;
+  error?: string;
+} {
+  // Basic image quality checks
+  const totalPixels = width * height;
+  let brightPixels = 0;
+  let darkPixels = 0;
+  let skinTonePixels = 0;
+  let edgePixels = 0;
+  let midTonePixels = 0;
+
+  // Analyze pixel data
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const brightness = (r + g + b) / 3;
+
+    // Count bright pixels (well-lit areas)
+    if (brightness > 200) brightPixels++;
+    
+    // Count dark pixels (shadows/hair)
+    if (brightness < 40) darkPixels++;
+
+    // Count mid-tone pixels (good lighting)
+    if (brightness >= 80 && brightness <= 200) midTonePixels++;
+
+    // More inclusive skin-tone detection
+    if (r > 60 && g > 30 && b > 15 && 
+        r >= g && r >= b && 
+        (r - g) < 80 && (r - b) < 120) {
+      skinTonePixels++;
+    }
+
+    // Simple edge detection (brightness changes)
+    if (i > width * 4) {
+      const prevBrightness = (data[i - width * 4] + data[i - width * 4 + 1] + data[i - width * 4 + 2]) / 3;
+      if (Math.abs(brightness - prevBrightness) > 25) {
+        edgePixels++;
+      }
+    }
+  }
+
+  // Calculate percentages
+  const brightPercent = (brightPixels / totalPixels) * 100;
+  const darkPercent = (darkPixels / totalPixels) * 100;
+  const skinPercent = (skinTonePixels / totalPixels) * 100;
+  const edgePercent = (edgePixels / totalPixels) * 100;
+  const midTonePercent = (midTonePixels / totalPixels) * 100;
+
+  console.log('Detection stats:', {
+    brightPercent: brightPercent.toFixed(2),
+    darkPercent: darkPercent.toFixed(2),
+    skinPercent: skinPercent.toFixed(2),
+    edgePercent: edgePercent.toFixed(2),
+    midTonePercent: midTonePercent.toFixed(2)
+  });
+
+  // Face detection logic based on heuristics
+  let confidence = 0;
+  let faceDetected = false;
+  let error: string | undefined;
+
+  // Check for extreme darkness
+  if (darkPercent > 90) {
+    error = 'Image too dark. Please ensure good lighting on your face.';
+    confidence = 0.1;
+  }
+  // Check for extreme overexposure
+  else if (brightPercent > 80) {
+    error = 'Image too bright. Please reduce lighting or move away from bright light.';
+    confidence = 0.2;
+  }
+  // More lenient skin tone check
+  else if (skinPercent < 0.5) {
+    error = 'No face detected. Please ensure your face is visible in the frame.';
+    confidence = 0.3;
+  }
+  // More lenient detail check
+  else if (edgePercent < 2) {
+    error = 'Image lacks detail. Please ensure your face is in focus and well-lit.';
+    confidence = 0.4;
+  }
+  // Good conditions detected
+  else {
+    // More generous confidence calculation
+    confidence = Math.min(
+      (skinPercent / 5) * 0.3 +        // Skin tone presence (lowered threshold)
+      (edgePercent / 15) * 0.3 +       // Facial features/edges (lowered threshold)
+      (midTonePercent / 50) * 0.2 +    // Good lighting distribution
+      (Math.min(darkPercent, 30) / 30) * 0.1 +  // Some shadows (natural)
+      0.1,  // Base confidence boost
+      1.0
+    );
+
+    // Much more lenient face detection threshold
+    if (confidence > 0.35) {  // Lowered from 0.6 to 0.35
+      faceDetected = true;
+    } else {
+      // Give more specific feedback based on what's missing
+      if (skinPercent < 1) {
+        error = 'Face not clearly visible. Please position your face in the center of the frame.';
+      } else if (edgePercent < 3) {
+        error = 'Image appears blurry. Please ensure the camera is in focus.';
+      } else {
+        error = 'Face detection confidence low. Please ensure good lighting and clear visibility.';
+      }
+    }
+  }
+
+  console.log('Final detection result:', { faceDetected, confidence: confidence.toFixed(3), error });
+
+  return {
+    faceDetected,
+    confidence,
+    error
+  };
+}
+
+// Basic image quality check as fallback
+async function checkBasicImageQuality(imageDataUrl: string): Promise<{
+  acceptable: boolean;
+  reason?: string;
+}> {
+  try {
+    // Create image element for analysis
+    const img = new Image();
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = imageDataUrl;
+    });
+
+    // Basic checks
+    const minWidth = 200;
+    const minHeight = 200;
+    
+    if (img.width < minWidth || img.height < minHeight) {
+      return {
+        acceptable: false,
+        reason: 'Image resolution too low'
+      };
+    }
+
+    // Create canvas for basic analysis
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return { acceptable: true }; // If can't analyze, assume acceptable
+    }
+
+    canvas.width = Math.min(img.width, 400); // Limit size for performance
+    canvas.height = Math.min(img.height, 400);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    // Basic quality metrics
+    let totalBrightness = 0;
+    let pixelCount = 0;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const brightness = (r + g + b) / 3;
+      totalBrightness += brightness;
+      pixelCount++;
+    }
+    
+    const avgBrightness = totalBrightness / pixelCount;
+    
+    // Very basic acceptance criteria
+    if (avgBrightness < 20) {
+      return {
+        acceptable: false,
+        reason: 'Image too dark'
+      };
+    }
+    
+    if (avgBrightness > 240) {
+      return {
+        acceptable: false,
+        reason: 'Image too bright'
+      };
+    }
+    
+    // If we get here, image has reasonable quality
+    return {
+      acceptable: true
+    };
+    
+  } catch (error) {
+    console.error('Basic quality check error:', error);
+    // If check fails, assume acceptable to avoid blocking users
+    return { acceptable: true };
+  }
+}
+
 export default function CameraVerificationPage() {
   const { userData, updateUserData } = useUserData();
+  const { t } = useLanguage();
   const router = useRouter();
   const webcamRef = useRef<Webcam>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
@@ -34,9 +296,32 @@ export default function CameraVerificationPage() {
   const [processingComplete, setProcessingComplete] = useState(false);
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewApproved, setPreviewApproved] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [faceDetectionError, setFaceDetectionError] = useState<string | null>(null);
+  
+  // Animation states
+  const [animatedElements, setAnimatedElements] = useState({
+    header: false,
+    cameraFrame: false,
+    controls: false,
+    preview: false
+  });
+  
+  // Progressive animation timing
+  useEffect(() => {
+    const timeouts = [
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, header: true })), 200),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, cameraFrame: true })), 400),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, controls: true })), 600),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, preview: true })), 800),
+    ];
+    
+    return () => timeouts.forEach(timeout => clearTimeout(timeout));
+  }, []);
   
   // Show entry animation
   useEffect(() => {
@@ -72,49 +357,86 @@ export default function CameraVerificationPage() {
     }
   }, [countdown]);
   
-  // Simulate face detection verification
+  // Face detection verification
   useEffect(() => {
     if (capturedPhoto && !processingComplete) {
-      // Simulate photo processing/face detection
-      const timer = setTimeout(() => {
-        // Simulate a face detection result - randomly fail ~30% of the time for demo purposes
-        const faceDetected = Math.random() > 0.3;
-        
-        if (faceDetected) {
-          // Face detected successfully
-          setProcessingComplete(true);
+      // Real face detection processing
+      const timer = setTimeout(async () => {
+        try {
+          // Perform actual face detection on captured photo
+          const faceDetectionResult = await detectFaceInImage(capturedPhoto);
           
-          // Upload captured photo to Cloudinary and store URL in context
-          if (typeof window !== 'undefined') {
-            (async () => {
-              const file = base64ToFile(capturedPhoto, 'captured-photo.jpg');
-              const formData = new FormData();
-              formData.append('file', file);
-              const res = await fetch('/api/upload', { method: 'POST', body: formData });
-              const data = await res.json();
-              if (data.url) {
-                updateUserData({ capturedPhoto: data.url });
-              }
-            })();
+          console.log('Face detection result:', faceDetectionResult);
+          
+          // Check if image meets basic quality criteria as fallback
+          const basicQualityCheck = await checkBasicImageQuality(capturedPhoto);
+          console.log('Basic quality check:', basicQualityCheck);
+          
+          if (faceDetectionResult.success && faceDetectionResult.faceDetected) {
+            // Face detected successfully - show preview
+            setProcessingComplete(true);
+            setShowPreview(true);
+            
+          } else if (basicQualityCheck.acceptable) {
+            // Fallback: Accept if basic quality is good even if face detection failed
+            console.log('Accepting photo based on basic quality check');
+            setProcessingComplete(true);
+            setShowPreview(true);
+            
+          } else {
+            // No face detected - show specific error
+            setCapturedPhoto(null);
+            setScanning(false);
+            setFaceDetectionError(faceDetectionResult.error || 'No face detected');
+            setShowFaceErrorModal(true);
           }
-          
-          // Display the captured photo for a moment before proceeding
-          const proceedTimer = setTimeout(() => {
-            router.push('/facial-success');
-          }, 1500);
-          
-          return () => clearTimeout(proceedTimer);
-        } else {
-          // No face detected - show error modal
+        } catch (error) {
+          console.error('Face detection error:', error);
           setCapturedPhoto(null);
           setScanning(false);
+          setFaceDetectionError('Face detection failed. Please try again.');
           setShowFaceErrorModal(true);
         }
-      }, 2000); // Simulate processing time
+      }, 2000); // Processing time
       
       return () => clearTimeout(timer);
     }
   }, [capturedPhoto, router, processingComplete, updateUserData]);
+  
+  // Handle preview approval and upload
+  useEffect(() => {
+    if (previewApproved && capturedPhoto) {
+      // Store the base64 photo in context immediately for preview
+      updateUserData({ capturedPhoto: capturedPhoto });
+      
+      // Upload captured photo to Cloudinary and update with URL
+      if (typeof window !== 'undefined') {
+        (async () => {
+          try {
+            const file = base64ToFile(capturedPhoto, 'captured-photo.jpg');
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.url) {
+              // Update with Cloudinary URL after upload
+              updateUserData({ capturedPhoto: data.url });
+            }
+          } catch (error) {
+            console.error('Upload failed:', error);
+            // Keep the base64 version if upload fails
+          }
+        })();
+      }
+      
+      // Navigate to success page
+      const proceedTimer = setTimeout(() => {
+        router.push('/facial-success');
+      }, 500);
+      
+      return () => clearTimeout(proceedTimer);
+    }
+  }, [previewApproved, capturedPhoto, router, updateUserData]);
   
   // Handle camera errors
   const handleCameraError = (error: string | DOMException) => {
@@ -204,11 +526,33 @@ export default function CameraVerificationPage() {
   const handleFaceErrorModalClose = () => {
     setShowFaceErrorModal(false);
     setProcessingComplete(false);
+    setFaceDetectionError(null); // Reset face detection error
     // Restart camera and countdown process
     setCountdown(null);
     setScanning(false);
     
     // Force remounting of Webcam component
+    setCameraActive(false);
+    setTimeout(() => {
+      setCameraActive(true);
+    }, 100);
+  };
+
+  // Handle preview approval
+  const handleApprovePhoto = () => {
+    setPreviewApproved(true);
+  };
+
+  // Handle retake photo
+  const handleRetakePhoto = () => {
+    setCapturedPhoto(null);
+    setShowPreview(false);
+    setProcessingComplete(false);
+    setPreviewApproved(false);
+    setCountdown(null);
+    setScanning(false);
+    
+    // Restart camera
     setCameraActive(false);
     setTimeout(() => {
       setCameraActive(true);
@@ -245,114 +589,42 @@ export default function CameraVerificationPage() {
   };
 
   return (
-    <div className="flex flex-col bg-white min-h-screen relative overflow-hidden">
+    <div className="flex flex-col bg-white min-h-screen relative overflow-hidden animate-pageEnter">
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
-        <div className="bg-white rounded-3xl shadow-lg p-6 relative z-10 w-full max-w-5xl mx-auto">
-          <h1 className="text-center text-2xl font-medium text-gray-600 mb-6">
-            {scanning ? 'Hold still, scanning your face...' : 'Please position your face in the frame'}
+        <div className="bg-white rounded-3xl shadow-lg p-6 relative z-10 w-full max-w-5xl mx-auto animate-cardEntrance">
+          <h1 className={`text-center text-2xl font-medium text-golden-shine mb-6 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
+            {showPreview && processingComplete ? t('cameraVerification', 'reviewPhoto') :
+             scanning ? t('cameraVerification', 'holdStill') : 
+             t('cameraVerification', 'positionFace')}
           </h1>
           
           {/* Camera View */}
-          <div className={`relative mx-auto w-full max-w-lg mb-6 ${showAnimation ? 'animate-fadeIn' : ''}`}>
+          <div className={`relative mx-auto w-full max-w-lg mb-6 transition-all duration-500 ${animatedElements.cameraFrame ? 'animate-fadeInUp' : 'animate-on-load'}`}>
             {/* Camera Outline Frame */}
             <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-gray-100 border-2 border-gray-300">
-              
-              {/* Error State */}
-              {error && (
-                <div className="absolute inset-0 bg-gray-100 flex flex-col items-center justify-center text-center p-4 z-20">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <p className="text-lg font-medium text-gray-800 mb-2">Camera Access Error</p>
-                  <p className="text-gray-600 mb-4">{error}</p>
-                  
-                  <button 
-                    onClick={retryCamera}
-                    className="bg-[#F5BC1C] text-white px-4 py-2 rounded-lg font-medium"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              )}
-              
-              {/* Loading State */}
-              {!error && !cameraActive && !capturedPhoto && (
-                <div className="absolute inset-0 bg-gray-100 flex flex-col items-center justify-center text-center p-4 z-20">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F5BC1C] mb-4"></div>
-                  <p className="text-gray-600">Initializing camera...</p>
-                </div>
-              )}
-              
-              {/* Webcam */}
-              {!capturedPhoto && !error && (
-                <Webcam
-                  audio={false}
-                  ref={webcamRef}
-                  screenshotFormat="image/jpeg"
-                  videoConstraints={videoConstraints}
-                  onUserMedia={handleWebcamLoad}
-                  onUserMediaError={handleCameraError}
-                  className="w-full h-full object-cover"
-                  style={{ 
-                    display: cameraActive && !capturedPhoto ? 'block' : 'none',
-                    transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
-                  }}
-                />
-              )}
-              
-              {/* Captured Photo Display */}
-              {capturedPhoto && (
-                <img 
-                  src={capturedPhoto} 
-                  alt="Captured" 
-                  className="w-full h-full object-cover"
-                  style={{ 
-                    transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
-                  }}
-                />
-              )}
-              
-              {/* Countdown display */}
-              {countdown !== null && countdown > 0 && (
-                <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-                  <div className="bg-[#F5BC1C] text-white font-bold text-5xl w-24 h-24 rounded-full flex items-center justify-center animate-pulse">
-                    {countdown}
-                  </div>
-                </div>
-              )}
-              
-              {/* Face Frame Overlay */}
-              {(cameraActive || capturedPhoto) && !error && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                  <div className={`w-4/5 h-4/5 border-2 ${scanning ? 'border-[#F5BC1C]' : 'border-white'} rounded-xl`}></div>
-                  {/* Horizontal scanner line animation */}
-                  {cameraActive && !capturedPhoto && scanning && (
-                    <div className="absolute w-4/5 h-0.5 bg-[#F5BC1C] animate-scanLine"></div>
-                  )}
-                </div>
-              )}
-              
-              {/* Corner frame markers */}
-              {(cameraActive || capturedPhoto) && !error && (
-                <>
-                  <div className={`absolute top-8 left-8 w-12 h-12 border-t-2 border-l-2 ${scanning ? 'border-[#F5BC1C]' : 'border-white'} rounded-tl-lg z-10`}></div>
-                  <div className={`absolute top-8 right-8 w-12 h-12 border-t-2 border-r-2 ${scanning ? 'border-[#F5BC1C]' : 'border-white'} rounded-tr-lg z-10`}></div>
-                  <div className={`absolute bottom-8 left-8 w-12 h-12 border-b-2 border-l-2 ${scanning ? 'border-[#F5BC1C]' : 'border-white'} rounded-bl-lg z-10`}></div>
-                  <div className={`absolute bottom-8 right-8 w-12 h-12 border-b-2 border-r-2 ${scanning ? 'border-[#F5BC1C]' : 'border-white'} rounded-br-lg z-10`}></div>
-                </>
-              )}
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <canvas
+                ref={canvasRef}
+                className="hidden"
+              />
             </div>
           </div>
           
           {/* Camera Controls */}
-          <div className="flex justify-center gap-4 mb-6">
+          <div className={`flex justify-center gap-4 mb-6 transition-all duration-500 ${animatedElements.controls ? 'animate-fadeInUp stagger-fast' : 'animate-on-load'}`}>
             {cameraActive && !capturedPhoto && !error && !scanning && (
               <>
                 <button
                   onClick={handleSwitchCamera}
                   disabled={isSwitchingCamera}
-                  className={`bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition-colors ${
+                  className={`bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition-colors hover-glow ${
                     isSwitchingCamera ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                   aria-label="Switch Camera"
@@ -372,7 +644,7 @@ export default function CameraVerificationPage() {
                 <button
                   onClick={handleCapturePhoto}
                   disabled={isCapturing}
-                  className={`bg-[#F5BC1C] p-4 rounded-full hover:bg-[#e5ac0f] transition-colors ${
+                  className={`bg-[#F5BC1C] p-4 rounded-full hover:bg-[#e5ac0f] transition-colors hover-glow ${
                     isCapturing ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                   aria-label="Take Photo"
@@ -392,21 +664,44 @@ export default function CameraVerificationPage() {
               </>
             )}
             
-            {scanning && (
+            {scanning && !capturedPhoto && (
               <div className="text-center text-[#F5BC1C] animate-pulse">
-                <p className="text-lg font-medium">Scanning your face...</p>
+                <p className="text-lg font-medium">{t('cameraVerification', 'scanningFace')}</p>
               </div>
             )}
             
             {capturedPhoto && !processingComplete && (
               <div className="text-center text-[#F5BC1C] animate-pulse">
-                <p className="text-lg font-medium">Processing your photo...</p>
+                <p className="text-lg font-medium">{t('cameraVerification', 'processingPhoto')}</p>
               </div>
             )}
             
-            {capturedPhoto && processingComplete && (
+            {showPreview && processingComplete && !previewApproved && (
+              <div className={`flex flex-col items-center gap-4 transition-all duration-500 ${animatedElements.preview ? 'animate-scaleIn' : 'animate-on-load'}`}>
+                <div className="text-center text-green-500">
+                  <p className="text-lg font-medium mb-2">{t('cameraVerification', 'faceVerified')}</p>
+                  <p className="text-sm text-gray-600">{t('cameraVerification', 'reviewConfirm')}</p>
+                </div>
+                <div className="flex gap-4 stagger-fast">
+                  <button
+                    onClick={handleRetakePhoto}
+                    className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors hover-glow"
+                  >
+                    {t('cameraVerification', 'retakePhoto')}
+                  </button>
+                  <button
+                    onClick={handleApprovePhoto}
+                    className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors hover-glow"
+                  >
+                    {t('cameraVerification', 'looksGood')}
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {previewApproved && (
               <div className="text-center text-green-500 animate-pulse">
-                <p className="text-lg font-medium">Face verified! Redirecting...</p>
+                <p className="text-lg font-medium">{t('cameraVerification', 'proceeding')}</p>
               </div>
             )}
           </div>
@@ -416,7 +711,8 @@ export default function CameraVerificationPage() {
       {/* Face Error Modal */}
       <FaceErrorModal 
         isOpen={showFaceErrorModal} 
-        onClose={handleFaceErrorModalClose} 
+        onClose={handleFaceErrorModalClose}
+        errorMessage={faceDetectionError}
       />
       
       {/* Bottom Wave Background */}

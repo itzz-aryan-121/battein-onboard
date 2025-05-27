@@ -94,12 +94,12 @@ export default function RootLayout({
             },
           }}
         />
-        <UserDataProvider>
-          <LanguageProvider>
+        <LanguageProvider>
+          <UserDataProvider>
             <ResumeLastPage />
             <div className="page-fade">{children}</div>
-          </LanguageProvider>
-        </UserDataProvider>
+          </UserDataProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

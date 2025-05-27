@@ -4,21 +4,23 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import WaveBackground from '../components/WaveBackground';
+import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
+import '../animations.css'; // Import animations
 
 export default function FacialSuccessPage() {
+  const { t } = useLanguage();
   const router = useRouter();
+  const { userData } = useUserData();
   const [showAnimation, setShowAnimation] = useState(true);
-  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
-
-  // Load captured photo from localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedPhoto = localStorage.getItem('capturedPhoto');
-      if (storedPhoto) {
-        setCapturedPhoto(storedPhoto);
-      }
-    }
-  }, []);
+  
+  // Animation states
+  const [animatedElements, setAnimatedElements] = useState({
+    title: false,
+    image: false,
+    successText: false,
+    button: false
+  });
 
   // Auto proceed to dashboard after a delay
   useEffect(() => {
@@ -26,15 +28,22 @@ export default function FacialSuccessPage() {
       setShowAnimation(false);
     }, 500);
 
-    // const redirectTimer = setTimeout(() => {
-    //   router.push('/dashboard');
-    // }, 3000);
-
     return () => {
       clearTimeout(animationTimer);
-      
     };
   }, [router]);
+  
+  // Progressive animation timing
+  useEffect(() => {
+    const timeouts = [
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, title: true })), 200),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, image: true })), 400),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, successText: true })), 600),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, button: true })), 800),
+    ];
+    
+    return () => timeouts.forEach(timeout => clearTimeout(timeout));
+  }, []);
 
   const handleContinue = () => {
     // Route to kyc-upload as the first step in the flow
@@ -42,21 +51,21 @@ export default function FacialSuccessPage() {
   };
 
   return (
-    <div className="flex flex-col bg-white min-h-screen relative overflow-hidden">
+    <div className="flex flex-col bg-white min-h-screen relative overflow-hidden animate-pageEnter">
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
-        <div className={`bg-white rounded-3xl shadow-lg p-8 relative z-10 w-full max-w-xl mx-auto ${showAnimation ? 'animate-scaleIn' : ''}`}>
-          <h1 className="text-center text-5xl font-bold text-[#F5BC1C] mb-10">
-            Well Done!
+        <div className="bg-white rounded-3xl shadow-lg p-8 relative z-10 w-full max-w-xl mx-auto animate-cardEntrance">
+          <h1 className={`text-center text-5xl font-bold text-golden-shine mb-10 transition-all duration-500 ${animatedElements.title ? 'animate-scaleIn' : 'animate-on-load'}`}>
+            {t('facialSuccess', 'title')}
           </h1>
           
           {/* Success Image with Green Check */}
-          <div className="relative max-w-md mx-auto mb-8">
+          <div className={`relative max-w-md mx-auto mb-8 transition-all duration-500 ${animatedElements.image ? 'animate-fadeInUp' : 'animate-on-load'}`}>
             {/* Container with positioned green checkmark */}
             <div className="relative">
               {/* Green tick image - positioned exactly like in screenshot */}
               <div 
-                className="absolute z-20" 
+                className="absolute z-20 animate-scaleIn" 
                 style={{ 
                   left: '40px', 
                   top: '-20px', 
@@ -73,7 +82,7 @@ export default function FacialSuccessPage() {
               
               {/* Image container */}
               <div 
-                className="relative rounded-xl overflow-hidden mx-auto border border-gray-100" 
+                className="relative rounded-xl overflow-hidden mx-auto border border-gray-100"
                 style={{ 
                   width: '300px', 
                   height: '190px',
@@ -81,26 +90,41 @@ export default function FacialSuccessPage() {
                 }}
               >
                 {/* Display captured profile image if available */}
-                {capturedPhoto && (
+                {userData.capturedPhoto ? (
                   <img 
-                    src={capturedPhoto}
+                    src={userData.capturedPhoto}
                     alt="Captured profile" 
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                    style={{ 
+                      objectFit: 'cover', 
+                      objectPosition: 'center',
+                      minWidth: '100%',
+                      minHeight: '100%'
+                    }}
                   />
+                ) : (
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                    <div className="text-gray-400 text-center">
+                      <svg className="w-12 h-12 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-sm">Photo</p>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
           </div>
           
-          <h2 className="text-center text-2xl font-medium text-gray-800 mb-10">
-            Facial authentication successful
+          <h2 className={`text-center text-2xl font-medium text-gray-800 mb-10 transition-all duration-500 ${animatedElements.successText ? 'animate-contentReveal' : 'animate-on-load'}`}>
+            {t('facialSuccess', 'message')}
           </h2>
           
           <button
             onClick={handleContinue}
-            className="w-full bg-[#F5BC1C] text-white font-medium py-4 px-6 rounded-lg hover:bg-[#e5ac0f] transition-colors"
+            className={`w-full bg-[#F5BC1C] text-white font-medium py-4 px-6 rounded-lg hover:bg-[#e5ac0f] transition-all duration-200 hover-glow ${animatedElements.button ? 'animate-buttonGlow' : 'animate-on-load'}`}
           >
-            Continue to KYC Verification
+            {t('facialSuccess', 'continue')}
           </button>
         </div>
       </div>

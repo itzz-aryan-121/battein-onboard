@@ -35,4 +35,73 @@
 /* Ensure the scrollbar is visible on hover for better UX */
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background: linear-gradient(102.19deg, #D1D1D1 9.14%, #999999 91.62%);
+}
+
+/* Mobile responsive styles for audio recording */
+@media (max-width: 640px) {
+  .audio-recording-container {
+    padding: 16px !important;
+  }
+  
+  .audio-player-container {
+    padding: 16px !important;
+  }
+  
+  .waveform-container {
+    height: 60px !important;
+    padding: 8px !important;
+    gap: 1px !important;
+  }
+  
+  .waveform-bar {
+    width: 3px !important;
+    min-height: 4px !important;
+  }
+  
+  .audio-waveform {
+    height: 50px !important;
+    gap: 1px !important;
+    padding: 0 4px !important;
+  }
+  
+  .audio-waveform-bar {
+    width: 2px !important;
+    min-height: 4px !important;
+  }
+  
+  .play-button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  
+  .microphone-button {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  
+  .recording-indicator {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* Tablet responsive styles */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .waveform-container {
+    height: 70px !important;
+    gap: 2px !important;
+  }
+  
+  .waveform-bar {
+    width: 4px !important;
+  }
+  
+  .audio-waveform {
+    height: 60px !important;
+    gap: 2px !important;
+  }
+  
+  .audio-waveform-bar {
+    width: 3px !important;
+  }
 } 

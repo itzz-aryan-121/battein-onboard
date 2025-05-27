@@ -198,13 +198,13 @@ const RegistrationForm = () => {
               <div className="flex flex-col sm:flex-row">
                 <div className="w-full sm:w-1/2 mb-4 sm:mb-0">
                   <h2 className="text-gray-400 text-2xl sm:text-[42px] font-bold mb-1">{t('errors', 'errorCode')}</h2>
-                  <h3 className="text-[#E75A34] text-base sm:text-lg font-medium mb-2">{t('errors', 'errorTitle')}</h3>
-                  <p className="text-[#464646] text-sm mb-4">
+                  <h3 className="text-gray-800 text-lg sm:text-xl font-bold mb-2">{t('errors', 'errorTitle')}</h3>
+                  <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-4">
                     {errorMessage || t('errors', 'errorMessage')}
                   </p>
                   <button 
                     onClick={() => setShowErrorModal(false)}
-                    className="w-full bg-[#E75A34] text-white font-medium py-3 rounded-md transition-colors mt-4"
+                    className="bg-[#F5BC1C] hover:bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto"
                   >
                     {t('errors', 'tryAgain')}
                   </button>

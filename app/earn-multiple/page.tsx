@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 import Image from 'next/image';
 import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
 import '../animations.css'; // Import animations
 
 export default function BaateinEarningsPage() {
+  const { t } = useLanguage();
   const { userData, updateUserData } = useUserData();
   const [selectedOption, setSelectedOption] = useState<'audio' | 'video' | null>(userData.earningPreference);
   const [showMoneyImage, setShowMoneyImage] = useState(false);
@@ -107,13 +109,12 @@ export default function BaateinEarningsPage() {
         <div className="bg-white rounded-xl md:rounded-3xl shadow-lg p-3 sm:p-4 lg:p-6 relative z-10 w-full max-w-6xl mx-auto animate-cardEntrance">
           {/* Heading */}
           <h1 className={`text-center text-xl sm:text-2xl md:text-3xl font-bold mb-2 md:mb-3 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
-            <span className="text-[#FDC62B]">Earn</span> <span className="text-gray-800">Through Multiple Features</span>
+            {t('earnMultiple', 'title')}
           </h1>
           
           {/* Subheading */}
           <div className={`text-center mb-2 md:mb-3 max-w-3xl mx-auto text-xs sm:text-sm transition-all duration-500 ${animatedElements.subheading ? 'animate-contentReveal' : 'animate-on-load'}`}>
-            <span className="font-semibold">Baatein</span> offers <span className="font-semibold">multiple earning opportunities</span> — connect with users through voice, chat, or video 
-            calls, and receive virtual gifts as a token of appreciation.
+            {t('earnMultiple', 'subtitle')}
           </div>
 
           {/* Clear Instruction Banner */}
@@ -127,7 +128,7 @@ export default function BaateinEarningsPage() {
               <h3 className="text-base md:text-lg font-bold text-gray-800">Choose Your Earning Method</h3>
             </div>
             <p className="text-center text-gray-700 text-xs md:text-sm">
-              <span className="font-semibold">👆 Select one option below</span> to continue with your registration
+              <span className="font-semibold">👆 {t('earnMultiple', 'selectPreferences')}</span>
             </p>
           </div>
           
@@ -149,13 +150,13 @@ export default function BaateinEarningsPage() {
             <div className="hidden lg:block absolute top-0 bottom-0 left-1/2 transform -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-[#FDC62B] to-transparent"></div>
             
             {/* Left Column - Audio Calling */}
-            <div 
-              className={`p-4 rounded-2xl relative transition-all duration-500 cursor-pointer border-3 hover-lift ${
-                selectedOption === 'audio' 
-                  ? 'bg-gradient-to-br from-[#FFF8E0] to-[#FFF4CC] border-[#FDC62B] shadow-lg transform scale-105 hover-glow' 
-                  : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-[#FDC62B] hover:shadow-md'
+            <div
+              onClick={() => handleAudioSelect()}
+              className={`p-4 rounded-2xl relative transition-all duration-500 cursor-pointer border-3 ${
+                selectedOption === 'audio'
+                  ? 'border-[#F5BC1C] bg-gradient-to-br from-[#FFF9E9] to-[#FFFBF0] shadow-lg transform scale-105'
+                  : 'border-gray-200 bg-white hover:border-[#F5BC1C] hover:shadow-md'
               } ${animatedElements.audioCard ? 'animate-fadeInLeft' : 'animate-on-load'}`}
-              onClick={handleAudioSelect}
             >
               {/* Selection Indicator */}
               {selectedOption === 'audio' && (
@@ -171,8 +172,8 @@ export default function BaateinEarningsPage() {
                   <Image src="/assets/Voice.png" alt="Audio Icon" width={48} height={36} className="h-8 w-12 object-contain" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg md:text-xl font-bold text-gray-800">Audio Calling</h3>
-                  <p className="text-xs md:text-sm text-gray-600">Earn by talking to users on voice calls</p>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-800">{t('earnMultiple', 'voiceCalls')}</h3>
+                  <p className="text-xs md:text-sm text-gray-600">{t('earnMultiple', 'voiceCallsDesc')}</p>
                 </div>
               </div>
               
@@ -234,12 +235,12 @@ export default function BaateinEarningsPage() {
             {/* Right Column - Video Calling */}
             <div 
               ref={videoColumnRef}
-              className={`p-4 rounded-2xl transition-all duration-500 cursor-pointer border-3 relative hover-lift ${
-                selectedOption === 'video' 
-                  ? 'bg-gradient-to-br from-[#FFF8E0] to-[#FFF4CC] border-[#FDC62B] shadow-lg transform scale-105 hover-glow' 
-                  : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-[#FDC62B] hover:shadow-md'
+              className={`p-4 rounded-2xl transition-all duration-500 cursor-pointer border-3 ${
+                selectedOption === 'video'
+                  ? 'border-[#F5BC1C] bg-gradient-to-br from-[#FFF9E9] to-[#FFFBF0] shadow-lg transform scale-105'
+                  : 'border-gray-200 bg-white hover:border-[#F5BC1C] hover:shadow-md'
               } ${animatedElements.videoCard ? 'animate-fadeInRight' : 'animate-on-load'}`}
-              onClick={handleVideoSelect}
+              onClick={() => handleVideoSelect()}
             >
               {/* Selection Indicator */}
               {selectedOption === 'video' && (
@@ -255,8 +256,8 @@ export default function BaateinEarningsPage() {
                   <Image src="/assets/Video.png" alt="Video Icon" width={48} height={36} className="h-8 w-12 object-contain" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg md:text-xl font-bold text-gray-800">Video Calling</h3>
-                  <p className="text-xs md:text-sm text-gray-600">Earn more through video calls and gifts</p>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-800">{t('earnMultiple', 'videoCalls')}</h3>
+                  <p className="text-xs md:text-sm text-gray-600">{t('earnMultiple', 'videoCallsDesc')}</p>
                 </div>
               </div>
               
@@ -320,7 +321,7 @@ export default function BaateinEarningsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
                 <span className="text-green-700 font-medium text-sm">
-                  {selectedOption === 'audio' ? 'Audio Calling' : 'Video Calling'} selected
+                  {selectedOption === 'audio' ? t('earnMultiple', 'voiceCalls') : t('earnMultiple', 'videoCalls')} selected
                 </span>
               </div>
             ) : (
@@ -350,17 +351,17 @@ export default function BaateinEarningsPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                   </svg>
-                  Processing...
+                  {t('common', 'loading')}
                 </span>
               ) : selectedOption ? (
                 <>
-                  <span>Start Earning with {selectedOption === 'audio' ? 'Audio' : 'Video'}</span>
+                  <span>Start Earning with {selectedOption === 'audio' ? t('earnMultiple', 'voiceCalls') : t('earnMultiple', 'videoCalls')}</span>
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                   </svg>
                 </>
               ) : (
-                'Select an Option to Continue'
+                t('earnMultiple', 'continue')
               )}
             </button>
             

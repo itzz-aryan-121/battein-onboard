@@ -5,13 +5,40 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import WaveBackground from '../components/WaveBackground';
 import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
+import '../animations.css'; // Import animations
 
 export default function RulesRegulationsPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { userData, submitAllData, isDataComplete, clearUserData } = useUserData();
   const [isAgreed, setIsAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Animation states
+  const [animatedElements, setAnimatedElements] = useState({
+    header: false,
+    logo: false,
+    rules: false,
+    checkbox: false,
+    button: false,
+    illustration: false
+  });
+  
+  // Progressive animation timing
+  useEffect(() => {
+    const timeouts = [
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, header: true })), 200),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, logo: true })), 400),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, rules: true })), 600),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, checkbox: true })), 800),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, button: true })), 1000),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, illustration: true })), 1200),
+    ];
+    
+    return () => timeouts.forEach(timeout => clearTimeout(timeout));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,36 +105,36 @@ export default function RulesRegulationsPage() {
   }, [userData]);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden py-32">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden py-32 animate-pageEnter">
       <main className="w-full max-w-4xl z-10 px-2 flex flex-col items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mx-auto w-full relative">
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mx-auto w-full relative animate-cardEntrance">
           {/* Logo and title */}
-          <div className="flex flex-col items-center mb-2">
-            <div className="flex items-center mb-2">
+          <div className={`flex flex-col items-center mb-2 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
+            <div className={`flex items-center mb-2 transition-all duration-500 ${animatedElements.logo ? 'animate-scaleIn' : 'animate-on-load'}`}>
               <div className="bg-[#F5BC1C] rounded-xl w-10 h-10 flex items-center justify-center mr-2">
                 <img src="/assets/Baaten Logo 6.png" alt="Baatein Logo" className="w-6 h-6" />
               </div>
               <div className="text-[#F5BC1C] text-2xl font-bold">Baatein</div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Rules & Regulations</h1>
+            <h1 className="text-2xl font-bold text-golden-shine mb-2 text-center">{t('rulesRegulations', 'title')}</h1>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg animate-shakeX">
               {error}
             </div>
           )}
 
           {/* Data completion warning */}
           {!isDataComplete() && (
-            <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+            <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg animate-fadeInUp">
               Please complete all previous steps before submitting your registration.
             </div>
           )}
 
           {/* Rules Content */}
-          <div className="max-w-3xl mx-auto text-left">
+          <div className={`max-w-3xl mx-auto text-left transition-all duration-500 ${animatedElements.rules ? 'animate-fadeInUp stagger-children' : 'animate-on-load'}`}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="mb-1">
                 <span className="font-bold text-sm">Accurate Information Required</span>
@@ -155,11 +182,11 @@ export default function RulesRegulationsPage() {
           </div>
           
           {/* Agreement checkbox */}
-          <div className="mt-4 flex items-start text-sm text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
+          <div className={`mt-4 flex items-start text-sm text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200 transition-all duration-500 ${animatedElements.checkbox ? 'animate-fadeInLeft' : 'animate-on-load'}`}>
             <input 
               type="checkbox" 
               id="agreement-checkbox"
-              className="h-5 w-5 cursor-pointer mt-0.5 flex-shrink-0" 
+              className="h-5 w-5 cursor-pointer mt-0.5 flex-shrink-0 hover-scale" 
               checked={isAgreed}
               onChange={() => setIsAgreed(!isAgreed)}
             />
@@ -174,7 +201,7 @@ export default function RulesRegulationsPage() {
               type="button"
               disabled={!isAgreed || isLoading || !isDataComplete()}
               onClick={handleSubmit}
-              className="w-[280px] bg-[#F5BC1C] text-white py-2.5 rounded-lg text-base font-medium hover:bg-[#e5ac0f] transition-colors flex items-center justify-center disabled:bg-[#f5bc1c99] disabled:cursor-not-allowed button-animate"
+              className={`w-[280px] bg-[#F5BC1C] text-white py-2.5 rounded-lg text-base font-medium hover:bg-[#e5ac0f] transition-all flex items-center justify-center disabled:bg-[#f5bc1c99] disabled:cursor-not-allowed button-animate hover-glow ${animatedElements.button ? 'animate-buttonGlow' : 'animate-on-load'}`}
             >
               {isLoading ? (
                 <>
@@ -191,14 +218,14 @@ export default function RulesRegulationsPage() {
       </main>
       
       {/* Girl Illustration - Hidden on mobile, visible on md screens and up */}
-      <div className="absolute z-10 pointer-events-none hidden md:block" style={{bottom: '220px', right: '250px'}}>
+      <div className={`absolute z-10 pointer-events-none hidden md:block transition-all duration-500 ${animatedElements.illustration ? 'animate-fadeInRight' : 'animate-on-load'}`} style={{bottom: '220px', right: '250px'}}>
         <Image 
           src="/assets/rules-girl.png" 
           alt="Person with checklist" 
           width={180} 
           height={180}
           priority
-          className="object-contain animate-floatY"
+          className="hover-scale"
         />
       </div>
       

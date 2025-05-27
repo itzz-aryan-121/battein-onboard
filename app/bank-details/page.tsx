@@ -6,9 +6,11 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
 import '../animations.css'; // Import animations
 
 export default function BankDetails() {
+  const { t } = useLanguage();
   const { userData, updateBankDetails } = useUserData();
   const [formData, setFormData] = useState<{
     bankAccountNumber: string;
@@ -279,59 +281,59 @@ export default function BankDetails() {
 
       {/* Error Modal */}
       {showErrorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
           {/* Overlay */}
           <div 
-            className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm"
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-sm animate-fadeIn"
             onClick={() => setShowErrorModal(false)}
           ></div>
           
           {/* Modal Content */}
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-auto z-10 relative" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-auto z-10 relative animate-scaleIn" style={{ boxShadow: '-9px 4px 76px 0px #00000040' }}>
             <div className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row">
                 <div className="w-full sm:w-3/4">
-                  <h3 className="text-[#E75A34] text-base sm:text-lg font-medium mb-3 sm:mb-4">Please fix the following issues:</h3>
+                  <h3 className="text-[#E75A34] text-base sm:text-lg font-medium mb-3 sm:mb-4 animate-fadeInUp">Please fix the following issues:</h3>
                   
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {errors.bankAccountNumber && (
-                      <div className="flex items-start">
+                      <div className="flex items-start animate-fadeInLeft delay-100">
                         <span className="text-[#E75A34] mr-2">•</span>
                         <p className="text-sm text-gray-700">{errors.bankAccountNumber}</p>
                       </div>
                     )}
                     {errors.accountHolderName && (
-                      <div className="flex items-start">
+                      <div className="flex items-start animate-fadeInLeft delay-200">
                         <span className="text-[#E75A34] mr-2">•</span>
                         <p className="text-sm text-gray-700">{errors.accountHolderName}</p>
                       </div>
                     )}
                     {errors.ifscCode && (
-                      <div className="flex items-start">
+                      <div className="flex items-start animate-fadeInLeft delay-300">
                         <span className="text-[#E75A34] mr-2">•</span>
                         <p className="text-sm text-gray-700">{errors.ifscCode}</p>
                       </div>
                     )}
                     {errors.branchName && (
-                      <div className="flex items-start">
+                      <div className="flex items-start animate-fadeInLeft delay-400">
                         <span className="text-[#E75A34] mr-2">•</span>
                         <p className="text-sm text-gray-700">{errors.branchName}</p>
                       </div>
                     )}
                     {errors.upiId && (
-                      <div className="flex items-start">
+                      <div className="flex items-start animate-fadeInLeft delay-500">
                         <span className="text-[#E75A34] mr-2">•</span>
                         <p className="text-sm text-gray-700">{errors.upiId}</p>
                       </div>
                     )}
                     {errors.cancelCheque && (
-                      <div className="flex items-start">
+                      <div className="flex items-start animate-fadeInLeft delay-600">
                         <span className="text-[#E75A34] mr-2">•</span>
                         <p className="text-sm text-gray-700">{errors.cancelCheque}</p>
                       </div>
                     )}
                     {errors.general && (
-                      <div className="flex items-start">
+                      <div className="flex items-start animate-fadeInLeft delay-700">
                         <span className="text-[#E75A34] mr-2">•</span>
                         <p className="text-sm text-gray-700">{errors.general}</p>
                       </div>
@@ -340,7 +342,7 @@ export default function BankDetails() {
                   
                   <button 
                     onClick={() => setShowErrorModal(false)}
-                    className="w-full bg-[#E75A34] text-white font-medium py-2 sm:py-3 rounded-md transition-colors mt-4 sm:mt-6 button-animate"
+                    className="w-full bg-[#E75A34] text-white font-medium py-2 sm:py-3 rounded-md transition-all duration-300 mt-4 sm:mt-6 button-animate transform hover:scale-105 animate-fadeInUp delay-800"
                   >
                     Fix Errors
                   </button>
@@ -351,7 +353,7 @@ export default function BankDetails() {
                     alt="Error" 
                     width={80} 
                     height={80} 
-                    className="object-contain"
+                    className="object-contain animate-floatY"
                   />
                 </div>
               </div>
@@ -362,15 +364,15 @@ export default function BankDetails() {
 
       <main className="w-full max-w-6xl z-10 px-4 md:px-6 lg:px-8">
         <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mx-auto">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-center mb-3 sm:mb-4">
-            Add Your <span className="text-yellow-500">Bank Details</span> to Receive Payouts
+          <h1 className={`text-lg sm:text-xl md:text-2xl font-bold text-center mb-3 sm:mb-4 transition-all duration-700 ${animatedFields.header ? 'animate-fadeInUp opacity-100' : 'opacity-0 translate-y-8'}`}>
+            {t('bankDetails', 'title')}
           </h1>
-          <p className="text-center text-gray-700 mb-3 sm:mb-4 text-sm md:text-base font-medium px-2">
+          <p className={`text-center text-gray-700 mb-3 sm:mb-4 text-sm md:text-base font-medium px-2 transition-all duration-700 delay-200 ${animatedFields.header ? 'animate-fadeInUp opacity-100' : 'opacity-0 translate-y-8'}`}>
             We collect your Bank Details, UPI ID to ensure secure and smooth
             <span className="hidden sm:inline"><br /></span> payouts directly to your account.
           </p>
-          <div className="bg-gray-50 rounded-md p-3 sm:p-4 mb-4 w-full sm:w-[90%] md:w-[80%] lg:w-[596px] mx-auto">
-            <h2 className="text-center font-medium mb-2 sm:mb-3 text-sm sm:text-base">Correct bank details needed to send your earnings securely</h2>
+          <div className={`bg-gray-50 rounded-md p-3 sm:p-4 mb-4 w-full sm:w-[90%] md:w-[80%] lg:w-[596px] mx-auto transition-all duration-700 delay-300 ${animatedFields.header ? 'animate-scaleIn opacity-100' : 'opacity-0 scale-95'}`}>
+            <h2 className="text-center font-medium mb-2 sm:mb-3 text-sm sm:text-base text-golden-shine">{t('bankDetails', 'subtitle')}</h2>
             <div className="space-y-1 sm:space-y-2">
               <div className="flex items-center justify-center text-xs sm:text-sm">
                 <span className="text-green-500 mr-2">✅</span>
@@ -384,60 +386,60 @@ export default function BankDetails() {
           </div>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col md:flex-row md:flex-wrap gap-4 mb-4">
-              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
+              <div className={`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)] transition-all duration-700 ${animatedFields.bankAccount ? 'animate-fadeInLeft opacity-100' : 'opacity-0 -translate-x-8'}`}>
                 <label htmlFor="bankAccountNumber" className="block font-medium mb-1 text-xs sm:text-sm">
-                  Bank Account Number <span className="text-red-500">*</span>
+                  Bank Account Number <span className="text-red-500 animate-pulse">*</span>
                 </label>
                 <input
                   type="text"
                   id="bankAccountNumber"
                   name="bankAccountNumber"
-                  className={`w-full border ${errors.bankAccountNumber ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.bankAccountNumber ? 'border-red-500 animate-shakeX' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm transition-all duration-300 focus:scale-105 hover:border-yellow-500`}
                   value={formData.bankAccountNumber}
                   onChange={handleInputChange}
                   required
                   placeholder="Enter your Bank Account Number"
                 />
               </div>
-              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
+              <div className={`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)] transition-all duration-700 ${animatedFields.accountHolder ? 'animate-fadeInRight opacity-100' : 'opacity-0 translate-x-8'}`}>
                 <label htmlFor="accountHolderName" className="block font-medium mb-1 text-xs sm:text-sm">
-                  Account Holder Name <span className="text-red-500">*</span>
+                  Account Holder Name <span className="text-red-500 animate-pulse">*</span>
                 </label>
                 <input
                   type="text"
                   id="accountHolderName"
                   name="accountHolderName"
-                  className={`w-full border ${errors.accountHolderName ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.accountHolderName ? 'border-red-500 animate-shakeX' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm transition-all duration-300 focus:scale-105 hover:border-yellow-500`}
                   value={formData.accountHolderName}
                   onChange={handleInputChange}
                   required
                   placeholder="Enter Account Holder Name"
                 />
               </div>
-              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
+              <div className={`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)] transition-all duration-700 ${animatedFields.ifsc ? 'animate-fadeInLeft opacity-100' : 'opacity-0 -translate-x-8'}`}>
                 <label htmlFor="ifscCode" className="block font-medium mb-1 text-xs sm:text-sm">
-                  IFSC Code <span className="text-red-500">*</span>
+                  IFSC Code <span className="text-red-500 animate-pulse">*</span>
                 </label>
                 <input
                   type="text"
                   id="ifscCode"
                   name="ifscCode"
-                  className={`w-full border ${errors.ifscCode ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.ifscCode ? 'border-red-500 animate-shakeX' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm transition-all duration-300 focus:scale-105 hover:border-yellow-500`}
                   value={formData.ifscCode}
                   onChange={handleInputChange}
                   required
                   placeholder="Enter IFSC Code"
                 />
               </div>
-              <div className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)]">
+              <div className={`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)] transition-all duration-700 ${animatedFields.branch ? 'animate-fadeInRight opacity-100' : 'opacity-0 translate-x-8'}`}>
                 <label htmlFor="branchName" className="block font-medium mb-1 text-xs sm:text-sm">
-                  Branch Name <span className="text-red-500">*</span>
+                  Branch Name <span className="text-red-500 animate-pulse">*</span>
                 </label>
                 <input
                   type="text"
                   id="branchName"
                   name="branchName"
-                  className={`w-full border ${errors.branchName ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full border ${errors.branchName ? 'border-red-500 animate-shakeX' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm transition-all duration-300 focus:scale-105 hover:border-yellow-500`}
                   value={formData.branchName}
                   onChange={handleInputChange}
                   required
@@ -453,16 +455,16 @@ export default function BankDetails() {
                 
               </div>
             </div>
-            <div className="mb-4 sm:mb-5">
-              <label htmlFor="upiId" className="block font-medium mb-1 text-xs sm:text-sm text-center">
-                Your UPI ID <span className="text-red-500">*</span>
+            <div className={`mb-4 sm:mb-5 transition-all duration-700 ${animatedFields.upi ? 'animate-fadeInUp opacity-100' : 'opacity-0 translate-y-8'}`}>
+              <label htmlFor="upiId" className="block font-medium mb-1 text-xs sm:text-sm text-center text-golden-shine">
+                {t('bankDetails', 'upiId')} <span className="text-red-500 animate-pulse">*</span>
               </label>
               <div className="flex justify-center">
                 <input
                   type="text"
                   id="upiId"
                   name="upiId"
-                  className={`w-full max-w-xs sm:max-w-sm md:max-w-md border ${errors.upiId ? 'border-red-500' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm`}
+                  className={`w-full max-w-xs sm:max-w-sm md:max-w-md border ${errors.upiId ? 'border-red-500 animate-shakeX' : 'border-yellow-400'} rounded-md px-2 py-1.5 sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-xs sm:text-sm transition-all duration-300 focus:scale-105 hover:border-yellow-500`}
                   value={formData.upiId}
                   onChange={handleInputChange}
                   required
@@ -470,14 +472,14 @@ export default function BankDetails() {
                 />
               </div>
             </div>
-            <div className="mb-4 sm:mb-6">
-              <label htmlFor="cancelCheque" className="block font-medium mb-2 text-center text-xs sm:text-sm">
-                Cancel cheque/ passbook <span className="text-red-500">*</span>
+            <div className={`mb-4 sm:mb-6 transition-all duration-700 ${animatedFields.upload ? 'animate-scaleIn opacity-100' : 'opacity-0 scale-95'}`}>
+              <label htmlFor="cancelCheque" className="block font-medium mb-2 text-center text-xs sm:text-sm text-golden-shine">
+                {t('bankDetails', 'cancelCheque')} <span className="text-red-500 animate-pulse">*</span>
               </label>
               <div className="flex flex-col items-center justify-center">
                 <label 
                   htmlFor="cancelCheque" 
-                  className={`flex items-center justify-center gap-2 w-full max-w-xs border ${errors.cancelCheque ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2.5 sm:px-4 sm:py-3 cursor-pointer text-xs sm:text-sm transition-colors duration-300 ${
+                  className={`flex items-center justify-center gap-2 w-full max-w-xs border ${errors.cancelCheque ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2.5 sm:px-4 sm:py-3 cursor-pointer text-xs sm:text-sm transition-all duration-300 transform hover:scale-105 ${
                     uploadProgress > 0 && uploadProgress < 100 ? 'opacity-50 cursor-not-allowed bg-gray-100' :
                     isUploaded ? 'bg-green-50 border-green-300' : 'bg-gray-100 hover:bg-gray-50'
                   }`}
@@ -520,7 +522,7 @@ export default function BankDetails() {
 
                 {/* Upload Error */}
                 {uploadError && (
-                  <div className="mt-3 w-full max-w-xs">
+                  <div className="mt-3 w-full max-w-xs animate-fadeInUp">
                     <div className="flex items-center p-2 bg-red-50 border border-red-200 rounded-md">
                       <svg className="h-4 w-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -535,7 +537,7 @@ export default function BankDetails() {
 
                 {/* Upload Progress */}
                 {uploadProgress > 0 && uploadProgress < 100 && !uploadError && (
-                  <div className="mt-3 w-full max-w-xs">
+                  <div className="mt-3 w-full max-w-xs animate-fadeInUp">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-black font-medium">
                         {uploadProgress < 20 ? 'Preparing upload...' : 
@@ -546,14 +548,14 @@ export default function BankDetails() {
                       <span className="text-xs text-black font-semibold">{uploadProgress}%</span>
                     </div>
                     <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#F5BC1C] rounded-full transition-all duration-300 ease-out" style={{ width: `${uploadProgress}%` }}></div>
+                      <div className="h-full bg-[#F5BC1C] rounded-full transition-all duration-300 ease-out animate-progress" style={{ width: `${uploadProgress}%` }}></div>
                     </div>
                   </div>
                 )}
 
                 {/* Success State */}
                 {isUploaded && uploadProgress === 100 && !uploadError && (
-                  <div className="mt-3 w-full max-w-xs">
+                  <div className="mt-3 w-full max-w-xs animate-scaleIn">
                     <div className="flex items-center justify-center p-2 bg-green-50 border border-green-200 rounded-md">
                       <svg className="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
@@ -572,7 +574,7 @@ export default function BankDetails() {
 
                 {/* File Info for uploaded files */}
                 {formData.cancelCheque && !isUploaded && uploadProgress === 0 && (
-                  <div className="mt-3 flex flex-col items-center w-full max-w-xs">
+                  <div className="mt-3 flex flex-col items-center w-full max-w-xs animate-fadeInUp">
                     <div className="w-full max-w-[200px] h-[6px] bg-gray-200 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full transition-all duration-300 ${isUploaded ? 'bg-[#F5BC1C]' : 'bg-yellow-400'}`} style={{ width: `${uploadProgress}%` }}></div>
                     </div>
@@ -592,10 +594,10 @@ export default function BankDetails() {
                 </p>
               </div>
             </div>
-            <div className="flex justify-center mb-2 sm:mb-0">
+            <div className={`flex justify-center mb-2 sm:mb-0 transition-all duration-700 ${animatedFields.button ? 'animate-buttonGlow opacity-100' : 'opacity-0 scale-95'}`}>
               <button
                 type="submit"
-                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-md transition duration-300 text-sm sm:text-base button-animate flex items-center justify-center"
+                className="w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-md transition-all duration-300 text-sm sm:text-base button-animate flex items-center justify-center transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 disabled={!isUploaded || isSubmitting}
               >
                 {isSubmitting ? (

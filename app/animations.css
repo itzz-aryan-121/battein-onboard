@@ -60,6 +60,51 @@
   100% { width: 100%; }
 }
 
+/* Golden Shine Animation for Text */
+@keyframes goldenShine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(245, 188, 28, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(245, 188, 28, 0.6), 0 0 30px rgba(245, 188, 28, 0.4);
+  }
+}
+
+/* Audio Recording Animations */
+@keyframes recordingPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes waveformBounce {
+  0%, 100% { height: 20%; }
+  50% { height: 100%; }
+}
+
+@keyframes microphoneGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(245, 188, 28, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(245, 188, 28, 0.6), 0 0 35px rgba(245, 188, 28, 0.4);
+  }
+}
+
 /* Enhanced Page Entrance Animations */
 @keyframes pageEnter {
   from { 
@@ -199,56 +244,291 @@
   animation: shakeX 0.3s ease-in-out;
 }
 
-.animate-progress {
-  animation: progress linear forwards;
+/* Golden Shine Text Animation Classes */
+.text-golden-shine {
+  background: linear-gradient(
+    90deg,
+    #2D2D2D 0%,
+    #2D2D2D 40%,
+    #F5BC1C 50%,
+    #FFD700 55%,
+    #F5BC1C 60%,
+    #2D2D2D 70%,
+    #2D2D2D 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldenShine 3s ease-in-out infinite;
 }
 
-/* Enhanced Page and Content Animations */
-.animate-pageEnter {
-  animation: pageEnter 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+.text-glow-golden {
+  animation: textGlow 2s ease-in-out infinite;
 }
 
-.animate-slideInFromBottom {
-  animation: slideInFromBottom 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+/* Audio Recording Animation Classes */
+.recording-pulse {
+  animation: recordingPulse 1.5s ease-in-out infinite;
 }
 
-.animate-slideInFromTop {
-  animation: slideInFromTop 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+.waveform-bar {
+  width: 6px;
+  background: #F5BC1C;
+  border-radius: 3px;
+  min-height: 12px;
+  transition: all 0.3s ease;
 }
 
-.animate-contentReveal {
-  animation: contentReveal 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+/* Enhanced waveform states */
+.waveform-bar.speaking {
+  background: linear-gradient(to top, #F5BC1C, #FFD700);
+  box-shadow: 0 0 6px rgba(245, 188, 28, 0.4);
+  transform: scaleY(1);
+  border-radius: 2px;
 }
 
-.animate-cardEntrance {
-  animation: cardEntrance 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+.waveform-bar.silent {
+  background: #10B981; /* Green like heart monitor */
+  transform: scaleY(1);
+  opacity: 1;
+  border-radius: 1px;
+  transition: all 0.1s ease;
 }
 
-.animate-headerSlide {
-  animation: headerSlide 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+/* More dynamic pulsing effect for speaking with varied timing */
+.waveform-bar.speaking:nth-child(odd) {
+  animation: speakingPulseVaried1 0.3s ease-in-out infinite alternate;
 }
 
-.animate-buttonGlow {
-  animation: buttonGlow 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+.waveform-bar.speaking:nth-child(even) {
+  animation: speakingPulseVaried2 0.5s ease-in-out infinite alternate-reverse;
 }
 
-/* Responsive animations - use mobile-optimized versions on small screens */
-@media (max-width: 768px) {
-  .animate-fadeInUp {
-    animation: fadeInUpMobile 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+.waveform-bar.speaking:nth-child(3n) {
+  animation: speakingPulseVaried3 0.4s ease-in-out infinite alternate;
+}
+
+.waveform-bar.speaking:nth-child(5n) {
+  animation: speakingPulseVaried4 0.6s ease-in-out infinite alternate-reverse;
+}
+
+/* Heart monitor style - no animation needed, just smooth transitions */
+.waveform-bar.silent {
+  /* Remove the running dots animation for cleaner look */
+}
+
+@keyframes speakingPulse {
+  0% {
+    filter: brightness(1);
+    transform: scaleY(1);
   }
-  
-  .animate-floatY {
-    animation: floatYMobile 3s ease-in-out infinite;
+  100% {
+    filter: brightness(1.1);
+    transform: scaleY(1.02);
   }
-  
-  .animate-pulse {
-    animation: pulse 2.5s ease-in-out infinite;
+}
+
+/* New varied pulse animations for more dynamic effect */
+@keyframes speakingPulseVaried1 {
+  0% {
+    filter: brightness(1) saturate(1);
+    transform: scaleY(1) scaleX(1);
   }
-  
-  .animate-cardEntrance {
-    animation: contentReveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  100% {
+    filter: brightness(1.15) saturate(1.1);
+    transform: scaleY(1.08) scaleX(1.02);
   }
+}
+
+@keyframes speakingPulseVaried2 {
+  0% {
+    filter: brightness(1.05) saturate(1.05);
+    transform: scaleY(1) scaleX(1);
+  }
+  100% {
+    filter: brightness(1.2) saturate(1.15);
+    transform: scaleY(1.12) scaleX(1.03);
+  }
+}
+
+@keyframes speakingPulseVaried3 {
+  0% {
+    filter: brightness(0.95) saturate(0.95);
+    transform: scaleY(1) scaleX(1);
+  }
+  100% {
+    filter: brightness(1.25) saturate(1.2);
+    transform: scaleY(1.15) scaleX(1.04);
+  }
+}
+
+@keyframes speakingPulseVaried4 {
+  0% {
+    filter: brightness(1.02) saturate(1.02);
+    transform: scaleY(1) scaleX(1);
+  }
+  100% {
+    filter: brightness(1.18) saturate(1.12);
+    transform: scaleY(1.1) scaleX(1.025);
+  }
+}
+
+/* Remove the old running dots animation */
+@keyframes runningDots {
+  /* This is no longer needed */
+}
+
+/* Waveform container improvements - cleaner design */
+.waveform-container {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+  padding: 16px 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  height: 80px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Remove the shimmer effect for cleaner look */
+.waveform-container::before {
+  display: none;
+}
+
+/* Smooth transitions for waveform bars */
+.waveform-container .waveform-bar {
+  transition: all 0.1s ease;
+  will-change: height, background;
+  width: 3px;
+  min-height: 3px;
+}
+
+.microphone-glow {
+  animation: microphoneGlow 2s ease-in-out infinite;
+}
+
+/* Enhanced Audio Recording UI */
+.audio-recording-container {
+  background: linear-gradient(135deg, #FFF9E9 0%, #FFFBF0 100%);
+  border: 2px solid #F5BC1C;
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.audio-recording-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(245, 188, 28, 0.1), transparent);
+  animation: goldenShine 3s ease-in-out infinite;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #EF4444;
+  font-weight: 600;
+}
+
+.recording-dot {
+  width: 12px;
+  height: 12px;
+  background: #EF4444;
+  border-radius: 50%;
+  animation: recordingPulse 1s ease-in-out infinite;
+}
+
+.microphone-button {
+  background: linear-gradient(135deg, #F5BC1C 0%, #FFD700 100%);
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(245, 188, 28, 0.3);
+}
+
+.microphone-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(245, 188, 28, 0.4);
+}
+
+.microphone-button.recording {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  animation: recordingPulse 1.5s ease-in-out infinite;
+}
+
+.audio-player-container {
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  border: 2px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.play-button {
+  background: linear-gradient(135deg, #F5BC1C 0%, #FFD700 100%);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(245, 188, 28, 0.3);
+  flex-shrink: 0;
+}
+
+.play-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(245, 188, 28, 0.4);
+}
+
+.audio-waveform {
+  flex: 1;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.audio-waveform-bar {
+  width: 4px;
+  background: #CBD5E1;
+  border-radius: 2px;
+  min-height: 8px;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: height, background, transform;
+  flex-shrink: 0;
+}
+
+.audio-waveform-bar.active {
+  background: #F5BC1C;
+  height: 100%;
 }
 
 /* Animation Delays - Enhanced with more options */
@@ -847,4 +1127,169 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.animate-progress {
+  animation: progress linear forwards;
+}
+
+/* Enhanced Page and Content Animations */
+.animate-pageEnter {
+  animation: pageEnter 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-slideInFromBottom {
+  animation: slideInFromBottom 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-slideInFromTop {
+  animation: slideInFromTop 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-contentReveal {
+  animation: contentReveal 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-cardEntrance {
+  animation: cardEntrance 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-headerSlide {
+  animation: headerSlide 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-buttonGlow {
+  animation: buttonGlow 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* Responsive animations - use mobile-optimized versions on small screens */
+@media (max-width: 768px) {
+  .animate-fadeInUp {
+    animation: fadeInUpMobile 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
+  
+  .animate-floatY {
+    animation: floatYMobile 3s ease-in-out infinite;
+  }
+
+  .animate-pulse {
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  .animate-cardEntrance {
+    animation: contentReveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .waveform-container {
+    height: 70px;
+    gap: 1.5px;
+    padding: 0 8px;
+  }
+  
+  .waveform-bar {
+    width: 5px;
+    min-height: 10px;
+  }
+  
+  .audio-waveform {
+    height: 50px;
+    gap: 1.5px;
+    padding: 0 6px;
+  }
+  
+  .audio-waveform-bar {
+    width: 3px;
+    min-height: 6px;
+  }
+}
+
+/* Large screen adjustments */
+@media (min-width: 1024px) {
+  .waveform-container {
+    height: 90px;
+    gap: 3px;
+    padding: 0 12px;
+  }
+  
+  .waveform-bar {
+    width: 7px;
+    min-height: 14px;
+  }
+  
+  .audio-waveform {
+    height: 70px;
+    gap: 3px;
+    padding: 0 10px;
+  }
+  
+  .audio-waveform-bar {
+    width: 5px;
+    min-height: 10px;
+  }
+}
+
+/* Extra large screen adjustments */
+@media (min-width: 1280px) {
+  .waveform-container {
+    height: 100px;
+    gap: 4px;
+    padding: 0 16px;
+  }
+  
+  .waveform-bar {
+    width: 8px;
+    min-height: 16px;
+  }
+  
+  .audio-waveform {
+    height: 80px;
+    gap: 4px;
+    padding: 0 12px;
+  }
+  
+  .audio-waveform-bar {
+    width: 6px;
+    min-height: 12px;
+  }
+}
+
+/* Black Text Shimmer Effect */
+@keyframes blackTextShimmer {
+  0% { 
+    background-position: -200% center; 
+  }
+  100% { 
+    background-position: 200% center; 
+  }
+}
+
+/* Silver Text Shimmer Effect */
+@keyframes silverTextShimmer {
+  0% { 
+    background-position: -200% center; 
+  }
+  100% { 
+    background-position: 200% center; 
+  }
+}
+
+.animate-blackTextShimmer {
+  background: linear-gradient(90deg, #1a1a1a 25%, #ffffff 50%, #1a1a1a 75%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: blackTextShimmer 3s linear infinite;
+}
+
+.animate-silverTextShimmer {
+  background: linear-gradient(90deg, #2d2d2d 25%, #c0c0c0 40%, #ffffff 50%, #c0c0c0 60%, #2d2d2d 75%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: silverTextShimmer 3s linear infinite;
 }

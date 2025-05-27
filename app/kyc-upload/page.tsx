@@ -6,8 +6,11 @@ import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
+import '../animations.css'; // Import animations
 
 export default function KYCVerification() {
+  const { t } = useLanguage();
   const { userData, updateKycData } = useUserData();
   const [panNumber, setPanNumber] = useState(userData.kyc.panNumber || '');
   const [panCardFile, setPanCardFile] = useState<string | null>(userData.kyc.panCardFile || null);
@@ -23,6 +26,26 @@ export default function KYCVerification() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const router = useRouter();
   const [uploadedFileSize, setUploadedFileSize] = useState<number | null>(null);
+  
+  // Animation states
+  const [animatedElements, setAnimatedElements] = useState({
+    header: false,
+    panInput: false,
+    uploadArea: false,
+    button: false
+  });
+  
+  // Progressive animation timing
+  useEffect(() => {
+    const timeouts = [
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, header: true })), 200),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, panInput: true })), 400),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, uploadArea: true })), 600),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, button: true })), 800),
+    ];
+    
+    return () => timeouts.forEach(timeout => clearTimeout(timeout));
+  }, []);
 
   // // Initialize video modal on page load
   // useEffect(() => {
@@ -426,57 +449,57 @@ export default function KYCVerification() {
         </div>
       )} */}
 
-      <main className="w-full max-w-4xl z-10">
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mx-auto">
-          <h1 className="text-xl sm:text-2xl font-bold text-center mb-2">
-            Complete Your <span className="text-yellow-500">KYC</span> – Upload Your <span className="text-yellow-500">PAN Card</span> Now!
+      <main className="w-full max-w-4xl z-10 animate-pageEnter">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mx-auto animate-cardEntrance">
+          <h1 className={`text-xl sm:text-2xl font-bold text-center mb-2 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
+            {t('kyc', 'title')}
           </h1>
-          <p className="text-center text-gray-700 text-xs sm:text-sm mb-3">
-            Make sure your details match your <span className="text-yellow-500">PAN</span> card for smooth verification and payouts.
+          <p className={`text-center text-gray-700 text-xs sm:text-sm mb-3 transition-all duration-500 ${animatedElements.header ? 'animate-contentReveal' : 'animate-on-load'}`}>
+            {t('kyc', 'subtitle')}
           </p>
-          <div className="bg-gray-50 rounded-lg p-3 mb-4 w-full max-w-md mx-auto">
-            <h3 className="font-medium text-center text-sm mb-1">Why PAN Card is Required:</h3>
+          <div className={`bg-gray-50 rounded-lg p-3 mb-4 w-full max-w-md mx-auto transition-all duration-500 ${animatedElements.header ? 'animate-fadeInUp' : 'animate-on-load'}`}>
+            <h3 className="font-medium text-center text-sm mb-1">{t('kyc', 'whyPanRequired')}</h3>
             <ul className="space-y-1 text-xs">
-              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>KYC Verification – Confirms your identity</li>
-              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>TDS Compliance – Required for tax purposes</li>
-              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>Receive Payments – No delays in payouts</li>
+              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>{t('kyc', 'kycVerification')}</li>
+              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>{t('kyc', 'tdsCompliance')}</li>
+              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>{t('kyc', 'receivePayments')}</li>
             </ul>
           </div>
           <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-            <div className="mb-3 w-full max-w-md mx-auto">
+            <div className={`mb-3 w-full max-w-md mx-auto transition-all duration-500 ${animatedElements.panInput ? 'animate-fadeInLeft' : 'animate-on-load'}`}>
               <label htmlFor="panNumber" className="block mb-1 text-sm font-medium">
-                PAN Number <span className="text-red-500">*</span>
+                {t('kyc', 'panNumber')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 id="panNumber"
-                className={`w-full px-3 py-2 text-sm border ${panError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-yellow-500'} rounded-lg focus:outline-none focus:ring-2`}
-                placeholder="Enter your PAN Number (e.g., AAAAA0000A)"
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 transition-all`}
+                placeholder={t('kyc', 'panPlaceholder')}
                 value={panNumber}
                 onChange={handlePanNumberChange}
                 maxLength={10}
                 required
               />
               {panError && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-red-500 animate-shakeX">
                   {panError}
                 </p>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                Format: 5 letters, 4 numbers, 1 letter (e.g., AAAAA0000A)
+                {t('kyc', 'panFormat')}
               </p>
             </div>
-            <div className="mb-4 w-full max-w-md mx-auto">
+            <div className={`mb-4 w-full max-w-md mx-auto transition-all duration-500 ${animatedElements.uploadArea ? 'animate-fadeInUp' : 'animate-on-load'}`}>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium">Upload your <span className="uppercase">PAN CARD</span> Photo</label>
-                <label htmlFor="panCardUpload" className={`inline-flex items-center px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white ${(uploadProgress > 0 && uploadProgress < 100) || isCompressing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`}>
+                <label className="text-sm font-medium">{t('kyc', 'uploadPanCard')}</label>
+                <label htmlFor="panCardUpload" className={`px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg transition-all ${(uploadProgress > 0 && uploadProgress < 100) || isCompressing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-[#F5BC1C] cursor-pointer'}`}>
                   {isCompressing ? (
                     <span className="flex items-center">
                       <svg className="animate-spin h-3 w-3 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                       </svg>
-                      Compressing...
+                      {t('kyc', 'compressing')}
                     </span>
                   ) : (uploadProgress > 0 && uploadProgress < 100) ? (
                     <span className="flex items-center">
@@ -484,11 +507,11 @@ export default function KYCVerification() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                       </svg>
-                      Processing...
+                      {t('kyc', 'processing')}
                     </span>
                   ) : (
                     <>
-                      Upload <svg className="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                      {t('kyc', 'upload')} <svg className="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                     </>
                   )}
                   <input 
@@ -522,7 +545,7 @@ export default function KYCVerification() {
                     <svg className="h-4 w-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p className="text-sm text-red-600 font-medium">Upload Failed</p>
+                    <p className="text-sm text-red-600 font-medium">{t('kyc', 'uploadFailed')}</p>
                   </div>
                   <p className="text-xs text-red-600 mt-1">{uploadError}</p>
                 </div>
@@ -559,7 +582,7 @@ export default function KYCVerification() {
                     <svg className="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    <span className="text-sm text-green-600 font-medium">Upload completed successfully!</span>
+                    <span className="text-sm text-green-600 font-medium">{t('kyc', 'uploadCompleted')}</span>
                   </div>
                 </div>
               )}
@@ -584,7 +607,7 @@ export default function KYCVerification() {
                   <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
                     {isUploaded ? (
                       <div className="flex items-center">
-                        <span className="text-green-600 text-xs sm:text-sm font-medium mr-2">Uploaded</span>
+                        <span className="text-green-600 text-xs sm:text-sm font-medium mr-2">{t('kyc', 'uploaded')}</span>
                         <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                           <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
@@ -607,17 +630,17 @@ export default function KYCVerification() {
                 Supported formats: JPEG, PNG, WEBP, HEIC, HEIF (Max size: 50MB - Large files will be automatically compressed)
               </p>
             </div>
-            <div className="mb-4">
+            <div className={`mb-4 transition-all duration-500 ${animatedElements.uploadArea ? 'animate-fadeInUp' : 'animate-on-load'}`}>
               <h3 className="text-center text-sm font-medium mb-1">Reference Video:</h3>
               <p className="text-center text-xs text-gray-600 mb-2">Complete Step by Step Process Explained</p>
               <div 
-                className="relative mx-auto rounded-lg overflow-hidden w-full max-w-[257px] cursor-pointer" 
+                className="relative mx-auto rounded-lg overflow-hidden w-full max-w-[257px] cursor-pointer"
                 style={{ maxHeight: "150px" }}
                 onClick={() => setShowVideoModal(true)}
               >
                 <img src="/assets/kyc-video-thumbnail.png" alt="KYC Video Thumbnail" className="w-full h-full object-cover" style={{ maxHeight: "150px" }} />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-black bg-opacity-50 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                  <div className="bg-black bg-opacity-50 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover-scale">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -628,9 +651,9 @@ export default function KYCVerification() {
             </div>
             <button
               type="submit"
-              className={`w-full max-w-[278px] mx-auto bg-yellow-500 text-white py-2 rounded-lg text-base font-medium transition-colors ${
+              className={`w-full max-w-[278px] mx-auto bg-yellow-500 text-white py-2 rounded-lg text-base font-medium transition-all hover-glow ${
                 !isFormValid || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-600'
-              } button-animate`}
+              } button-animate ${animatedElements.button ? 'animate-buttonGlow' : 'animate-on-load'}`}
               disabled={!isFormValid || isSubmitting}
             >
               {isSubmitting ? (
@@ -639,10 +662,10 @@ export default function KYCVerification() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                   </svg>
-                  Processing...
+                  {t('kyc', 'processing')}
                 </span>
               ) : (
-                'Proceed'
+                t('kyc', 'proceed')
               )}
             </button>
           </form>

@@ -29,13 +29,18 @@ export default function LanguageSelection() {
   };
 
   const handleConfirm = async () => {
+    if (!selectedLanguage) return;
+    
     setIsLoading(true);
     try {
-      if (selectedLanguage) {
-        // Update context and localStorage
-        setLanguage(selectedLanguage);
-        router.push('/welcome');
-      }
+      // Add a small delay to show loading state for better UX
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Update context and localStorage
+      setLanguage(selectedLanguage);
+      router.push('/welcome');
+    } catch (error) {
+      console.error('Error setting language:', error);
     } finally {
       setIsLoading(false);
     }
@@ -58,10 +63,16 @@ export default function LanguageSelection() {
       {/* Main content - with responsive padding and spacing */}
       <div className="w-full px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col items-center justify-center pt-12 sm:pt-16 lg:pt-20 pb-8 sm:pb-12 relative z-10">
         <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-center mb-3 sm:mb-4 lg:mb-6  px-4">
-          {selectedLanguage ? t('language', 'title') : "Begin your soulful journey with"} <span className="text-[#F5BC1C] animate-textShimmer">Baatein</span>
+          {selectedLanguage ? (
+            <span dangerouslySetInnerHTML={{
+              __html: t('language', 'title').replace('Baatein', '<span class="text-[#F5BC1C] animate-textShimmer">Baatein</span>')
+            }} />
+          ) : (
+            <>Begin your soulful journey with <span className="text-[#F5BC1C] animate-textShimmer">Baatein</span></>
+          )}
         </h1>
 
-        <p className="text-base sm:text-lg lg:text-xl xl:text-2xl text-center mb-6 sm:mb-8 lg:mb-10 font-normal animate-fadeInUp delay-200 px-4 max-w-2xl hover-lift">
+        <p className="text-base sm:text-lg lg:text-xl xl:text-2xl text-center mb-6 sm:mb-8 lg:mb-10 font-normal animate-fadeInUp delay-200 px-4 max-w-2xl">
           {selectedLanguage ? t('language', 'selectLanguage') : "Select your language to proceed"}
         </p>
 
@@ -99,7 +110,7 @@ export default function LanguageSelection() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                 </svg>
-                <span className="text-sm sm:text-base">Processing...</span>
+                <span className="text-sm sm:text-base">Setting up your experience...</span>
               </span>
             ) : (
               t('language', 'confirm')
@@ -115,7 +126,7 @@ export default function LanguageSelection() {
           <img
             src="/assets/people-group.png"
             alt="People using mobile devices"
-            className="object-contain w-full max-w-[240px] xs:max-w-[280px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[650px] xl:max-w-[750px] h-auto hover-lift transition-transform duration-500"
+            className="object-contain w-full max-w-[240px] xs:max-w-[280px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[650px] xl:max-w-[750px] h-auto transition-transform duration-500"
             style={{ pointerEvents: 'auto' }}
           />
         </div>

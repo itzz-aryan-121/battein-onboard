@@ -6,9 +6,11 @@ import FloatingParticles from '../components/FloatingParticles';
 import WaveBackground from '../components/WaveBackground';
 import { useEffect, useState } from 'react';
 import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
 import '../animations.css'; // Import animations
 
 export default function SuccessPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { clearUserData } = useUserData();
   const [isLoading, setIsLoading] = useState(false);
@@ -84,27 +86,27 @@ export default function SuccessPage() {
           </div>
           
           {/* Thank you message */}
-          <h1 className={`text-4xl font-bold text-gray-800 mb-4 transition-all duration-500 ${animatedElements.title ? 'animate-fadeInUp' : 'animate-on-load'}`}>
-            Thanks for joining the <span className="text-[#F5BC1C] animate-textShimmer">Baatein</span> app
+          <h1 className={`text-4xl font-bold text-golden-shine mb-4 transition-all duration-500 ${animatedElements.title ? 'animate-fadeInUp' : 'animate-on-load'}`}>
+            {t('success', 'title')}
           </h1>
-          
-          <p className={`text-xl text-gray-600 mb-12 transition-all duration-500 ${animatedElements.subtitle ? 'animate-contentReveal' : 'animate-on-load'}`}>
-            we're excited to have you on this journey!
+
+          <p className={`text-gray-600 mb-8 transition-all duration-500 ${animatedElements.subtitle ? 'animate-fadeInUp' : 'animate-on-load'}`}>
+            {t('success', 'message')}
           </p>
           
           {/* App download section */}
           <div className={`mb-8 transition-all duration-500 ${animatedElements.download ? 'animate-fadeInUp' : 'animate-on-load'}`}>
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+            <h2 className="text-xl font-semibold text-golden-shine mb-6">
               Download the Baatein app on the Play Store today!
             </h2>
             
             <div className="flex mx-auto justify-center space-x-4 stagger-fast">
-              <a href="#" className="inline-block hover-lift hover-scale animate-fadeInLeft">
+              <a href="#" className="inline-block  animate-fadeInLeft">
                 <img src="/assets/Google Play.png" 
                      alt="Get it on Google Play" 
                      className="h-11 w-[157px]" />
               </a>
-              <a href="#" className="inline-block hover-lift hover-scale animate-fadeInRight">
+              <a href="#" className="inline-block  animate-fadeInRight">
                 <img src="/assets/App Store.png" 
                      alt="Download on the App Store" 
                      className="h-11 w-[157px]" />
@@ -116,7 +118,7 @@ export default function SuccessPage() {
           <button
             onClick={handleGoHome}
             disabled={isLoading}
-            className={`mt-4 px-8 py-3 bg-[#F5BC1C] text-white rounded-lg font-semibold text-lg hover:bg-[#e5ac0f] transition-all duration-300 button-animate hover-lift hover-glow ${
+            className={`mt-4 px-8 py-3 bg-[#F5BC1C] text-white rounded-lg font-semibold text-lg hover:bg-[#e5ac0f] transition-all duration-300 button-animate ${
               isLoading ? 'opacity-70 cursor-not-allowed' : 'transform hover:scale-105'
             } ${animatedElements.button ? 'animate-buttonGlow' : 'animate-on-load'}`}
           >

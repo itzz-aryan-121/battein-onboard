@@ -6,13 +6,36 @@ import Image from 'next/image';
 import WaveBackground from '../components/WaveBackground';
 import { useRouter } from 'next/navigation';
 import { useUserData } from '../context/UserDataContext';
+import { useLanguage } from '../context/LanguageContext';
+import '../animations.css'; // Import animations
 
 export default function Page() {
+  const { t } = useLanguage();
   const { userData, updateUserData } = useUserData();
   const [uploadedImage, setUploadedImage] = useState<string | null>(userData.profilePicture || null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  
+  // Animation states
+  const [animatedElements, setAnimatedElements] = useState({
+    header: false,
+    card: false,
+    uploadArea: false,
+    button: false
+  });
+  
+  // Progressive animation timing
+  useEffect(() => {
+    const timeouts = [
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, header: true })), 200),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, card: true })), 400),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, uploadArea: true })), 600),
+      setTimeout(() => setAnimatedElements(prev => ({ ...prev, button: true })), 800),
+    ];
+    
+    return () => timeouts.forEach(timeout => clearTimeout(timeout));
+  }, []);
 
   interface FileUploadEvent extends React.ChangeEvent<HTMLInputElement> {
     target: HTMLInputElement & { files: FileList };
@@ -119,22 +142,22 @@ export default function Page() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative animate-pageEnter">
       {/* Heading above the white box */}
-      <h1 className="text-2xl font-medium text-gray-800 mb-8 z-10">
-        Lights. Camera. Upload! 🎬📷
+      <h1 className={`text-2xl font-medium text-golden-shine mb-8 z-10 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
+        {t('profilePic', 'title')} 🎬📷
       </h1>
       
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-lg w-full mx-4 z-10">
+      <div className={`bg-white rounded-3xl shadow-2xl p-8 max-w-lg w-full mx-4 z-10 transition-all duration-500 ${animatedElements.card ? 'animate-cardEntrance' : 'animate-on-load'}`}>
         {/* Header */}
         <div className="text-center mb-8">
           <p className="text-gray-600 text-lg">
-            Just upload your Profile Pic
+            {t('profilePic', 'subtitle')}
           </p>
         </div>
 
         {/* Profile Picture Upload Section */}
-        <div className="flex flex-col items-center mb-8">
+        <div className={`flex flex-col items-center mb-8 transition-all duration-500 ${animatedElements.uploadArea ? 'animate-fadeInUp' : 'animate-on-load'}`}>
           {/* Upload Area */}
           <div className="relative mb-6">
             <input
@@ -147,7 +170,7 @@ export default function Page() {
             />
             <label
               htmlFor="profile-upload"
-              className={`w-32 h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-all ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {uploadedImage ? (
                 <img
@@ -166,15 +189,15 @@ export default function Page() {
           {/* Upload Button */}
           <label
             htmlFor="profile-upload"
-            className={`flex items-center gap-2 text-green-600 hover:text-green-700 mb-4 ${isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`flex items-center gap-2 text-green-600 hover:text-green-700 mb-4 hover-scale ${isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
           >
             <Upload className="w-4 h-4" />
-            Upload your Profile Picture
+            {t('profilePic', 'uploadProfilePicture')}
           </label>
           
           {/* Error Message */}
           {error && (
-            <div className="text-red-500 text-sm text-center mb-4">
+            <div className="text-red-500 text-sm text-center mb-4 animate-shakeX">
               {error}
             </div>
           )}
@@ -185,17 +208,17 @@ export default function Page() {
           <button 
             onClick={handleContinue}
             disabled={!uploadedImage || isUploading}
-            className={`bg-green-400 text-white py-3 px-8 rounded-lg font-medium transition-colors ${
+            className={`bg-green-400 text-white py-3 px-8 rounded-lg font-medium transition-all hover-glow ${
               !uploadedImage || isUploading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-500'
-            }`}
+            } ${animatedElements.button ? 'animate-buttonGlow' : 'animate-on-load'}`}
           >
             {isUploading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                Saving...
+                {t('profilePic', 'saving')}...
               </span>
             ) : (
-              'Continue'
+              t('profilePic', 'continue')
             )}
           </button>
           
