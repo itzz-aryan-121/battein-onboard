@@ -155,16 +155,17 @@ export default function RulesRegulationsPage() {
           </div>
           
           {/* Agreement checkbox */}
-          <div className="mt-3 flex items-center text-sm text-gray-700">
+          <div className="mt-4 flex items-start text-sm text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
             <input 
               type="checkbox" 
-              className="h-4 w-4 text-green-600 border-green-400 rounded focus:ring-green-500" 
+              id="agreement-checkbox"
+              className="h-5 w-5 cursor-pointer mt-0.5 flex-shrink-0" 
               checked={isAgreed}
               onChange={() => setIsAgreed(!isAgreed)}
             />
-            <span className="ml-2 text-green-700 text-xs">
-              I agree to the <span className="underline">Terms & Conditions</span> and confirm that the information provided is accurate.
-            </span>
+            <label htmlFor="agreement-checkbox" className="ml-3 text-green-700 text-sm cursor-pointer">
+              I agree to the <span className="underline font-medium">Terms & Conditions</span> and confirm that the information provided is accurate.
+            </label>
           </div>
           
           {/* Submit button */}

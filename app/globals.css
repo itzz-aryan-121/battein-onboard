@@ -1,5 +1,55 @@
 @import "tailwindcss";
 
+/* Checkbox styling for better visibility across all pages */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #F5BC1C;
+  border-radius: 3px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #F5BC1C;
+  border-color: #F5BC1C;
+}
+
+input[type="checkbox"]:checked::before {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+input[type="checkbox"]:hover {
+  border-color: #E5A91A;
+  box-shadow: 0 0 0 2px rgba(245, 188, 28, 0.2);
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  border-color: #E5A91A;
+  box-shadow: 0 0 0 3px rgba(245, 188, 28, 0.3);
+}
+
+/* Ensure checkboxes work in Safari */
+input[type="checkbox"]::-webkit-appearance {
+  -webkit-appearance: none;
+}
+
 /* Mobile-first responsive utilities */
 .touch-manipulation {
   touch-action: manipulation;
