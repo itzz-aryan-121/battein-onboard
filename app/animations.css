@@ -60,6 +60,89 @@
   100% { width: 100%; }
 }
 
+/* Enhanced Page Entrance Animations */
+@keyframes pageEnter {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.98); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes slideInFromBottom {
+  from { 
+    opacity: 0; 
+    transform: translateY(60px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideInFromTop {
+  from { 
+    opacity: 0; 
+    transform: translateY(-60px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Smooth Content Reveal Animations */
+@keyframes contentReveal {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes cardEntrance {
+  from { 
+    opacity: 0; 
+    transform: translateY(40px) scale(0.9); 
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@keyframes headerSlide {
+  from { 
+    opacity: 0; 
+    transform: translateY(-30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes buttonGlow {
+  from { 
+    opacity: 0; 
+    transform: scale(0.9); 
+    box-shadow: 0 0 0 rgba(245, 188, 28, 0);
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+    box-shadow: 0 4px 15px rgba(245, 188, 28, 0.3);
+  }
+}
+
 /* Mobile-optimized animations */
 @keyframes fadeInUpMobile {
   from { opacity: 0; transform: translateY(20px); }
@@ -73,7 +156,7 @@
 
 /* Animation Utility Classes */
 .animate-fadeIn {
-  animation: fadeIn 0.8s ease-in forwards;
+  animation: fadeIn 0.8s ease-out forwards;
 }
 
 .animate-fadeInUp {
@@ -93,7 +176,7 @@
 }
 
 .animate-scaleIn {
-  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .animate-floatY {
@@ -120,6 +203,35 @@
   animation: progress linear forwards;
 }
 
+/* Enhanced Page and Content Animations */
+.animate-pageEnter {
+  animation: pageEnter 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-slideInFromBottom {
+  animation: slideInFromBottom 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-slideInFromTop {
+  animation: slideInFromTop 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-contentReveal {
+  animation: contentReveal 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-cardEntrance {
+  animation: cardEntrance 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-headerSlide {
+  animation: headerSlide 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-buttonGlow {
+  animation: buttonGlow 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
 /* Responsive animations - use mobile-optimized versions on small screens */
 @media (max-width: 768px) {
   .animate-fadeInUp {
@@ -133,47 +245,69 @@
   .animate-pulse {
     animation: pulse 2.5s ease-in-out infinite;
   }
+  
+  .animate-cardEntrance {
+    animation: contentReveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
 }
 
-/* Animation Delays */
-.delay-100 {
-  animation-delay: 0.1s;
-}
+/* Animation Delays - Enhanced with more options */
+.delay-75 { animation-delay: 0.075s; }
+.delay-100 { animation-delay: 0.1s; }
+.delay-150 { animation-delay: 0.15s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-250 { animation-delay: 0.25s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-350 { animation-delay: 0.35s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-450 { animation-delay: 0.45s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
+.delay-900 { animation-delay: 0.9s; }
+.delay-1000 { animation-delay: 1s; }
 
-.delay-200 {
-  animation-delay: 0.2s;
-}
-
-.delay-300 {
-  animation-delay: 0.3s;
-}
-
-.delay-400 {
-  animation-delay: 0.4s;
-}
-
-.delay-500 {
-  animation-delay: 0.5s;
-}
-
-.delay-700 {
-  animation-delay: 0.7s;
-}
-
-.delay-1000 {
-  animation-delay: 1s;
-}
-
-/* Animation for staggered children */
+/* Enhanced Staggered Children Animation */
 .stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
 .stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
 .stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
 .stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
 .stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.7s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.8s; }
+
+/* Fast Stagger for Quick Reveals */
+.stagger-fast > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-fast > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-fast > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-fast > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-fast > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-fast > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Slow Stagger for Dramatic Effect */
+.stagger-slow > *:nth-child(1) { animation-delay: 0.2s; }
+.stagger-slow > *:nth-child(2) { animation-delay: 0.4s; }
+.stagger-slow > *:nth-child(3) { animation-delay: 0.6s; }
+.stagger-slow > *:nth-child(4) { animation-delay: 0.8s; }
+.stagger-slow > *:nth-child(5) { animation-delay: 1s; }
+
+/* Initial Hidden State for Animations */
+.animate-on-load {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.animate-on-load.animate-fadeInUp,
+.animate-on-load.animate-contentReveal,
+.animate-on-load.animate-cardEntrance {
+  opacity: 0;
+}
 
 /* Hover effects */
 .hover-scale {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .hover-scale:hover {
@@ -181,12 +315,20 @@
 }
 
 .hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease;
 }
 
 .hover-lift:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(245, 188, 28, 0.4);
 }
 
 /* Touch-friendly hover effects for mobile */

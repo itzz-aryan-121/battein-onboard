@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import WaveBackground from '../components/WaveBackground';
 import { useUserData } from '../context/UserDataContext';
+import '../animations.css'; // Import animations
 
 export default function BankDetails() {
   const { userData, updateBankDetails } = useUserData();
@@ -40,6 +41,32 @@ export default function BankDetails() {
   }>({});
   const [uploadedFileSize, setUploadedFileSize] = useState<number | null>(null);
   const router = useRouter();
+  const [animatedFields, setAnimatedFields] = useState({
+    header: false,
+    bankAccount: false,
+    accountHolder: false,
+    ifsc: false,
+    branch: false,
+    upi: false,
+    upload: false,
+    button: false
+  });
+
+  // Progressive form field appearance for better UX like welcome page
+  useEffect(() => {
+    const timeouts = [
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, header: true })), 200),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, bankAccount: true })), 400),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, accountHolder: true })), 600),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, ifsc: true })), 800),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, branch: true })), 1000),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, upi: true })), 1200),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, upload: true })), 1400),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, button: true })), 1600),
+    ];
+    
+    return () => timeouts.forEach(timeout => clearTimeout(timeout));
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('lastVisitedPage', '/bank-details');
