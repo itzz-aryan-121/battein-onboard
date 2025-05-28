@@ -100,7 +100,21 @@ export default function Page() {
     }
     
     try {
-      // Upload to Cloudinary
+      // Delete previous image if it exists
+      if (uploadedImage && uploadedImage.includes('cloudinary.com')) {
+        try {
+          console.log('🗑️ Deleting previous image:', uploadedImage);
+          await fetch(`/api/upload?url=${encodeURIComponent(uploadedImage)}`, {
+            method: 'DELETE'
+          });
+          console.log('✅ Previous image deleted successfully');
+        } catch (deleteError) {
+          console.warn('⚠️ Failed to delete previous image:', deleteError);
+          // Continue with upload even if deletion fails
+        }
+      }
+
+      // Upload new image to Cloudinary
       const formData = new FormData();
       formData.append('file', file);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
@@ -108,9 +122,11 @@ export default function Page() {
       
       if (!data.url) throw new Error('Upload failed');
       
+      console.log('✅ New image uploaded:', data.url);
       setUploadedImage(data.url); // Save Cloudinary URL in state
       setError(null); // Clear any previous errors
     } catch (error) {
+      console.error('❌ Upload error:', error);
       setError("Error uploading image. Please try again.");
     } finally {
       setIsUploading(false);
