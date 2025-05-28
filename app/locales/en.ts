@@ -147,6 +147,7 @@ const en = {
     subtitle: "Take a selfie to verify your identity",
     positionFace: "Please position your face in the frame",
     holdStill: "Hold still, scanning your face...",
+    photoTaken: "Photo captured! Processing...",
     reviewPhoto: "Review Your Photo",
     scanningFace: "Scanning your face...",
     processingPhoto: "Processing your photo...",

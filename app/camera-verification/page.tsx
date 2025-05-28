@@ -90,35 +90,104 @@ function analyzeImageForFace(data: Uint8ClampedArray, width: number, height: num
   let skinTonePixels = 0;
   let edgePixels = 0;
   let midTonePixels = 0;
+  let faceShapePixels = 0;
+  let eyeRegionPixels = 0;
+  let mouthRegionPixels = 0;
 
-  // Analyze pixel data
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    const brightness = (r + g + b) / 3;
+  // Define face regions (approximate percentages of image)
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const faceWidth = width * 0.6; // Face should occupy ~60% of width
+  const faceHeight = height * 0.7; // Face should occupy ~70% of height
+  
+  // Eye regions (upper third of face area)
+  const eyeRegionTop = centerY - faceHeight * 0.25;
+  const eyeRegionBottom = centerY - faceHeight * 0.05;
+  const leftEyeLeft = centerX - faceWidth * 0.25;
+  const leftEyeRight = centerX - faceWidth * 0.05;
+  const rightEyeLeft = centerX + faceWidth * 0.05;
+  const rightEyeRight = centerX + faceWidth * 0.25;
+  
+  // Mouth region (lower third of face area)
+  const mouthRegionTop = centerY + faceHeight * 0.05;
+  const mouthRegionBottom = centerY + faceHeight * 0.25;
+  const mouthLeft = centerX - faceWidth * 0.15;
+  const mouthRight = centerX + faceWidth * 0.15;
 
-    // Count bright pixels (well-lit areas)
-    if (brightness > 200) brightPixels++;
-    
-    // Count dark pixels (shadows/hair)
-    if (brightness < 40) darkPixels++;
+  // Analyze pixel data with more sophisticated detection
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const brightness = (r + g + b) / 3;
 
-    // Count mid-tone pixels (good lighting)
-    if (brightness >= 80 && brightness <= 200) midTonePixels++;
+      // Count bright pixels (well-lit areas)
+      if (brightness > 200) brightPixels++;
+      
+      // Count dark pixels (shadows/hair)
+      if (brightness < 40) darkPixels++;
 
-    // More inclusive skin-tone detection
-    if (r > 60 && g > 30 && b > 15 && 
-        r >= g && r >= b && 
-        (r - g) < 80 && (r - b) < 120) {
-      skinTonePixels++;
-    }
+      // Count mid-tone pixels (good lighting)
+      if (brightness >= 80 && brightness <= 200) midTonePixels++;
 
-    // Simple edge detection (brightness changes)
-    if (i > width * 4) {
-      const prevBrightness = (data[i - width * 4] + data[i - width * 4 + 1] + data[i - width * 4 + 2]) / 3;
-      if (Math.abs(brightness - prevBrightness) > 25) {
-        edgePixels++;
+      // More strict skin-tone detection for human faces
+      const isValidSkinTone = (
+        r > 95 && g > 40 && b > 20 &&  // Minimum RGB values for skin
+        r > g && r > b &&              // Red dominance
+        Math.abs(r - g) <= 15 &&       // R-G difference not too high
+        Math.abs(r - b) <= 25 &&       // R-B difference reasonable
+        (r - g) >= -5 &&               // Red should be >= green
+        (r - b) >= 10                  // Red should be > blue
+      );
+      
+      if (isValidSkinTone) {
+        skinTonePixels++;
+        
+        // Check if this skin pixel is in the expected face region
+        const distanceFromCenter = Math.sqrt(
+          Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)
+        );
+        const maxFaceDistance = Math.min(faceWidth, faceHeight) / 2;
+        
+        if (distanceFromCenter <= maxFaceDistance) {
+          faceShapePixels++;
+        }
+      }
+
+      // Check for eye regions (should have some darker pixels for eyes)
+      if (y >= eyeRegionTop && y <= eyeRegionBottom) {
+        if ((x >= leftEyeLeft && x <= leftEyeRight) || 
+            (x >= rightEyeLeft && x <= rightEyeRight)) {
+          if (brightness < 100) { // Eyes are typically darker
+            eyeRegionPixels++;
+          }
+        }
+      }
+
+      // Check for mouth region (should have some variation)
+      if (y >= mouthRegionTop && y <= mouthRegionBottom &&
+          x >= mouthLeft && x <= mouthRight) {
+        if (brightness < 150) { // Mouth area typically has some shadows
+          mouthRegionPixels++;
+        }
+      }
+
+      // Enhanced edge detection for facial features
+      if (x > 0 && y > 0) {
+        const prevPixelH = (y * width + (x - 1)) * 4;
+        const prevPixelV = ((y - 1) * width + x) * 4;
+        
+        const prevBrightnessH = (data[prevPixelH] + data[prevPixelH + 1] + data[prevPixelH + 2]) / 3;
+        const prevBrightnessV = (data[prevPixelV] + data[prevPixelV + 1] + data[prevPixelV + 2]) / 3;
+        
+        const edgeStrengthH = Math.abs(brightness - prevBrightnessH);
+        const edgeStrengthV = Math.abs(brightness - prevBrightnessV);
+        
+        if (edgeStrengthH > 30 || edgeStrengthV > 30) {
+          edgePixels++;
+        }
       }
     }
   }
@@ -127,70 +196,93 @@ function analyzeImageForFace(data: Uint8ClampedArray, width: number, height: num
   const brightPercent = (brightPixels / totalPixels) * 100;
   const darkPercent = (darkPixels / totalPixels) * 100;
   const skinPercent = (skinTonePixels / totalPixels) * 100;
+  const faceShapePercent = (faceShapePixels / totalPixels) * 100;
   const edgePercent = (edgePixels / totalPixels) * 100;
   const midTonePercent = (midTonePixels / totalPixels) * 100;
+  const eyeRegionPercent = (eyeRegionPixels / totalPixels) * 100;
+  const mouthRegionPercent = (mouthRegionPixels / totalPixels) * 100;
 
-  console.log('Detection stats:', {
+  console.log('Enhanced detection stats:', {
     brightPercent: brightPercent.toFixed(2),
     darkPercent: darkPercent.toFixed(2),
     skinPercent: skinPercent.toFixed(2),
+    faceShapePercent: faceShapePercent.toFixed(2),
     edgePercent: edgePercent.toFixed(2),
-    midTonePercent: midTonePercent.toFixed(2)
+    midTonePercent: midTonePercent.toFixed(2),
+    eyeRegionPercent: eyeRegionPercent.toFixed(2),
+    mouthRegionPercent: mouthRegionPercent.toFixed(2)
   });
 
-  // Face detection logic based on heuristics
+  // Enhanced face detection logic with very lenient requirements
   let confidence = 0;
   let faceDetected = false;
   let error: string | undefined;
 
-  // Check for extreme darkness
-  if (darkPercent > 90) {
+  // Check for extreme conditions first
+  if (darkPercent > 95) {
     error = 'Image too dark. Please ensure good lighting on your face.';
     confidence = 0.1;
   }
-  // Check for extreme overexposure
-  else if (brightPercent > 80) {
+  else if (brightPercent > 85) {
     error = 'Image too bright. Please reduce lighting or move away from bright light.';
     confidence = 0.2;
   }
-  // More lenient skin tone check
-  else if (skinPercent < 0.5) {
-    error = 'No face detected. Please ensure your face is visible in the frame.';
+  // Very relaxed skin tone requirement - reduced from 1.5% to 0.8%
+  else if (skinPercent < 0.8) {
+    error = 'No face detected. Please ensure your face is visible and well-lit.';
+    confidence = 0.2;
+  }
+  // Very relaxed face shape requirement - reduced from 1% to 0.5%
+  else if (faceShapePercent < 0.5) {
+    error = 'Face not properly positioned. Please center your face in the frame.';
     confidence = 0.3;
   }
-  // More lenient detail check
+  // Very relaxed edge detection - reduced from 3% to 2%
   else if (edgePercent < 2) {
-    error = 'Image lacks detail. Please ensure your face is in focus and well-lit.';
+    error = 'Image lacks facial detail. Please ensure the camera is in focus.';
     confidence = 0.4;
   }
-  // Good conditions detected
   else {
-    // More generous confidence calculation
-    confidence = Math.min(
-      (skinPercent / 5) * 0.3 +        // Skin tone presence (lowered threshold)
-      (edgePercent / 15) * 0.3 +       // Facial features/edges (lowered threshold)
-      (midTonePercent / 50) * 0.2 +    // Good lighting distribution
-      (Math.min(darkPercent, 30) / 30) * 0.1 +  // Some shadows (natural)
-      0.1,  // Base confidence boost
-      1.0
-    );
+    // Calculate confidence with very lenient requirements
+    const skinScore = Math.min(skinPercent / 3, 1) * 0.3;        // Reduced from 5% to 3%, increased weight
+    const faceShapeScore = Math.min(faceShapePercent / 2, 1) * 0.25; // Reduced from 3% to 2%
+    const eyeScore = Math.min(eyeRegionPercent / 0.2, 1) * 0.1;   // Reduced from 0.3% to 0.2%, reduced weight
+    const mouthScore = Math.min(mouthRegionPercent / 0.05, 1) * 0.05; // Reduced from 0.1% to 0.05%, reduced weight
+    const edgeScore = Math.min(edgePercent / 5, 1) * 0.2;       // Reduced from 7% to 5%, increased weight
+    const lightingScore = Math.min(midTonePercent / 20, 1) * 0.1;  // Reduced from 30% to 20%
+    
+    confidence = skinScore + faceShapeScore + eyeScore + mouthScore + edgeScore + lightingScore;
 
-    // Much more lenient face detection threshold
-    if (confidence > 0.35) {  // Lowered from 0.6 to 0.35
+    // Much more lenient threshold for face detection
+    if (confidence > 0.35) {  // Reduced from 0.5 to 0.35
       faceDetected = true;
     } else {
-      // Give more specific feedback based on what's missing
-      if (skinPercent < 1) {
-        error = 'Face not clearly visible. Please position your face in the center of the frame.';
+      // Provide specific feedback based on what's missing
+      if (skinPercent < 1.5) {
+        error = 'Insufficient skin tone detected. Please ensure your face fills more of the frame.';
+      } else if (faceShapePercent < 1) {
+        error = 'Face not properly centered. Please position your face in the center of the frame.';
       } else if (edgePercent < 3) {
-        error = 'Image appears blurry. Please ensure the camera is in focus.';
+        error = 'Facial features not clear. Please ensure the camera is in focus and well-lit.';
       } else {
-        error = 'Face detection confidence low. Please ensure good lighting and clear visibility.';
+        error = 'Face detection confidence too low. Please ensure optimal lighting and positioning.';
       }
     }
   }
 
-  console.log('Final detection result:', { faceDetected, confidence: confidence.toFixed(3), error });
+  console.log('Enhanced detection result:', { 
+    faceDetected, 
+    confidence: confidence.toFixed(3), 
+    error,
+    scores: {
+      skin: (Math.min(skinPercent / 3, 1) * 0.3).toFixed(3),
+      faceShape: (Math.min(faceShapePercent / 2, 1) * 0.25).toFixed(3),
+      eyes: (Math.min(eyeRegionPercent / 0.2, 1) * 0.1).toFixed(3),
+      mouth: (Math.min(mouthRegionPercent / 0.05, 1) * 0.05).toFixed(3),
+      edges: (Math.min(edgePercent / 5, 1) * 0.2).toFixed(3),
+      lighting: (Math.min(midTonePercent / 20, 1) * 0.1).toFixed(3)
+    }
+  });
 
   return {
     faceDetected,
@@ -228,7 +320,10 @@ async function checkBasicImageQuality(imageDataUrl: string): Promise<{
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      return { acceptable: true }; // If can't analyze, assume acceptable
+      return { 
+        acceptable: false,
+        reason: 'Cannot analyze image quality'
+      };
     }
 
     canvas.width = Math.min(img.width, 400); // Limit size for performance
@@ -238,9 +333,12 @@ async function checkBasicImageQuality(imageDataUrl: string): Promise<{
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
     
-    // Basic quality metrics
+    // Enhanced quality metrics
     let totalBrightness = 0;
     let pixelCount = 0;
+    let skinToneCount = 0;
+    let colorVariation = 0;
+    let edgeCount = 0;
     
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i];
@@ -249,11 +347,51 @@ async function checkBasicImageQuality(imageDataUrl: string): Promise<{
       const brightness = (r + g + b) / 3;
       totalBrightness += brightness;
       pixelCount++;
+      
+      // Check for skin-like colors (more strict than before)
+      if (r > 100 && g > 50 && b > 30 && 
+          r > g && r > b && 
+          Math.abs(r - g) <= 20 && 
+          Math.abs(r - b) <= 30) {
+        skinToneCount++;
+      }
+      
+      // Check color variation (faces have more color variation than single objects)
+      if (i > 0) {
+        const prevR = data[i - 4];
+        const prevG = data[i - 3];
+        const prevB = data[i - 2];
+        const colorDiff = Math.abs(r - prevR) + Math.abs(g - prevG) + Math.abs(b - prevB);
+        if (colorDiff > 30) {
+          colorVariation++;
+        }
+      }
+      
+      // Simple edge detection
+      if (i > canvas.width * 4) {
+        const aboveR = data[i - canvas.width * 4];
+        const aboveG = data[i - canvas.width * 4 + 1];
+        const aboveB = data[i - canvas.width * 4 + 2];
+        const edgeDiff = Math.abs(r - aboveR) + Math.abs(g - aboveG) + Math.abs(b - aboveB);
+        if (edgeDiff > 50) {
+          edgeCount++;
+        }
+      }
     }
     
     const avgBrightness = totalBrightness / pixelCount;
+    const skinTonePercent = (skinToneCount / pixelCount) * 100;
+    const colorVariationPercent = (colorVariation / pixelCount) * 100;
+    const edgePercent = (edgeCount / pixelCount) * 100;
     
-    // Very basic acceptance criteria
+    console.log('Basic quality check:', {
+      avgBrightness: avgBrightness.toFixed(2),
+      skinTonePercent: skinTonePercent.toFixed(2),
+      colorVariationPercent: colorVariationPercent.toFixed(2),
+      edgePercent: edgePercent.toFixed(2)
+    });
+    
+    // Very lenient acceptance criteria
     if (avgBrightness < 20) {
       return {
         acceptable: false,
@@ -268,15 +406,42 @@ async function checkBasicImageQuality(imageDataUrl: string): Promise<{
       };
     }
     
-    // If we get here, image has reasonable quality
+    // Require minimal skin tone presence - reduced from 2% to 1%
+    if (skinTonePercent < 1) {
+      return {
+        acceptable: false,
+        reason: 'No face-like features detected'
+      };
+    }
+    
+    // Require minimal color variation - reduced from 6% to 4%
+    if (colorVariationPercent < 4) {
+      return {
+        acceptable: false,
+        reason: 'Insufficient detail for face verification'
+      };
+    }
+    
+    // Require minimal edges - reduced from 2% to 1%
+    if (edgePercent < 1) {
+      return {
+        acceptable: false,
+        reason: 'No facial features detected'
+      };
+    }
+    
+    // If we get here, image meets basic face-like criteria
     return {
       acceptable: true
     };
     
   } catch (error) {
     console.error('Basic quality check error:', error);
-    // If check fails, assume acceptable to avoid blocking users
-    return { acceptable: true };
+    // If check fails, reject to be safe
+    return { 
+      acceptable: false,
+      reason: 'Image analysis failed'
+    };
   }
 }
 
@@ -323,6 +488,24 @@ export default function CameraVerificationPage() {
     return () => timeouts.forEach(timeout => clearTimeout(timeout));
   }, []);
   
+  // Auto capture photo from webcam - MOVED HERE to fix dependency issue
+  const autoCapture = useCallback(() => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        setCapturedPhoto(imageSrc);
+        setScanning(false);
+        setCountdown(null);
+        setCountdownStarted(false);
+      } else {
+        setError('Failed to capture photo. Please try again.');
+        setScanning(false);
+        setCountdown(null);
+        setCountdownStarted(false);
+      }
+    }
+  }, [webcamRef]);
+  
   // Show entry animation
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -332,19 +515,24 @@ export default function CameraVerificationPage() {
     return () => clearTimeout(timer);
   }, []);
   
-  // Start auto-capture countdown when camera is active - FIXED: Prevent duplicate countdown
+  // Start auto-capture countdown when camera is active - FIXED: Capture BEFORE countdown
   useEffect(() => {
     if (cameraActive && !capturedPhoto && !error && !countdown && !countdownStarted && !scanning) {
       // Give the user a moment to position their face
       setTimeout(() => {
         setCountdownStarted(true);
         setScanning(true);
+        
+        // CAPTURE PHOTO IMMEDIATELY when countdown starts (before showing 3,2,1)
+        autoCapture();
+        
+        // Then start the countdown for user feedback
         setCountdown(3);
       }, 2000);
     }
-  }, [cameraActive, capturedPhoto, error, countdown, countdownStarted, scanning]);
+  }, [cameraActive, capturedPhoto, error, countdown, countdownStarted, scanning, autoCapture]);
   
-  // Handle countdown for auto-capture
+  // Handle countdown for user feedback only (photo already captured)
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
       const timer = setTimeout(() => {
@@ -353,8 +541,9 @@ export default function CameraVerificationPage() {
       
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Auto capture when countdown reaches 0
-      autoCapture();
+      // Countdown finished - photo was already captured at the start
+      // Just show "Processing..." or move to next step
+      setCountdown(null);
     }
   }, [countdown]);
   
@@ -474,24 +663,6 @@ export default function CameraVerificationPage() {
     setError(null);
   };
   
-  // Auto capture photo from webcam
-  const autoCapture = useCallback(() => {
-    if (webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (imageSrc) {
-        setCapturedPhoto(imageSrc);
-        setScanning(false);
-        setCountdown(null);
-        setCountdownStarted(false);
-      } else {
-        setError('Failed to capture photo. Please try again.');
-        setScanning(false);
-        setCountdown(null);
-        setCountdownStarted(false);
-      }
-    }
-  }, [webcamRef]);
-  
   // Manual capture photo from webcam
   const capturePhoto = useCallback(() => {
     if (webcamRef.current) {
@@ -606,19 +777,20 @@ export default function CameraVerificationPage() {
   return (
     <div className="flex flex-col bg-white min-h-screen relative overflow-hidden animate-pageEnter">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
-        <div className="bg-white rounded-3xl shadow-lg p-6 relative z-10 w-full max-w-5xl mx-auto animate-cardEntrance">
-          <h1 className={`text-center text-2xl font-medium text-golden-shine mb-6 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
+      <div className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 py-4 sm:py-6">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 relative z-10 w-full max-w-5xl mx-auto animate-cardEntrance">
+          <h1 className={`text-center text-xl sm:text-2xl font-medium text-golden-shine mb-4 sm:mb-6 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
             {showPreview && processingComplete ? t('cameraVerification', 'reviewPhoto') :
-             scanning ? t('cameraVerification', 'holdStill') : 
+             capturedPhoto ? t('cameraVerification', 'processingPhoto') :
+             scanning ? t('cameraVerification', 'photoTaken') : 
              cameraLoading ? t('cameraVerification', 'initializingCamera') :
              t('cameraVerification', 'positionFace')}
           </h1>
           
           {/* Camera View */}
-          <div className={`relative mx-auto w-full max-w-lg mb-6 transition-all duration-500 ${animatedElements.cameraFrame ? 'animate-fadeInUp' : 'animate-on-load'}`}>
+          <div className={`relative mx-auto w-full max-w-sm sm:max-w-lg mb-4 sm:mb-6 transition-all duration-500 ${animatedElements.cameraFrame ? 'animate-fadeInUp' : 'animate-on-load'}`}>
             {/* Camera Outline Frame */}
-            <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-black border-2 border-gray-300">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-[4/3] bg-black border-2 border-gray-300">
               
               {/* Camera Loading State */}
               {cameraLoading && !capturedPhoto && !error && (
@@ -698,7 +870,7 @@ export default function CameraVerificationPage() {
                     <div className="text-white text-7xl font-bold animate-pulse mb-2">
                       {countdown}
                     </div>
-                    <p className="text-white text-lg font-medium">Get ready...</p>
+                    <p className="text-white text-lg font-medium">Photo captured! Processing...</p>
                   </div>
                 </div>
               )}
@@ -743,24 +915,24 @@ export default function CameraVerificationPage() {
           </div>
           
           {/* Camera Controls */}
-          <div className={`flex justify-center gap-4 mb-6 transition-all duration-500 ${animatedElements.controls ? 'animate-fadeInUp stagger-fast' : 'animate-on-load'}`}>
+          <div className={`flex justify-center gap-3 sm:gap-4 mb-4 sm:mb-6 transition-all duration-500 ${animatedElements.controls ? 'animate-fadeInUp stagger-fast' : 'animate-on-load'}`}>
             {cameraActive && !capturedPhoto && !error && !scanning && !cameraLoading && (
               <>
                 <button
                   onClick={handleSwitchCamera}
                   disabled={isSwitchingCamera}
-                  className={`bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition-colors hover-glow ${
+                  className={`bg-gray-200 p-2.5 sm:p-3 rounded-full hover:bg-gray-300 transition-colors hover-glow ${
                     isSwitchingCamera ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                   aria-label="Switch Camera"
                 >
                   {isSwitchingCamera ? (
-                    <svg className="animate-spin h-6 w-6 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                   )}
@@ -769,18 +941,18 @@ export default function CameraVerificationPage() {
                 <button
                   onClick={handleCapturePhoto}
                   disabled={isCapturing}
-                  className={`bg-[#F5BC1C] p-4 rounded-full hover:bg-[#e5ac0f] transition-colors hover-glow ${
+                  className={`bg-[#F5BC1C] p-3 sm:p-4 rounded-full hover:bg-[#e5ac0f] transition-colors hover-glow ${
                     isCapturing ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                   aria-label="Take Photo"
                 >
                   {isCapturing ? (
-                    <svg className="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-7 w-7 sm:h-8 sm:w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -791,7 +963,7 @@ export default function CameraVerificationPage() {
             
             {(scanning || cameraLoading) && !capturedPhoto && (
               <div className="text-center text-[#F5BC1C] animate-pulse">
-                <p className="text-lg font-medium">
+                <p className="text-base sm:text-lg font-medium">
                   {cameraLoading ? t('cameraVerification', 'preparingCamera') : t('cameraVerification', 'scanningFace')}
                 </p>
               </div>
@@ -800,33 +972,33 @@ export default function CameraVerificationPage() {
             {capturedPhoto && !processingComplete && (
               <div className="text-center text-[#F5BC1C] animate-pulse">
                 <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#F5BC1C]"></div>
-                  <p className="text-lg font-medium">{t('cameraVerification', 'processingPhoto')}</p>
+                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-[#F5BC1C]"></div>
+                  <p className="text-base sm:text-lg font-medium">{t('cameraVerification', 'processingPhoto')}</p>
                 </div>
               </div>
             )}
             
             {showPreview && processingComplete && !previewApproved && (
-              <div className={`flex flex-col items-center gap-4 transition-all duration-500 ${animatedElements.preview ? 'animate-scaleIn' : 'animate-on-load'}`}>
+              <div className={`flex flex-col items-center gap-3 sm:gap-4 transition-all duration-500 ${animatedElements.preview ? 'animate-scaleIn' : 'animate-on-load'}`}>
                 <div className="text-center text-green-500">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <p className="text-lg font-medium">{t('cameraVerification', 'faceVerified')}</p>
+                    <p className="text-base sm:text-lg font-medium">{t('cameraVerification', 'faceVerified')}</p>
                   </div>
-                  <p className="text-sm text-gray-600">{t('cameraVerification', 'reviewConfirm')}</p>
+                  <p className="text-xs sm:text-sm text-gray-600 px-2">{t('cameraVerification', 'reviewConfirm')}</p>
                 </div>
-                <div className="flex gap-4 stagger-fast">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-xs sm:max-w-none stagger-fast">
                   <button
                     onClick={handleRetakePhoto}
-                    className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors hover-glow"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-500 hover:bg-gray-600 text-white text-sm sm:text-base font-medium rounded-lg transition-colors hover-glow"
                   >
                     {t('cameraVerification', 'retakePhoto')}
                   </button>
                   <button
                     onClick={handleApprovePhoto}
-                    className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors hover-glow"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base font-medium rounded-lg transition-colors hover-glow"
                   >
                     {t('cameraVerification', 'looksGood')}
                   </button>
@@ -837,8 +1009,8 @@ export default function CameraVerificationPage() {
             {previewApproved && (
               <div className="text-center text-green-500 animate-pulse">
                 <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
-                  <p className="text-lg font-medium">{t('cameraVerification', 'proceeding')}</p>
+                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-green-500"></div>
+                  <p className="text-base sm:text-lg font-medium">{t('cameraVerification', 'proceeding')}</p>
                 </div>
               </div>
             )}
