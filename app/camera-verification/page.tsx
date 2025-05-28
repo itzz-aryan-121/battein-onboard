@@ -290,6 +290,7 @@ export default function CameraVerificationPage() {
   const [showAnimation, setShowAnimation] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [scanning, setScanning] = useState(false);
   const [showFaceErrorModal, setShowFaceErrorModal] = useState(false);
@@ -298,10 +299,9 @@ export default function CameraVerificationPage() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewApproved, setPreviewApproved] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const [faceDetectionError, setFaceDetectionError] = useState<string | null>(null);
+  const [countdownStarted, setCountdownStarted] = useState(false);
   
   // Animation states
   const [animatedElements, setAnimatedElements] = useState({
@@ -332,16 +332,17 @@ export default function CameraVerificationPage() {
     return () => clearTimeout(timer);
   }, []);
   
-  // Start auto-capture countdown when camera is active
+  // Start auto-capture countdown when camera is active - FIXED: Prevent duplicate countdown
   useEffect(() => {
-    if (cameraActive && !capturedPhoto && !error && !countdown) {
+    if (cameraActive && !capturedPhoto && !error && !countdown && !countdownStarted && !scanning) {
       // Give the user a moment to position their face
       setTimeout(() => {
+        setCountdownStarted(true);
         setScanning(true);
         setCountdown(3);
       }, 2000);
     }
-  }, [cameraActive, capturedPhoto, error, countdown]);
+  }, [cameraActive, capturedPhoto, error, countdown, countdownStarted, scanning]);
   
   // Handle countdown for auto-capture
   useEffect(() => {
@@ -441,6 +442,7 @@ export default function CameraVerificationPage() {
   // Handle camera errors
   const handleCameraError = (error: string | DOMException) => {
     console.error('Camera error:', error);
+    setCameraLoading(false);
     
     let errorMessage = 'Failed to access camera.';
     
@@ -465,8 +467,9 @@ export default function CameraVerificationPage() {
     setError(errorMessage);
   };
   
-  // Handle webcam load success
+  // Handle webcam load success - FIXED: Proper loading state management
   const handleWebcamLoad = () => {
+    setCameraLoading(false);
     setCameraActive(true);
     setError(null);
   };
@@ -479,10 +482,12 @@ export default function CameraVerificationPage() {
         setCapturedPhoto(imageSrc);
         setScanning(false);
         setCountdown(null);
+        setCountdownStarted(false);
       } else {
         setError('Failed to capture photo. Please try again.');
         setScanning(false);
         setCountdown(null);
+        setCountdownStarted(false);
       }
     }
   }, [webcamRef]);
@@ -495,26 +500,31 @@ export default function CameraVerificationPage() {
         setCapturedPhoto(imageSrc);
         setScanning(false);
         setCountdown(null);
+        setCountdownStarted(false);
       } else {
         setError('Failed to capture photo. Please try again.');
       }
     }
   }, [webcamRef]);
   
-  // Switch between front and back camera
+  // Switch between front and back camera - FIXED: Reset states properly
   const switchCamera = () => {
     const newMode = facingMode === 'user' ? 'environment' : 'user';
     setFacingMode(newMode);
-    // Reset countdown when switching camera
+    // Reset all countdown and scanning states
     setCountdown(null);
     setScanning(false);
+    setCountdownStarted(false);
+    setCameraLoading(true);
   };
   
-  // Retry after error
+  // Retry after error - FIXED: Reset all states
   const retryCamera = () => {
     setError(null);
     setCountdown(null);
     setScanning(false);
+    setCountdownStarted(false);
+    setCameraLoading(true);
     // Force remounting of Webcam component
     setCameraActive(false);
     setTimeout(() => {
@@ -522,14 +532,16 @@ export default function CameraVerificationPage() {
     }, 100);
   };
   
-  // Handle face error modal close
+  // Handle face error modal close - FIXED: Reset all states
   const handleFaceErrorModalClose = () => {
     setShowFaceErrorModal(false);
     setProcessingComplete(false);
-    setFaceDetectionError(null); // Reset face detection error
+    setFaceDetectionError(null);
     // Restart camera and countdown process
     setCountdown(null);
     setScanning(false);
+    setCountdownStarted(false);
+    setCameraLoading(true);
     
     // Force remounting of Webcam component
     setCameraActive(false);
@@ -543,7 +555,7 @@ export default function CameraVerificationPage() {
     setPreviewApproved(true);
   };
 
-  // Handle retake photo
+  // Handle retake photo - FIXED: Reset all states
   const handleRetakePhoto = () => {
     setCapturedPhoto(null);
     setShowPreview(false);
@@ -551,6 +563,8 @@ export default function CameraVerificationPage() {
     setPreviewApproved(false);
     setCountdown(null);
     setScanning(false);
+    setCountdownStarted(false);
+    setCameraLoading(true);
     
     // Restart camera
     setCameraActive(false);
@@ -561,8 +575,9 @@ export default function CameraVerificationPage() {
 
   // Webcam configuration
   const videoConstraints = {
-    width: 1280,
-    height: 720,
+    width: { ideal: 1280, min: 640 },
+    height: { ideal: 960, min: 480 },
+    aspectRatio: 4/3,
     facingMode: facingMode,
   };
 
@@ -596,20 +611,130 @@ export default function CameraVerificationPage() {
           <h1 className={`text-center text-2xl font-medium text-golden-shine mb-6 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
             {showPreview && processingComplete ? t('cameraVerification', 'reviewPhoto') :
              scanning ? t('cameraVerification', 'holdStill') : 
+             cameraLoading ? t('cameraVerification', 'initializingCamera') :
              t('cameraVerification', 'positionFace')}
           </h1>
           
           {/* Camera View */}
           <div className={`relative mx-auto w-full max-w-lg mb-6 transition-all duration-500 ${animatedElements.cameraFrame ? 'animate-fadeInUp' : 'animate-on-load'}`}>
             {/* Camera Outline Frame */}
-            <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-gray-100 border-2 border-gray-300">
-              <video
-                ref={videoRef}
-                autoPlay
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-              />
+            <div className="relative rounded-3xl overflow-hidden aspect-[4/3] bg-black border-2 border-gray-300">
+              
+              {/* Camera Loading State */}
+              {cameraLoading && !capturedPhoto && !error && (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 absolute inset-0">
+                  <div className="text-center p-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5BC1C] mx-auto mb-4"></div>
+                    <p className="text-sm text-gray-600">{t('cameraVerification', 'startingCamera')}</p>
+                    <p className="text-xs text-gray-500 mt-2">{t('cameraVerification', 'allowCameraAccess')}</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Webcam Component */}
+              {!capturedPhoto && !error && (
+                <div className="absolute inset-0 w-full h-full">
+                  <Webcam
+                    ref={webcamRef}
+                    audio={false}
+                    screenshotFormat="image/jpeg"
+                    videoConstraints={videoConstraints}
+                    onUserMedia={handleWebcamLoad}
+                    onUserMediaError={handleCameraError}
+                    className={`w-full h-full object-cover transition-opacity duration-500 ${
+                      cameraLoading ? 'opacity-0' : 'opacity-100'
+                    }`}
+                    style={{ 
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      width: '100%',
+                      height: '100%'
+                    }}
+                    mirrored={facingMode === 'user'}
+                  />
+                </div>
+              )}
+              
+              {/* Captured Photo Preview */}
+              {capturedPhoto && (
+                <div className="absolute inset-0 w-full h-full">
+                  <img
+                    src={capturedPhoto}
+                    alt="Captured"
+                    className="w-full h-full object-cover animate-fadeIn"
+                    style={{ 
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      width: '100%',
+                      height: '100%'
+                    }}
+                  />
+                </div>
+              )}
+              
+              {/* Error State */}
+              {error && (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200 absolute inset-0">
+                  <div className="text-center p-4">
+                    <svg className="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p className="text-sm text-gray-600 mb-4 font-medium">Camera Error</p>
+                    <p className="text-xs text-gray-500 mb-4">{error}</p>
+                    <button
+                      onClick={retryCamera}
+                      className="px-4 py-2 bg-[#F5BC1C] text-white rounded-lg hover:bg-[#e5ac0f] transition-colors font-medium"
+                    >
+                      {t('cameraVerification', 'tryAgain') || 'Try Again'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Countdown Overlay */}
+              {countdown !== null && countdown > 0 && !capturedPhoto && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 z-10">
+                  <div className="text-center">
+                    <div className="text-white text-7xl font-bold animate-pulse mb-2">
+                      {countdown}
+                    </div>
+                    <p className="text-white text-lg font-medium">Get ready...</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Scanning Overlay */}
+              {scanning && !capturedPhoto && countdown === null && (
+                <div className="absolute inset-0 pointer-events-none z-10">
+                  <div className="absolute inset-4 border-2 border-[#F5BC1C] rounded-2xl">
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#F5BC1C] animate-scanLine"></div>
+                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 text-center">
+                    <p className="text-[#F5BC1C] text-sm font-medium bg-black bg-opacity-50 px-3 py-1 rounded-full inline-block">
+                      Scanning face...
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Face Detection Frame Overlay */}
+              {cameraActive && !capturedPhoto && !error && !cameraLoading && (
+                <div className="absolute inset-0 pointer-events-none z-5">
+                  <div className="absolute inset-8 border-2 border-white border-opacity-50 rounded-2xl">
+                    {/* Corner indicators */}
+                    <div className="absolute top-0 left-0 w-6 h-6 border-l-4 border-t-4 border-[#F5BC1C] rounded-tl-lg"></div>
+                    <div className="absolute top-0 right-0 w-6 h-6 border-r-4 border-t-4 border-[#F5BC1C] rounded-tr-lg"></div>
+                    <div className="absolute bottom-0 left-0 w-6 h-6 border-l-4 border-b-4 border-[#F5BC1C] rounded-bl-lg"></div>
+                    <div className="absolute bottom-0 right-0 w-6 h-6 border-r-4 border-b-4 border-[#F5BC1C] rounded-br-lg"></div>
+                  </div>
+                  <div className="absolute bottom-2 left-0 right-0 text-center">
+                    <p className="text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded inline-block">
+                      Position your face in the frame
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <canvas
                 ref={canvasRef}
                 className="hidden"
@@ -619,7 +744,7 @@ export default function CameraVerificationPage() {
           
           {/* Camera Controls */}
           <div className={`flex justify-center gap-4 mb-6 transition-all duration-500 ${animatedElements.controls ? 'animate-fadeInUp stagger-fast' : 'animate-on-load'}`}>
-            {cameraActive && !capturedPhoto && !error && !scanning && (
+            {cameraActive && !capturedPhoto && !error && !scanning && !cameraLoading && (
               <>
                 <button
                   onClick={handleSwitchCamera}
@@ -664,22 +789,32 @@ export default function CameraVerificationPage() {
               </>
             )}
             
-            {scanning && !capturedPhoto && (
+            {(scanning || cameraLoading) && !capturedPhoto && (
               <div className="text-center text-[#F5BC1C] animate-pulse">
-                <p className="text-lg font-medium">{t('cameraVerification', 'scanningFace')}</p>
+                <p className="text-lg font-medium">
+                  {cameraLoading ? t('cameraVerification', 'preparingCamera') : t('cameraVerification', 'scanningFace')}
+                </p>
               </div>
             )}
             
             {capturedPhoto && !processingComplete && (
               <div className="text-center text-[#F5BC1C] animate-pulse">
-                <p className="text-lg font-medium">{t('cameraVerification', 'processingPhoto')}</p>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#F5BC1C]"></div>
+                  <p className="text-lg font-medium">{t('cameraVerification', 'processingPhoto')}</p>
+                </div>
               </div>
             )}
             
             {showPreview && processingComplete && !previewApproved && (
               <div className={`flex flex-col items-center gap-4 transition-all duration-500 ${animatedElements.preview ? 'animate-scaleIn' : 'animate-on-load'}`}>
                 <div className="text-center text-green-500">
-                  <p className="text-lg font-medium mb-2">{t('cameraVerification', 'faceVerified')}</p>
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-lg font-medium">{t('cameraVerification', 'faceVerified')}</p>
+                  </div>
                   <p className="text-sm text-gray-600">{t('cameraVerification', 'reviewConfirm')}</p>
                 </div>
                 <div className="flex gap-4 stagger-fast">
@@ -701,7 +836,10 @@ export default function CameraVerificationPage() {
             
             {previewApproved && (
               <div className="text-center text-green-500 animate-pulse">
-                <p className="text-lg font-medium">{t('cameraVerification', 'proceeding')}</p>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
+                  <p className="text-lg font-medium">{t('cameraVerification', 'proceeding')}</p>
+                </div>
               </div>
             )}
           </div>

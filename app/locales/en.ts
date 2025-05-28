@@ -154,7 +154,12 @@ const en = {
     reviewConfirm: "Please review your photo and confirm to continue",
     retakePhoto: "Retake Photo",
     looksGood: "Looks Good!",
-    proceeding: "Perfect! Proceeding..."
+    proceeding: "Perfect! Proceeding...",
+    tryAgain: "Try Again",
+    initializingCamera: "Initializing Camera...",
+    preparingCamera: "Preparing camera...",
+    startingCamera: "Starting camera...",
+    allowCameraAccess: "Please allow camera access if prompted"
   },
   facialSuccess: {
     title: "Well Done!",

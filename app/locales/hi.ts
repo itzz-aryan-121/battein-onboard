@@ -154,7 +154,12 @@ const hi = {
     reviewConfirm: "कृपया अपनी तस्वीर की समीक्षा करें और जारी रखने के लिए पुष्टि करें",
     retakePhoto: "दोबारा तस्वीर लें",
     looksGood: "अच्छी लग रही है!",
-    proceeding: "बेहतरीन! आगे बढ़ रहे हैं..."
+    proceeding: "बेहतरीन! आगे बढ़ रहे हैं...",
+    tryAgain: "दोबारा कोशिश करें",
+    initializingCamera: "कैमरा शुरू कर रहे हैं...",
+    preparingCamera: "कैमरा तैयार कर रहे हैं...",
+    startingCamera: "कैमरा चालू कर रहे हैं...",
+    allowCameraAccess: "कृपया कैमरा एक्सेस की अनुमति दें"
   },
   facialSuccess: {
     title: "बहुत बढ़िया!",
