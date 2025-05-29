@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface ContinueOrFreshModalProps {
   open: boolean;
@@ -7,8 +7,28 @@ interface ContinueOrFreshModalProps {
 }
 
 const ContinueOrFreshModal: React.FC<ContinueOrFreshModalProps> = ({ open, onContinue, onStartFresh }) => {
+  const [isLoadingContinue, setIsLoadingContinue] = useState(false);
+  const [isLoadingStartFresh, setIsLoadingStartFresh] = useState(false);
+
   if (!open) return null;
   
+  const handleContinue = () => {
+    
+    setIsLoadingContinue(true);
+    
+    setTimeout(() => {
+      onContinue();
+    }, 500); 
+  };
+
+  const handleStartFresh = () => {
+    setIsLoadingStartFresh(true);
+    
+    setTimeout(() => {
+      onStartFresh();
+    }, 500); 
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md p-4 animate-overlayFadeIn">
       <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 max-w-lg w-full text-center relative animate-modalSlideIn border border-gray-100 overflow-hidden">
@@ -40,28 +60,58 @@ const ContinueOrFreshModal: React.FC<ContinueOrFreshModalProps> = ({ open, onCon
           {/* Buttons */}
           <div className="flex flex-col gap-4 animate-buttonsSlideUp animation-delay-400">
             <button
-              className="group relative bg-[#F5BC1C] hover:bg-[#e0a800] text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-1 overflow-hidden"
-              onClick={onContinue}
+              className={`group relative bg-[#F5BC1C] hover:bg-[#e0a800] text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-1 overflow-hidden ${
+                isLoadingContinue || isLoadingStartFresh ? 'opacity-70 cursor-not-allowed transform-none hover:scale-100 hover:translate-y-0' : ''
+              }`}
+              onClick={handleContinue}
+              disabled={isLoadingContinue || isLoadingStartFresh}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-all duration-700"></div>
               <div className="relative flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Continue
+                {isLoadingContinue ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Continue
+                  </>
+                )}
               </div>
             </button>
             
             <button
-              className="group relative bg-gray-200 hover:bg-red-400 hover:text-white text-gray-800 font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 hover:-translate-y-1 overflow-hidden"
-              onClick={onStartFresh}
+              className={`group relative bg-gray-200 hover:bg-red-400 hover:text-white text-gray-800 font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 hover:-translate-y-1 overflow-hidden ${
+                isLoadingContinue || isLoadingStartFresh ? 'opacity-70 cursor-not-allowed transform-none hover:scale-100 hover:translate-y-0 hover:bg-gray-200 hover:text-gray-800' : ''
+              }`}
+              onClick={handleStartFresh}
+              disabled={isLoadingContinue || isLoadingStartFresh}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-all duration-700"></div>
               <div className="relative flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Start Fresh
+                {isLoadingStartFresh ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Start Fresh
+                  </>
+                )}
               </div>
             </button>
           </div>
