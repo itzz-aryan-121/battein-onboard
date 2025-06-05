@@ -272,6 +272,23 @@ export default function BankDetails() {
 
   const errorCount = Object.keys(errors).length;
 
+  // Check if form is valid for enabling submit button
+  const isFormValid = () => {
+    return (
+      formData.bankAccountNumber.trim() !== '' &&
+      formData.bankAccountNumber.match(/^\d{9,18}$/) &&
+      formData.accountHolderName.trim() !== '' &&
+      formData.ifscCode.trim() !== '' &&
+      formData.ifscCode.match(/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/) &&
+      formData.branchName.trim() !== '' &&
+      formData.upiId.trim() !== '' &&
+      formData.upiId.includes('@') &&
+      (isUploaded || userData.bankDetails.cancelCheque) &&
+      !uploadError &&
+      !isSubmitting
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden py-4 sm:py-6 md:py-8 px-4">
       <Head>
@@ -383,15 +400,15 @@ export default function BankDetails() {
               <div className={`bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-blue-200 transition-all duration-700 delay-300 ${animatedFields.header ? 'animate-scaleIn opacity-100' : 'opacity-0 scale-95'}`}>
                 <h2 className="text-center font-semibold mb-3 text-sm sm:text-base text-blue-800 flex items-center justify-center gap-2">
                   <span className="text-lg">💡</span>
-                  {t('bankDetails', 'subtitle')}
+                  Correct bank details needed to send your earnings securely
                 </h2>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-center text-xs sm:text-sm">
+                  <div className="flex items-center text-xs sm:text-sm">
                     <span className="text-green-500 mr-2 flex-shrink-0">✅</span>
                     <span className="text-gray-700">Make sure all information is accurate</span>
                   </div>
-                  <div className="flex items-center justify-center text-xs sm:text-sm">
-                    <span className="text-red-500 mr-2 flex-shrink-1">❌</span>
+                  <div className="flex items-center text-xs sm:text-sm">
+                    <span className="text-red-500 mr-2 flex-shrink-0">❌</span>
                     <span className="text-gray-700">Incorrect details may lead to failed or delayed payouts</span>
                   </div>
                 </div>
@@ -506,7 +523,7 @@ export default function BankDetails() {
                   {/* UPI Section */}
                   <div className={`transition-all duration-700 ${animatedFields.upi ? 'animate-fadeInUp opacity-100' : 'opacity-0 translate-y-8'}`}>
                     <div className="text-center lg:text-left mb-3">
-                      <label htmlFor="upiId" className="block font-semibold text-sm sm:text-base text-[#f5bc1c] mb-1">
+                      <label htmlFor="upiId" className="block font-semibold text-sm sm:text-base  mb-1">
                         {t('bankDetails', 'upiId')} <span className="text-red-500">*</span>
                       </label>
                       <p className="text-xs sm:text-sm text-gray-500">Quick and easy payment method</p>
@@ -534,7 +551,7 @@ export default function BankDetails() {
                   {/* File Upload Section */}
                   <div className={`transition-all duration-700 ${animatedFields.upload ? 'animate-scaleIn opacity-100' : 'opacity-0 scale-95'}`}>
                     <div className="text-center lg:text-left mb-3">
-                      <label htmlFor="cancelCheque" className="block font-semibold text-sm sm:text-base text-[#f5bc1c] mb-1">
+                      <label htmlFor="cancelCheque" className="block font-semibold text-sm sm:text-base mb-1">
                         {t('bankDetails', 'cancelCheque')} <span className="text-red-500">*</span>
                       </label>
                       <p className="text-xs sm:text-sm text-gray-500">Upload cancelled cheque or passbook</p>
@@ -653,9 +670,11 @@ export default function BankDetails() {
                 <div className={`transition-all duration-700 ${animatedFields.button ? 'opacity-100' : 'opacity-0 translate-y-8'}`}>
                   <button
                     type="submit"
-                    className={`w-full bg-gradient-to-r from-[#f5bc1c] to-[#ffd700] text-white py-3 sm:py-4 lg:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] 
-                      ${isSubmitting ? 'opacity-50 cursor-not-allowed from-gray-400 to-gray-500' : 'hover:from-[#e6a817] hover:to-[#f5bc1c]'}`}
-                    disabled={isSubmitting}
+                    className={`w-full bg-gradient-to-r text-white py-3 sm:py-4 lg:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all duration-300 shadow-lg 
+                      ${!isFormValid() ? 'from-gray-400 to-gray-500 opacity-50 cursor-not-allowed' : 
+                        isSubmitting ? 'from-gray-400 to-gray-500 opacity-75 cursor-not-allowed' :
+                        'from-[#f5bc1c] to-[#ffd700] hover:from-[#e6a817] hover:to-[#f5bc1c] hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]'}`}
+                    disabled={!isFormValid()}
                     style={{ minHeight: '48px' }}
                   >
                     {isSubmitting ? (
@@ -669,18 +688,35 @@ export default function BankDetails() {
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         <span>Continue to Next Step</span>
-                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
+                        {isFormValid() ? (
+                          <div className="w-5 h-5 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                        ) : (
+                          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                          </svg>
+                        )}
                       </span>
                     )}
                   </button>
                   
                   {/* Form Status Message */}
                   <div className="mt-2 text-center">
-                    <p className="text-xs sm:text-sm text-gray-500">
-                      All fields are required to proceed to the next step
-                    </p>
+                    {isFormValid() ? (
+                      <p className="text-xs sm:text-sm text-green-600 flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        All details completed - Ready to proceed
+                      </p>
+                    ) : (
+                      <p className="text-xs sm:text-sm text-gray-500">
+                        All fields are required to proceed to the next step
+                      </p>
+                    )}
                   </div>
                 </div>
               </form>
