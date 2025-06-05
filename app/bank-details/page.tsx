@@ -424,18 +424,31 @@ export default function BankDetails() {
                     <label htmlFor="bankAccountNumber" className="block font-semibold mb-2 text-sm sm:text-base text-gray-700">
                       Bank Account Number <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      id="bankAccountNumber"
-                      name="bankAccountNumber"
-                      className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
-                        ${errors.bankAccountNumber ? 'border-red-400 bg-red-50 animate-shakeX' : 'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
-                      value={formData.bankAccountNumber}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter your Bank Account Number"
-                      style={{ minHeight: '48px' }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="bankAccountNumber"
+                        name="bankAccountNumber"
+                        className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
+                          ${errors.bankAccountNumber ? 'border-red-400 bg-red-50 animate-shakeX' : 
+                            formData.bankAccountNumber && formData.bankAccountNumber.match(/^\d{9,18}$/) ? 'border-green-400 bg-green-50' :
+                            'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
+                        value={formData.bankAccountNumber}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter your Bank Account Number"
+                        style={{ minHeight: '48px' }}
+                      />
+                      {formData.bankAccountNumber && formData.bankAccountNumber.match(/^\d{9,18}$/) && !errors.bankAccountNumber && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     {errors.bankAccountNumber && (
                       <p className="mt-1 text-xs sm:text-sm text-red-600 font-medium flex items-start gap-2">
                         <span className="text-red-500 flex-shrink-0 mt-0.5">⚠️</span>
@@ -448,18 +461,31 @@ export default function BankDetails() {
                     <label htmlFor="accountHolderName" className="block font-semibold mb-2 text-sm sm:text-base text-gray-700">
                       Account Holder Name <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      id="accountHolderName"
-                      name="accountHolderName"
-                      className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
-                        ${errors.accountHolderName ? 'border-red-400 bg-red-50 animate-shakeX' : 'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
-                      value={formData.accountHolderName}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter Account Holder Name"
-                      style={{ minHeight: '48px' }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="accountHolderName"
+                        name="accountHolderName"
+                        className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
+                          ${errors.accountHolderName ? 'border-red-400 bg-red-50 animate-shakeX' : 
+                            formData.accountHolderName && formData.accountHolderName.trim() ? 'border-green-400 bg-green-50' :
+                            'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
+                        value={formData.accountHolderName}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter Account Holder Name"
+                        style={{ minHeight: '48px' }}
+                      />
+                      {formData.accountHolderName && formData.accountHolderName.trim() && !errors.accountHolderName && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     {errors.accountHolderName && (
                       <p className="mt-1 text-xs sm:text-sm text-red-600 font-medium flex items-start gap-2">
                         <span className="text-red-500 flex-shrink-0 mt-0.5">⚠️</span>
@@ -472,18 +498,31 @@ export default function BankDetails() {
                     <label htmlFor="ifscCode" className="block font-semibold mb-2 text-sm sm:text-base text-gray-700">
                       IFSC Code <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      id="ifscCode"
-                      name="ifscCode"
-                      className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
-                        ${errors.ifscCode ? 'border-red-400 bg-red-50 animate-shakeX' : 'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
-                      value={formData.ifscCode}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter IFSC Code"
-                      style={{ minHeight: '48px' }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="ifscCode"
+                        name="ifscCode"
+                        className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
+                          ${errors.ifscCode ? 'border-red-400 bg-red-50 animate-shakeX' : 
+                            formData.ifscCode && formData.ifscCode.match(/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/) ? 'border-green-400 bg-green-50' :
+                            'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
+                        value={formData.ifscCode}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter IFSC Code"
+                        style={{ minHeight: '48px' }}
+                      />
+                      {formData.ifscCode && formData.ifscCode.match(/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/) && !errors.ifscCode && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     {errors.ifscCode && (
                       <p className="mt-1 text-xs sm:text-sm text-red-600 font-medium flex items-start gap-2">
                         <span className="text-red-500 flex-shrink-0 mt-0.5">⚠️</span>
@@ -496,18 +535,31 @@ export default function BankDetails() {
                     <label htmlFor="branchName" className="block font-semibold mb-2 text-sm sm:text-base text-gray-700">
                       Branch Name <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      id="branchName"
-                      name="branchName"
-                      className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
-                        ${errors.branchName ? 'border-red-400 bg-red-50 animate-shakeX' : 'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
-                      value={formData.branchName}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter Branch Name"
-                      style={{ minHeight: '48px' }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="branchName"
+                        name="branchName"
+                        className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
+                          ${errors.branchName ? 'border-red-400 bg-red-50 animate-shakeX' : 
+                            formData.branchName && formData.branchName.trim() ? 'border-green-400 bg-green-50' :
+                            'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
+                        value={formData.branchName}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter Branch Name"
+                        style={{ minHeight: '48px' }}
+                      />
+                      {formData.branchName && formData.branchName.trim() && !errors.branchName && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     {errors.branchName && (
                       <p className="mt-1 text-xs sm:text-sm text-red-600 font-medium flex items-start gap-2">
                         <span className="text-red-500 flex-shrink-0 mt-0.5">⚠️</span>
@@ -528,18 +580,31 @@ export default function BankDetails() {
                       </label>
                       <p className="text-xs sm:text-sm text-gray-500">Quick and easy payment method</p>
                     </div>
-                    <input
-                      type="text"
-                      id="upiId"
-                      name="upiId"
-                      className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
-                        ${errors.upiId ? 'border-red-400 bg-red-50 animate-shakeX' : 'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
-                      value={formData.upiId}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter your UPI ID (e.g., name@paytm)"
-                      style={{ minHeight: '48px' }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="upiId"
+                        name="upiId"
+                        className={`w-full border-2 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-sm sm:text-base transition-all duration-300 placeholder-gray-400
+                          ${errors.upiId ? 'border-red-400 bg-red-50 animate-shakeX' : 
+                            formData.upiId && formData.upiId.includes('@') && formData.upiId.trim() ? 'border-green-400 bg-green-50' :
+                            'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
+                        value={formData.upiId}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter your UPI ID (e.g., name@paytm)"
+                        style={{ minHeight: '48px' }}
+                      />
+                      {formData.upiId && formData.upiId.includes('@') && formData.upiId.trim() && !errors.upiId && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     {errors.upiId && (
                       <p className="mt-1 text-xs sm:text-sm text-red-600 font-medium flex items-start gap-2">
                         <span className="text-red-500 flex-shrink-0 mt-0.5">⚠️</span>
@@ -688,17 +753,9 @@ export default function BankDetails() {
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         <span>Continue to Next Step</span>
-                        {isFormValid() ? (
-                          <div className="w-5 h-5 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                          </div>
-                        ) : (
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                          </svg>
-                        )}
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
                       </span>
                     )}
                   </button>
