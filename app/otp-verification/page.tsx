@@ -241,17 +241,9 @@ export default function OtpVerification() {
 
   return (
     <div className="relative min-h-screen bg-white flex flex-col overflow-hidden px-4 sm:px-6 lg:px-12 py-6 sm:py-8 animate-pageEnter">
-      {/* Desktop illustration - hidden on mobile and tablet */}
-      <Image 
-        src="/assets/yo-girl.png" 
-        alt="Illustration" 
-        width={316} 
-        height={520}
-        className="hidden xl:block absolute right-[525px] bottom-32 z-50 object-contain animate-fadeInRight"
-        priority
-      />
-
-      <div className="flex justify-center lg:justify-start items-center flex-1">
+      {/* Centered flex container for OTP and illustration */}
+      <div className="flex flex-1 min-h-[80vh] items-center justify-center xl:justify-center xl:items-center w-full max-w-7xl mx-auto">
+        {/* OTP Box */}
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg flex flex-col w-full max-w-sm sm:max-w-md lg:max-w-xl overflow-hidden relative z-10 border border-gray-200 p-6 sm:p-8 lg:p-14 animate-cardEntrance">
           {/* Header */}
           <h1 className={`text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-medium text-golden-shine mb-2 sm:mb-3 leading-tight font-inter transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
@@ -336,6 +328,17 @@ export default function OtpVerification() {
               t('otp', 'continue')
             )}
           </button>
+        </div>
+        {/* Illustration - attached to OTP box on xl screens */}
+        <div className="hidden xl:flex items-center justify-center ml-12 h-full">
+          <Image 
+            src="/assets/yo-girl.png" 
+            alt="Illustration" 
+            width={300} 
+            height={500}
+            className="object-contain z-50 animate-fadeInRight"
+            priority
+          />
         </div>
       </div>
 

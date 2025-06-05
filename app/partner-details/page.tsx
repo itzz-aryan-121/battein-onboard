@@ -925,40 +925,38 @@ const PartnerDetailsForm = () => {
                                             </div>
 
                                             {/* Enhanced Audio Player - Mobile Responsive */}
-                                            <div className="audio-waveform w-full">
-                                                {Array(50).fill(0).map((_, index) => {
-                                                    // Create a more realistic static waveform
-                                                    const height = 15 + Math.sin(index * 0.3) * 12 + Math.cos(index * 0.7) * 8;
-                                                    const isActive = index < 12; // Show first few bars as active/played
-                                                    
-                                                    return (
-                                                        <div
-                                                            key={index}
-                                                            className={`audio-waveform-bar ${isActive ? 'active' : ''}`}
-                                                            style={{
-                                                                height: `${Math.max(6, height)}px`
-                                                            }}
-                                                        ></div>
-                                                    );
-                                                })}
-                                                
-                                                {/* Play button positioned on the right */}
+                                            <div className="w-full flex flex-col sm:flex-row sm:items-center sm:gap-3">
+                                                <div className="audio-waveform w-full flex-1">
+                                                    {Array(50).fill(0).map((_, index) => {
+                                                        // Create a more realistic static waveform
+                                                        const height = 15 + Math.sin(index * 0.3) * 12 + Math.cos(index * 0.7) * 8;
+                                                        const isActive = index < 12; // Show first few bars as active/played
+                                                        return (
+                                                            <div
+                                                                key={index}
+                                                                className={`audio-waveform-bar ${isActive ? 'active' : ''}`}
+                                                                style={{ height: `${Math.max(6, height)}px` }}
+                                                            ></div>
+                                                        );
+                                                    })}
+                                                </div>
+                                                {/* Play button: below waveform on mobile, right on desktop */}
                                                 <button
                                                     type="button"
                                                     onClick={handlePlayRecording}
-                                                    className="play-button ml-2 sm:ml-3 flex-shrink-0"
+                                                    className="play-button mt-3 sm:mt-0 sm:ml-3 flex-shrink-0"
+                                                    style={{ alignSelf: 'center' }}
                                                 >
                                                     {isPlaying ? (
                                                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                                                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                                                         </svg>
                                                     ) : (
                                                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M8 5v14l11-7z"/>
+                                                            <path d="M8 5v14l11-7z" />
                                                         </svg>
                                                     )}
                                                 </button>
-                                                
                                                 {/* Audio element - hidden */}
                                                 {audioUrl && (
                                                     <audio
