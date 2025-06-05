@@ -47,42 +47,42 @@ export default function KYCVerification() {
     return () => timeouts.forEach(timeout => clearTimeout(timeout));
   }, []);
 
-  // // Initialize video modal on page load
-  // useEffect(() => {
-  //   setShowVideoModal(true);
+  // Initialize video modal on page load
+  useEffect(() => {
+    setShowVideoModal(false);
     
-  //   const handleBeforeUnload = () => {
-  //     return undefined;
-  //   };
+    const handleBeforeUnload = () => {
+      return undefined;
+    };
     
-  //   window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
     
-  //   return () => {
-  //     window.removeEventListener('beforeunload', handleBeforeUnload);
-  //   };
-  // }, []);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
-  // // Handle video playback
-  // useEffect(() => {
-  //   if (showVideoModal && videoRef.current) {
-  //     videoRef.current.play()
-  //       .catch(e => console.log('Video autoplay prevented:', e));
-  //     setIsVideoPlaying(true);
-  //   }
-  // }, [showVideoModal]);
+  // Handle video playback
+  useEffect(() => {
+    if (showVideoModal && videoRef.current) {
+      videoRef.current.play()
+        .catch(e => console.log('Video autoplay prevented:', e));
+      setIsVideoPlaying(true);
+    }
+  }, [showVideoModal]);
 
-  // // Toggle video play/pause
-  // const toggleVideoPlayback = () => {
-  //   if (videoRef.current) {
-  //     if (isVideoPlaying) {
-  //       videoRef.current.pause();
-  //       setIsVideoPlaying(false);
-  //     } else {
-  //       videoRef.current.play();
-  //       setIsVideoPlaying(true);
-  //     }
-  //   }
-  // };
+  // Toggle video play/pause
+  const toggleVideoPlayback = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsVideoPlaying(true);
+      }
+    }
+  };
 
   // Validate PAN number
   const validatePanNumber = (pan: string): boolean => {
@@ -383,23 +383,23 @@ export default function KYCVerification() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden overflow-y-auto py-8 px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden py-1 sm:py-2 md:py-3 px-4">
       <Head>
         <title>KYC Verification - PAN Card Upload</title>
         <meta name="description" content="Complete your KYC by uploading your PAN Card" />
       </Head>
 
       {/* Video Modal */}
-      {/* {showVideoModal && (
+      {showVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-opacity-50 backdrop-filter backdrop-blur-sm"
-           
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-sm"
+            onClick={() => setShowVideoModal(false)}
           ></div>
           
           <div className="relative bg-white w-full max-w-2xl mx-auto z-10 rounded-xl overflow-hidden shadow-2xl">
             <button 
-              
+              onClick={() => setShowVideoModal(false)}
               className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -422,7 +422,7 @@ export default function KYCVerification() {
                 <video 
                   ref={videoRef}
                   className="w-full h-full object-cover"
-                  
+                  onClick={toggleVideoPlayback}
                   controls={false}
                   muted
                   autoPlay
@@ -434,7 +434,7 @@ export default function KYCVerification() {
                 {!isVideoPlaying && (
                   <div 
                     className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                    
+                    onClick={toggleVideoPlayback}
                   >
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
@@ -447,232 +447,271 @@ export default function KYCVerification() {
             </div>
           </div>
         </div>
-      )} */}
+      )}
 
-      <main className="w-full max-w-4xl z-10 animate-pageEnter">
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mx-auto animate-cardEntrance">
-          <h1 className={`text-xl sm:text-2xl font-bold text-center mb-2 transition-all duration-500 ${animatedElements.header ? 'animate-headerSlide' : 'animate-on-load'}`}>
-            {t('kyc', 'title')}
-          </h1>
-          <p className={`text-center text-gray-700 text-xs sm:text-sm mb-3 transition-all duration-500 ${animatedElements.header ? 'animate-contentReveal' : 'animate-on-load'}`}>
-            {t('kyc', 'subtitle')}
-          </p>
-          <div className={`bg-gray-50 rounded-lg p-3 mb-4 w-full max-w-md mx-auto transition-all duration-500 ${animatedElements.header ? 'animate-fadeInUp' : 'animate-on-load'}`}>
-            <h3 className="font-medium text-center text-sm mb-1">{t('kyc', 'whyPanRequired')}</h3>
-            <ul className="space-y-1 text-xs">
-              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>{t('kyc', 'kycVerification')}</li>
-              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>{t('kyc', 'tdsCompliance')}</li>
-              <li className="flex items-start"><span className="text-red-500 mr-2">📌</span>{t('kyc', 'receivePayments')}</li>
-            </ul>
+      <main className="w-full max-w-4xl z-10">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-3 sm:p-4 lg:p-5 mx-auto border border-[#f5bc1c0a]">
+          {/* Header Section */}
+          <div className="text-center mb-2 sm:mb-3">
+            <h1 className={`text-lg sm:text-xl lg:text-2xl font-bold mb-1 text-gray-800 transition-all duration-700 ${animatedElements.header ? 'animate-fadeInUp opacity-100' : 'opacity-0 translate-y-8'}`}>
+              {t('kyc', 'title')} 📄
+            </h1>
+            <p className={`text-center text-gray-600 text-xs sm:text-sm leading-relaxed mb-1 px-2 transition-all duration-700 delay-200 ${animatedElements.header ? 'animate-fadeInUp opacity-100' : 'opacity-0 translate-y-8'}`}>
+              {t('kyc', 'subtitle')}
+            </p>
           </div>
-          <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-            <div className={`mb-3 w-full max-w-md mx-auto transition-all duration-500 ${animatedElements.panInput ? 'animate-fadeInLeft' : 'animate-on-load'}`}>
-              <label htmlFor="panNumber" className="block mb-1 text-sm font-medium">
-                {t('kyc', 'panNumber')} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="panNumber"
-                className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 transition-all`}
-                placeholder={t('kyc', 'panPlaceholder')}
-                value={panNumber}
-                onChange={handlePanNumberChange}
-                maxLength={10}
-                required
-              />
-              {panError && (
-                <p className="mt-1 text-xs text-red-500 animate-shakeX">
-                  {panError}
-                </p>
-              )}
-              <p className="mt-1 text-xs text-gray-500">
-                {t('kyc', 'panFormat')}
-              </p>
-            </div>
-            <div className={`mb-4 w-full max-w-md mx-auto transition-all duration-500 ${animatedElements.uploadArea ? 'animate-fadeInUp' : 'animate-on-load'}`}>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium">{t('kyc', 'uploadPanCard')}</label>
-                <label htmlFor="panCardUpload" className={`px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg transition-all ${(uploadProgress > 0 && uploadProgress < 100) || isCompressing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 hover:border-[#F5BC1C] cursor-pointer'}`}>
-                  {isCompressing ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin h-3 w-3 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                      </svg>
-                      {t('kyc', 'compressing')}
-                    </span>
-                  ) : (uploadProgress > 0 && uploadProgress < 100) ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin h-3 w-3 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                      </svg>
-                      {t('kyc', 'processing')}
-                    </span>
-                  ) : (
-                    <>
-                      {t('kyc', 'upload')} <svg className="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
-                    </>
-                  )}
-                  <input 
-                    type="file" 
-                    id="panCardUpload" 
-                    className="hidden" 
-                    accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif" 
-                    onChange={handleFileUpload} 
-                    disabled={(uploadProgress > 0 && uploadProgress < 100) || isCompressing} 
-                  />
-                </label>
-              </div>
-              
-              {/* Show compression progress for large files */}
-              {isCompressing && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-blue-600">Compressing large file...</span>
-                    <span className="text-xs text-blue-600">{compressionProgress}%</span>
-                  </div>
-                  <div className="w-full bg-blue-100 rounded-full h-1.5">
-                    <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style={{ width: `${compressionProgress}%` }}></div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Show upload error */}
-              {uploadError && (
-                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <div className="flex items-center">
-                    <svg className="h-4 w-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p className="text-sm text-red-600 font-medium">{t('kyc', 'uploadFailed')}</p>
-                  </div>
-                  <p className="text-xs text-red-600 mt-1">{uploadError}</p>
-                </div>
-              )}
 
-              {/* Show upload progress */}
-              {uploadProgress > 0 && uploadProgress < 100 && !uploadError && (
-                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      <svg className="animate-spin h-4 w-4 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          {/* Desktop: Single Column Layout with Info Section */}
+          <div className="max-w-3xl mx-auto">
+            
+            {/* Info Section */}
+            <div className="mb-2 lg:mb-3">
+              <div className={`bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg sm:rounded-xl p-2 sm:p-3 w-full max-w-md mx-auto border border-amber-200 transition-all duration-700 delay-300 ${animatedElements.header ? 'animate-scaleIn opacity-100' : 'opacity-0 scale-95'}`}>
+                <h2 className="text-center font-semibold mb-1 text-xs sm:text-sm text-amber-800 flex items-center justify-center gap-2">
+                  <span className="text-sm">💡</span>
+                  {t('kyc', 'whyPanRequired')}
+                </h2>
+                <div className="space-y-1">
+                  <div className="flex items-center text-xs">
+                    <span className="text-green-500 mr-2 flex-shrink-0">✅</span>
+                    <span className="text-gray-700">{t('kyc', 'kycVerification')}</span>
+                  </div>
+                  <div className="flex items-center text-xs">
+                    <span className="text-green-500 mr-2 flex-shrink-0">✅</span>
+                    <span className="text-gray-700">{t('kyc', 'tdsCompliance')}</span>
+                  </div>
+                  <div className="flex items-center text-xs">
+                    <span className="text-green-500 mr-2 flex-shrink-0">✅</span>
+                    <span className="text-gray-700">{t('kyc', 'receivePayments')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Form Section */}
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+              {/* PAN Number Input */}
+              <div className={`w-full max-w-sm mx-auto transition-all duration-700 ${animatedElements.panInput ? 'animate-fadeInLeft opacity-100' : 'opacity-0 -translate-x-8'}`}>
+                <label htmlFor="panNumber" className="block font-semibold mb-1 text-xs sm:text-sm text-gray-700">
+                  {t('kyc', 'panNumber')} <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="panNumber"
+                    className={`w-full border-2 rounded-lg sm:rounded-xl px-3 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-[#f5bc1c] focus:border-[#f5bc1c] text-xs sm:text-sm transition-all duration-300 placeholder-gray-400
+                      ${panError ? 'border-red-400 bg-red-50 animate-shakeX' : 'border-gray-300 bg-white hover:border-[#f5bc1c]'}`}
+                    placeholder={t('kyc', 'panPlaceholder')}
+                    value={panNumber}
+                    onChange={handlePanNumberChange}
+                    maxLength={10}
+                    required
+                    style={{ minHeight: '36px' }}
+                  />
+                  {panNumber.length > 0 && !panError && panNumber.length === 10 && (
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {panError && (
+                  <p className="mt-1 text-xs text-red-600 font-medium flex items-start gap-1">
+                    <span className="text-red-500 flex-shrink-0 mt-0.5">⚠️</span>
+                    {panError}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                  <span className="text-blue-500">💡</span>
+                  {t('kyc', 'panFormat')}
+                </p>
+              </div>
+
+              {/* File Upload Section */}
+              <div className={`w-full max-w-sm mx-auto transition-all duration-700 ${animatedElements.uploadArea ? 'animate-scaleIn opacity-100' : 'opacity-0 scale-95'}`}>
+                <div className="text-center mb-2">
+                  <label htmlFor="panCardUpload" className="block font-semibold text-xs sm:text-sm text-[#f5bc1c] mb-1">
+                    {t('kyc', 'uploadPanCard')} <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500">Upload your PAN card image</p>
+                </div>
+                
+                <label 
+                  htmlFor="panCardUpload" 
+                  className={`relative flex flex-col items-center justify-center w-full h-16 sm:h-20 border-2 border-dashed rounded-lg sm:rounded-xl cursor-pointer transition-all duration-300 
+                    ${uploadProgress > 0 && uploadProgress < 100 ? 'opacity-50 cursor-not-allowed border-gray-300 bg-gray-50' :
+                      isUploaded ? 'border-green-400 bg-green-50 hover:bg-green-100' : 
+                      'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-[#f5bc1c] hover:scale-[1.02]'}`}
+                >
+                  {isUploaded ? (
+                    // Success State
+                    <div className="text-center p-2">
+                      <div className="w-6 h-6 mx-auto mb-1 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                      <p className="text-xs font-semibold text-green-700 mb-1">Upload Complete!</p>
+                      <p className="text-xs text-green-600">Click to change file</p>
+                    </div>
+                  ) : uploadProgress > 0 && uploadProgress < 100 ? (
+                    // Uploading State
+                    <div className="text-center p-2">
+                      <div className="w-6 h-6 mx-auto mb-1">
+                        <svg className="animate-spin h-6 w-6 text-[#f5bc1c]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-700 mb-1">Uploading...</p>
+                      <p className="text-xs text-gray-500">{uploadProgress}% complete</p>
+                    </div>
+                  ) : (
+                    // Default Upload State
+                    <div className="text-center p-2">
+                      <div className="w-6 h-6 mx-auto mb-1 bg-[#f5bc1c] rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-700 mb-1">
+                        Upload PAN Card
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Click to browse or drag & drop
+                      </p>
+                    </div>
+                  )}
+                </label>
+                
+                <input
+                  type="file"
+                  id="panCardUpload"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  accept="image/*,.pdf"
+                  disabled={uploadProgress > 0 && uploadProgress < 100}
+                />
+
+                {/* Upload Error */}
+                {uploadError && (
+                  <div className="mt-1 animate-fadeInUp">
+                    <div className="flex items-center p-2 bg-red-50 border border-red-200 rounded-lg">
+                      <svg className="h-3 w-3 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
-                      <span className="text-sm text-black font-medium">
+                      <div>
+                        <p className="text-xs text-red-600 font-medium">Upload Failed</p>
+                        <p className="text-xs text-red-600">{uploadError}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Progress */}
+                {uploadProgress > 0 && uploadProgress < 100 && !uploadError && (
+                  <div className="mt-1 animate-fadeInUp">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-700 font-medium">
                         {uploadProgress < 20 ? 'Preparing upload...' : 
                          uploadProgress < 50 ? 'Uploading to cloud...' : 
                          uploadProgress < 90 ? 'Processing file...' : 
                          'Finalizing upload...'}
                       </span>
+                      <span className="text-xs text-gray-700 font-semibold">{uploadProgress}%</span>
                     </div>
-                    <span className="text-sm text-black font-semibold">{uploadProgress}%</span>
+                    <div className="w-full bg-gray-200 rounded-full h-1">
+                      <div className="bg-[#f5bc1c] h-1 rounded-full transition-all duration-300 ease-out" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div className="bg-[#F5BC1C] h-2 rounded-full transition-all duration-300 ease-out" style={{ width: `${uploadProgress}%` }}></div>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Show success state */}
-              {isUploaded && uploadProgress === 100 && !uploadError && (
-                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
-                  <div className="flex items-center">
-                    <svg className="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span className="text-sm text-green-600 font-medium">{t('kyc', 'uploadCompleted')}</span>
-                  </div>
-                </div>
-              )}
-              
-              {panCardFile && (
-                <div className="border border-yellow-400 rounded-xl px-3 sm:px-4 mx-auto my-auto flex items-center gap-2 sm:gap-4 mt-2 w-full h-auto py-2 sm:py-0 sm:h-[61px]" style={{ boxShadow: '0px 0px 12.3px 0px #00000014' }}>
-                  <div className="flex-shrink-0">
-                    <img src="/assets/_File upload icon.png" alt="" className='w-[24px] h-[24px] sm:w-[28px] sm:h-[28px]'/>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-light text-sm sm:text-lg text-gray-800 truncate">
-                      {panCardFile}
+                {/* Success State */}
+                {isUploaded && uploadProgress === 100 && !uploadError && (
+                  <div className="mt-1 animate-fadeInUp">
+                    <div className="flex items-center p-1 bg-green-50 border border-green-200 rounded-lg">
+                      <svg className="h-3 w-3 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      <span className="text-xs text-green-600 font-medium">File uploaded successfully!</span>
                     </div>
-                    {uploadedFileSize !== null && (
-                      <div className="text-gray-500 text-xs sm:text-sm">
-                        {uploadedFileSize > 1024 * 1024 
-                          ? `${(uploadedFileSize / (1024 * 1024)).toFixed(1)} MB` 
-                          : `${Math.round(uploadedFileSize / 1024)} KB`}
-                      </div>
-                    )}
                   </div>
-                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
-                    {isUploaded ? (
-                      <div className="flex items-center">
-                        <span className="text-green-600 text-xs sm:text-sm font-medium mr-2">{t('kyc', 'uploaded')}</span>
-                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                          </svg>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 sm:w-20 bg-yellow-100 rounded-full h-2">
-                          <div className="bg-yellow-400 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
-                        </div>
-                        <span className="font-semibold text-gray-700 text-xs sm:text-sm whitespace-nowrap">{uploadProgress}%</span>
-                      </div>
-                    )}
-                  </div>
+                )}
+                
+                <p className="mt-1 text-xs text-gray-500 text-center">
+                  Supported formats: JPEG, PNG, PDF (Max size: 50MB)
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <div className={`w-full max-w-sm mx-auto transition-all duration-700 ${animatedElements.button ? ' opacity-100' : 'opacity-0 translate-y-8'}`}>
+                <button
+                  type="submit"
+                  className={`w-full bg-gradient-to-r from-[#f5bc1c] to-[#ffd700] text-white py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-bold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] 
+                    ${!isFormValid || isSubmitting ? 'opacity-50 cursor-not-allowed from-gray-400 to-gray-500' : 'hover:from-[#e6a817] hover:to-[#f5bc1c]'}`}
+                  disabled={!isFormValid || isSubmitting}
+                  style={{ minHeight: '36px' }}
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                      <span>Processing...</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <span>Continue to Next Step</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                      </svg>
+                    </span>
+                  )}
+                </button>
+                
+                {/* Form Status Message */}
+                <div className="mt-1 text-center">
+                  <p className="text-xs text-gray-500">
+                    All fields are required to proceed to the next step
+                  </p>
                 </div>
-              )}
-              
-              <p className="mt-2 text-xs text-gray-500">
-                Supported formats: JPEG, PNG, WEBP, HEIC, HEIF (Max size: 50MB - Large files will be automatically compressed)
-              </p>
-            </div>
-            <div className={`mb-4 transition-all duration-500 ${animatedElements.uploadArea ? 'animate-fadeInUp' : 'animate-on-load'}`}>
-              <h3 className="text-center text-sm font-medium mb-1">Reference Video:</h3>
-              <p className="text-center text-xs text-gray-600 mb-2">Complete Step by Step Process Explained</p>
-              <div 
-                className="relative mx-auto rounded-lg overflow-hidden w-full max-w-[257px] cursor-pointer"
-                style={{ maxHeight: "150px" }}
-                onClick={() => setShowVideoModal(true)}
-              >
-                <img src="/assets/kyc-video-thumbnail.png" alt="KYC Video Thumbnail" className="w-full h-full object-cover" style={{ maxHeight: "150px" }} />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-black bg-opacity-50 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover-scale">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+              </div>
+
+              {/* Reference Video Section - After proceed button */}
+              <div className={`w-full max-w-sm mx-auto mt-2 transition-all duration-700 ${animatedElements.uploadArea ? 'animate-fadeInUp opacity-100' : 'opacity-0 translate-y-8'}`}>
+                <div className="text-center mb-2">
+                  <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1">📹 Reference Video</h3>
+                  <p className="text-xs text-gray-500">Complete Step-by-Step Process Explained</p>
+                </div>
+                <div 
+                  className="relative mx-auto rounded-lg sm:rounded-xl overflow-hidden w-full max-w-[200px] cursor-pointer shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                  style={{ aspectRatio: '16/9' }}
+                  onClick={() => setShowVideoModal(true)}
+                >
+                  <img 
+                    src="/assets/kyc-video-thumbnail.png" 
+                    alt="KYC Video Thumbnail" 
+                    className="w-full h-full object-cover" 
+                  />
+                  <div className="absolute inset-0  bg-opacity-20 flex items-center justify-center">
+                    <div className="bg-white bg-opacity-90 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shadow-lg hover:bg-opacity-100 transition-all duration-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-[#f5bc1c] ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <button
-              type="submit"
-              className={`w-full max-w-[278px] mx-auto bg-yellow-500 text-white py-2 rounded-lg text-base font-medium transition-all hover-glow ${
-                !isFormValid || isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-600'
-              } button-animate ${animatedElements.button ? 'animate-buttonGlow' : 'animate-on-load'}`}
-              disabled={!isFormValid || isSubmitting}
-            >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                  </svg>
-                  {t('kyc', 'processing')}
-                </span>
-              ) : (
-                t('kyc', 'proceed')
-              )}
-            </button>
-          </form>
+            </form>
+          </div>
         </div>
       </main>
 
-      <WaveBackground height={250} />
+      <WaveBackground height={100} />
     </div>
   );
 }
