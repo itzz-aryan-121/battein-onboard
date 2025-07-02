@@ -105,10 +105,10 @@ const en = {
   earnMultiple: {
     title: "Earn Multiple Ways",
     subtitle: "Choose your earning preferences",
-    voiceCalls: "Voice Calls",
+    voiceCalls: "Audio Calls",
     voiceCallsDesc: "Talk to people through phone calls",
-    videoCalls: "Video Calls",
-    videoCallsDesc: "Connect with people through video calls",
+    videoCalls: "Audio & Video Calls",
+    videoCallsDesc: "Connect with people through audio & video calls",
     chatMessages: "Chat Messages",
     chatMessagesDesc: "Communicate through text messages",
     selectPreferences: "Select your preferences and proceed",

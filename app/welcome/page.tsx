@@ -42,6 +42,11 @@ const RegistrationForm = () => {
   const [showLGBTQErrorModal, setShowLGBTQErrorModal] = useState(false);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(true);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [videoWatchedOnce, setVideoWatchedOnce] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Progressive form field appearance for better UX
   useEffect(() => {
@@ -55,6 +60,10 @@ const RegistrationForm = () => {
     return () => timeouts.forEach(timeout => clearTimeout(timeout));
   }, []);
 
+  useEffect(() => {
+    setShowVideoModal(true);
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -62,7 +71,7 @@ const RegistrationForm = () => {
       [name]: value
     }));
     
-    // Validate each field on change
+    
     validateField(name, value);
   };
 
@@ -72,19 +81,19 @@ const RegistrationForm = () => {
       gender
     }));
     
-    // Clear gender error when a new gender is selected
+    
     setErrors(prev => ({
       ...prev,
       gender: ''
     }));
     
-    // If selecting LGBTQ, validate the name for feminine characteristics
+    
     if (gender === 'LGBTQ' && formData.name.trim() !== '') {
       validateField('name', formData.name);
     }
   };
   
-  // Validate a specific field
+  
   const validateField = (fieldName: string, value: string) => {
     let newErrors = { ...errors };
     
@@ -116,7 +125,7 @@ const RegistrationForm = () => {
     setErrors(newErrors);
   };
   
-  // Check for LGBTQ Validation(On the basis of name)
+  
   const isFeminineName = (name: string) => {
     // Enhanced list of feminine name patterns
     const feminineEndings = ['a', 'i', 'e', 'ah', 'ya', 'ia', 'ina', 'ita', 'elle', 'elly', 'ly', 'ey','ora','ine','lyn','is','na'];
@@ -181,8 +190,105 @@ const RegistrationForm = () => {
     }
   };
 
+  // Toggle video play/pause
+  const toggleVideoPlayback = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+        setIsVideoPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsVideoPlaying(true);
+      }
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setHasWatchedVideo(true);
+    setVideoWatchedOnce(true);
+  };
+
+  const handleReplay = () => {
+    setHasWatchedVideo(false);
+    setIsVideoPlaying(true);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen w-full flex flex-col relative">
+      {/* Welcome Video Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
+          <div className="relative bg-white/90 w-full max-w-lg mx-auto z-10 rounded-2xl overflow-hidden shadow-2xl border border-yellow-100">
+            <div className="p-4 sm:p-8 pb-6 sm:pb-10">
+              <div className="text-center mb-4 sm:mb-6">
+                <h2 className="text-yellow-500 text-2xl sm:text-3xl font-bold mb-1">
+                  Welcome to Baatein
+                </h2>
+                <p className="text-gray-700 text-sm sm:text-base">
+                  Watch this quick video to get started with Baatein
+                </p>
+              </div>
+              <div className="relative rounded-xl overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto mb-4 flex justify-center items-center" style={{ height: '70vh', background: '#000' }}>
+                <video
+                  ref={videoRef}
+                  className="h-full w-auto object-contain bg-black"
+                  controls
+                  muted
+                  autoPlay
+                  onEnded={handleVideoEnded}
+                >
+                  <source src="https://baateinvideos001.blob.core.windows.net/videos/Be%20a%20partner%20without%20music.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                {!isVideoPlaying && (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                    onClick={toggleVideoPlayback}
+                  >
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Modal Actions */}
+              <div className="flex flex-col items-center gap-3 mt-2">
+                {!videoWatchedOnce ? (
+                  <button
+                    className="w-32 py-2 rounded-lg bg-gray-300 text-gray-600 font-semibold cursor-not-allowed opacity-60"
+                    disabled
+                  >
+                    Watch till end to continue
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="w-32 py-2 rounded-lg bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 transition"
+                      onClick={() => setShowVideoModal(false)}
+                    >
+                      Continue
+                    </button>
+                    <button
+                      className="w-32 py-2 rounded-lg bg-white border border-yellow-400 text-yellow-600 font-semibold hover:bg-yellow-50 transition"
+                      onClick={handleReplay}
+                    >
+                      Replay
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Generic Error Modal */}
       {showErrorModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

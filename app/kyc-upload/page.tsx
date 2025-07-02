@@ -17,6 +17,8 @@ export default function KYCVerification() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(!!userData.kyc.panCardFile);
   const [showVideoModal, setShowVideoModal] = useState(true);
+  const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
+  const [videoWatchedOnce, setVideoWatchedOnce] = useState(false);
   const [panError, setPanError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -49,17 +51,7 @@ export default function KYCVerification() {
 
   // Initialize video modal on page load
   useEffect(() => {
-    setShowVideoModal(false);
-    
-    const handleBeforeUnload = () => {
-      return undefined;
-    };
-    
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
+    setShowVideoModal(true);
   }, []);
 
   // Handle video playback
@@ -382,6 +374,20 @@ export default function KYCVerification() {
     localStorage.setItem('lastVisitedPage', '/kyc-upload');
   }, []);
 
+  const handleVideoEnded = () => {
+    setHasWatchedVideo(true);
+    setVideoWatchedOnce(true);
+  };
+
+  const handleReplay = () => {
+    setHasWatchedVideo(false);
+    setIsVideoPlaying(true);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden py-1 sm:py-2 md:py-3 px-4">
       <Head>
@@ -392,56 +398,66 @@ export default function KYCVerification() {
       {/* Video Modal */}
       {showVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-sm"
-            onClick={() => setShowVideoModal(false)}
-          ></div>
-          
-          <div className="relative bg-white w-full max-w-2xl mx-auto z-10 rounded-xl overflow-hidden shadow-2xl">
-            <button 
-              onClick={() => setShowVideoModal(false)}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-            
-            <div className="p-4 sm:p-6 pb-6 sm:pb-8">
+          <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
+          <div className="relative bg-white/90 w-full max-w-lg mx-auto z-10 rounded-2xl overflow-hidden shadow-2xl border border-yellow-100">
+            <div className="p-4 sm:p-8 pb-6 sm:pb-10">
               <div className="text-center mb-4 sm:mb-6">
-                <h2 className="text-yellow-500 text-xl sm:text-2xl font-bold mb-1">
+                <h2 className="text-yellow-500 text-2xl sm:text-3xl font-bold mb-1">
                   KYC Verification Guide
                 </h2>
-                <p className="text-gray-700 text-xs sm:text-sm">
+                <p className="text-gray-700 text-sm sm:text-base">
                   Watch this step-by-step guide on how to complete your KYC verification
                 </p>
               </div>
-              
-              <div className="relative rounded-lg overflow-hidden w-full aspect-video">
-                <video 
+              <div className="relative rounded-xl overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto mb-4 flex justify-center items-center" style={{ height: '70vh', background: '#000' }}>
+                <video
                   ref={videoRef}
-                  className="w-full h-full object-cover"
-                  onClick={toggleVideoPlayback}
-                  controls={false}
+                  className="h-full w-auto object-contain bg-black"
+                  controls
                   muted
                   autoPlay
+                  onEnded={handleVideoEnded}
                 >
-                  <source src="/assets/kyc-reference-video.mp4" type="video/mp4" />
+                  <source src="https://baateinvideos001.blob.core.windows.net/videos/kyc%20part%202%20no%20music.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
-                
                 {!isVideoPlaying && (
-                  <div 
+                  <div
                     className="absolute inset-0 flex items-center justify-center cursor-pointer"
                     onClick={toggleVideoPlayback}
                   >
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                     </div>
                   </div>
+                )}
+              </div>
+              {/* Modal Actions */}
+              <div className="flex flex-col items-center gap-3 mt-2">
+                {!videoWatchedOnce ? (
+                  <button
+                    className="w-32 py-2 rounded-lg bg-gray-300 text-gray-600 font-semibold cursor-not-allowed opacity-60"
+                    disabled
+                  >
+                    Watch till end to continue
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="w-32 py-2 rounded-lg bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 transition"
+                      onClick={() => setShowVideoModal(false)}
+                    >
+                      Continue
+                    </button>
+                    <button
+                      className="w-32 py-2 rounded-lg bg-white border border-yellow-400 text-yellow-600 font-semibold hover:bg-yellow-50 transition"
+                      onClick={handleReplay}
+                    >
+                      Replay
+                    </button>
+                  </>
                 )}
               </div>
             </div>
