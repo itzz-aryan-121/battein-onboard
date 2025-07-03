@@ -38,7 +38,7 @@ export default function LanguageSelection() {
       
       // Update context and localStorage
       setLanguage(selectedLanguage);
-      router.push('/welcome');
+      router.push('/personal');
     } catch (error) {
       console.error('Error setting language:', error);
     } finally {

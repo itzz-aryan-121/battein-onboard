@@ -12,13 +12,11 @@ const RegistrationForm = () => {
   const { t } = useLanguage();
   const { userData, updateUserData } = useUserData();
   const [formData, setFormData] = useState<{
-    name: string;
-    phoneNumber: string;
+    profileName: string;
     gender: 'Female' | 'Male' | 'LGBTQ';
     referralCode: string;
   }>({
-    name: userData.name || '',
-    phoneNumber: userData.phoneNumber || '',
+    profileName: userData.profileName || '',
     gender: userData.gender || 'Female',
     referralCode: userData.referralCode || ''
   });
@@ -26,13 +24,11 @@ const RegistrationForm = () => {
   // Validation errors for each field
   const [errors, setErrors] = useState({
     name: '',
-    phoneNumber: '',
     gender: ''
   });
   
   const [animatedFields, setAnimatedFields] = useState({
     name: false,
-    phoneNumber: false,
     gender: false,
     referralCode: false
   });
@@ -46,15 +42,15 @@ const RegistrationForm = () => {
   const [hasWatchedVideo, setHasWatchedVideo] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const [videoWatchedOnce, setVideoWatchedOnce] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Progressive form field appearance for better UX
   useEffect(() => {
     const timeouts = [
       setTimeout(() => setAnimatedFields(prev => ({ ...prev, name: true })), 300),
-      setTimeout(() => setAnimatedFields(prev => ({ ...prev, phoneNumber: true })), 500),
-      setTimeout(() => setAnimatedFields(prev => ({ ...prev, gender: true })), 700),
-      setTimeout(() => setAnimatedFields(prev => ({ ...prev, referralCode: true })), 900),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, gender: true })), 500),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, referralCode: true })), 700),
     ];
     
     return () => timeouts.forEach(timeout => clearTimeout(timeout));
@@ -70,7 +66,6 @@ const RegistrationForm = () => {
       ...prevState,
       [name]: value
     }));
-    
     
     validateField(name, value);
   };
@@ -88,8 +83,8 @@ const RegistrationForm = () => {
     }));
     
     
-    if (gender === 'LGBTQ' && formData.name.trim() !== '') {
-      validateField('name', formData.name);
+    if (gender === 'LGBTQ' && formData.profileName.trim() !== '') {
+      validateField('profileName', formData.profileName);
     }
   };
   
@@ -98,7 +93,7 @@ const RegistrationForm = () => {
     let newErrors = { ...errors };
     
     switch (fieldName) {
-      case 'name':
+      case 'profileName':
         if (value.trim() === '') {
           newErrors.name = 'Name is required';
         } else if (value.trim().length < 3) {
@@ -107,17 +102,6 @@ const RegistrationForm = () => {
           newErrors.name = 'For LGBTQ selection, please use a feminine name style';
         } else {
           newErrors.name = '';
-        }
-        break;
-        
-      case 'phoneNumber':
-        const phoneRegex = /^[0-9]{10}$/;
-        if (value.trim() === '') {
-          newErrors.phoneNumber = 'Phone number is required';
-        } else if (!phoneRegex.test(value)) {
-          newErrors.phoneNumber = 'Please enter a valid 10-digit phone number';
-        } else {
-          newErrors.phoneNumber = '';
         }
         break;
     }
@@ -147,11 +131,10 @@ const RegistrationForm = () => {
     setIsLoading(true);
     try {
       // Validate all fields before submission
-      validateField('name', formData.name);
-      validateField('phoneNumber', formData.phoneNumber);
+      validateField('profileName', formData.profileName);
       
       // Check if we have any errors
-      if (errors.name || errors.phoneNumber || formData.name.trim() === '' || formData.phoneNumber.trim() === '') {
+      if (errors.name || formData.profileName.trim() === '') {
         setErrorMessage("Please fix the errors in the form before submitting.");
         setShowErrorModal(true);
         setIsLoading(false);
@@ -159,7 +142,7 @@ const RegistrationForm = () => {
       }
 
       // Special check for LGBTQ with non-feminine name
-      if (formData.gender === 'LGBTQ' && !isFeminineName(formData.name)) {
+      if (formData.gender === 'LGBTQ' && !isFeminineName(formData.profileName)) {
         setErrorMessage("For LGBTQ selection, please use a feminine name style.");
         setShowLGBTQErrorModal(true);
         setIsLoading(false);
@@ -168,8 +151,7 @@ const RegistrationForm = () => {
 
       // Store user data in context instead of localStorage
       updateUserData({
-        name: formData.name,
-        phoneNumber: formData.phoneNumber,
+        profileName: formData.profileName,
         gender: formData.gender as 'Female' | 'Male' | 'LGBTQ',
         referralCode: formData.referralCode
       });
@@ -180,7 +162,7 @@ const RegistrationForm = () => {
         setIsLoading(false);
       } else {
         // For female and LGBTQ gender, proceed to OTP verification
-        router.push(`/otp-verification?phoneNumber=${formData.phoneNumber}`);
+        router.push(`/otp-verification?phoneNumber=${userData.phoneNumber}`);
       }
     } catch (error) {
       console.error('Error processing form:', error);
@@ -222,47 +204,81 @@ const RegistrationForm = () => {
       {/* Welcome Video Modal */}
       {showVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
-          <div className="relative bg-white/90 w-full max-w-lg mx-auto z-10 rounded-2xl overflow-hidden shadow-2xl border border-yellow-100">
-            <div className="p-4 sm:p-8 pb-6 sm:pb-10">
-              <div className="text-center mb-4 sm:mb-6">
-                <h2 className="text-yellow-500 text-2xl sm:text-3xl font-bold mb-1">
-                  Welcome to Baatein
-                </h2>
-                <p className="text-gray-700 text-sm sm:text-base">
-                  Watch this quick video to get started with Baatein
-                </p>
+          {/* Blurred dark overlay */}
+          <div className="absolute inset-0 bg-opacity-70 backdrop-blur-sm transition-opacity"></div>
+          {/* Popup modal */}
+          <div className="relative bg-white/95 w-full max-w-md mx-auto z-10 rounded-2xl shadow-2xl border border-yellow-100 p-0 animate-scaleIn">
+            {/* Close button (disabled until watched once) */}
+            <button
+              onClick={() => setShowVideoModal(false)}
+              className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white text-gray-700 shadow hover:bg-gray-100 transition disabled:opacity-50 disabled:pointer-events-none z-20"
+              disabled={!videoWatchedOnce}
+              aria-label="Close video"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div className="flex flex-col items-center px-6 pt-8 pb-6">
+              {/* Title & subtitle */}
+              <div className="text-center mb-4">
+                <h2 className="text-yellow-500 text-2xl font-bold mb-1">Welcome to Baatein</h2>
+                <p className="text-gray-700 text-sm">Watch this quick video to get started with Baatein</p>
               </div>
-              <div className="relative rounded-xl overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto mb-4 flex justify-center items-center" style={{ height: '70vh', background: '#000' }}>
+              {/* Video in dark rounded container */}
+              <div className="relative rounded-xl overflow-hidden flex justify-center items-center bg-black mb-5 w-full" style={{ height: '70vh', maxHeight: '420px' }}>
                 <video
                   ref={videoRef}
                   className="h-full w-auto object-contain bg-black"
-                  controls
-                  muted
                   autoPlay
+                  muted={!isSoundEnabled}
                   onEnded={handleVideoEnded}
                 >
                   <source src="https://baateinvideos001.blob.core.windows.net/videos/Be%20a%20partner%20without%20music.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
-                {!isVideoPlaying && (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                    onClick={toggleVideoPlayback}
+                {/* Volume Icon Overlay */}
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center z-50">
+                  <button
+                    className={`relative group bg-white shadow-xl rounded-full p-4 flex items-center justify-center transition hover:bg-yellow-100 focus:outline-none border-2 border-yellow-200
+                      ${isSoundEnabled ? 'text-yellow-500 ring-2 ring-yellow-300' : 'text-gray-400 animate-pulse-glow'}
+                    `}
+                    onClick={() => {
+                      setIsSoundEnabled(!isSoundEnabled);
+                      if (videoRef.current) {
+                        videoRef.current.muted = isSoundEnabled; // toggle
+                        videoRef.current.play();
+                      }
+                    }}
+                    aria-label={isSoundEnabled ? 'Mute Sound' : 'Enable Sound'}
+                    style={{ outline: 'none', border: 'none', fontSize: 0 }}
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center shadow-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-500">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    {isSoundEnabled ? (
+                      // Full volume icon
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.54 8.46a5 5 0 010 7.07m2.83-9.9a9 9 0 010 12.73" />
                       </svg>
-                    </div>
-                  </div>
-                )}
+                    ) : (
+                      // Muted icon with slash
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H3v6h3l5 4V5z" fill="currentColor" />
+                        <line x1="19" y1="5" x2="5" y2="19" stroke="currentColor" strokeWidth="2" />
+                      </svg>
+                    )}
+                    {/* Tooltip */}
+                    <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap shadow-lg">
+                      {isSoundEnabled ? 'Mute Sound' : 'Enable Sound'}
+                    </span>
+                  </button>
+                </div>
               </div>
               {/* Modal Actions */}
-              <div className="flex flex-col items-center gap-3 mt-2">
+              <div className="flex flex-col items-center gap-3 w-full">
                 {!videoWatchedOnce ? (
                   <button
-                    className="w-32 py-2 rounded-lg bg-gray-300 text-gray-600 font-semibold cursor-not-allowed opacity-60"
+                    className="w-40 py-2 rounded-lg bg-gray-300 text-gray-600 font-semibold cursor-not-allowed opacity-60 text-base"
                     disabled
                   >
                     Watch till end to continue
@@ -270,13 +286,13 @@ const RegistrationForm = () => {
                 ) : (
                   <>
                     <button
-                      className="w-32 py-2 rounded-lg bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 transition"
+                      className="w-40 py-2 rounded-lg bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 transition text-base"
                       onClick={() => setShowVideoModal(false)}
                     >
                       Continue
                     </button>
                     <button
-                      className="w-32 py-2 rounded-lg bg-white border border-yellow-400 text-yellow-600 font-semibold hover:bg-yellow-50 transition"
+                      className="w-40 py-2 rounded-lg bg-white border border-yellow-400 text-yellow-600 font-semibold hover:bg-yellow-50 transition text-base"
                       onClick={handleReplay}
                     >
                       Replay
@@ -428,23 +444,29 @@ const RegistrationForm = () => {
           </div>
           
           {/* Header */}
-          <h1 className="text-xl sm:text-2xl font-bold text-[#F5BC1C] mb-1 animate-fadeInUp delay-200">
-            {t('welcome', 'title')}
-          </h1>
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-1 text-gray-800 transition-all duration-700 animate-fadeInUp opacity-100">
+              {t('welcome', 'title')}
+            </h1>
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-full px-4 py-1 font-semibold text-xs shadow-sm flex items-center gap-2 animate-fadeInUp ml-4">
+              <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" /></svg>
+              Details are for User Side
+            </div>
+          </div>
           <p className="text-[#2D2D2D] text-sm mb-4 sm:mb-6 animate-fadeInUp delay-300">{t('welcome', 'subtitle')}</p>
           
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 flex-1 max-w-full lg:max-w-lg">
             <div className={animatedFields.name ? 'animate-fadeInUp' : 'opacity-0'}>
               <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
-                {t('welcome', 'nameLabel')} <span className="text-[#F5BC1C]">*</span>
+                Profile Name <span className="text-[#F5BC1C]">*</span>
               </label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="profileName"
+                value={formData.profileName}
                 onChange={handleChange}
-                placeholder={t('welcome', 'namePlaceholder')}
+                placeholder="Enter Your Name"
                 className={`w-full border ${errors.name ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-3 text-base`}
                 required
               />
@@ -457,62 +479,32 @@ const RegistrationForm = () => {
               )}
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4 w-full">
-              <div className={`${animatedFields.phoneNumber ? 'animate-fadeInUp' : 'opacity-0'} w-full sm:w-1/2`}>
-                <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
-                  {t('welcome', 'phoneLabel')} <span className="text-[#F5BC1C]">*</span>
-                </label>
-                <div className="flex gap-2">
-                  <div className="w-16 sm:w-20">
-                    <input
-                      type="text"
-                      value="+91"
-                      className="w-full border border-[#F5BC1C] rounded-lg px-2 py-3 bg-gray-50 text-center text-base"
-                      disabled
-                    />
-                  </div>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder={t('welcome', 'phonePlaceholder')}
-                    className={`flex-1 border ${errors.phoneNumber ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-3 text-base`}
-                    required
-                  />
-                </div>
-                {errors.phoneNumber && (
-                  <p className="text-xs text-red-500 mt-1">{errors.phoneNumber}</p>
-                )}
+            <div className={`${animatedFields.gender ? 'animate-fadeInUp' : 'opacity-0'} w-full sm:w-1/2`}>
+              <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
+                {t('welcome', 'genderLabel')} <span className="text-[#F5BC1C]">*</span>
+              </label>
+              <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                {['Female', 'Male', 'LGBTQ'].map((g, index) => (
+                  <button
+                    type="button"
+                    key={g}
+                    onClick={() => handleGenderSelect(g as 'Female' | 'Male' | 'LGBTQ')}
+                    className={`px-3 py-2 sm:py-3 rounded-lg border text-xs sm:text-sm transition flex-1 min-w-0 ${
+                      formData.gender === g
+                        ? 'bg-[#F5BC1C] text-white border-[#F5BC1C]'
+                        : 'bg-white text-gray-700 border-gray-200'
+                    }`}
+                    style={{animationDelay: `${index * 0.1}s`}}
+                  >
+                    {g}
+                  </button>
+                ))}
               </div>
-              
-              <div className={`${animatedFields.gender ? 'animate-fadeInUp' : 'opacity-0'} w-full sm:w-1/2`}>
-                <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
-                  {t('welcome', 'genderLabel')} <span className="text-[#F5BC1C]">*</span>
-                </label>
-                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                  {['Female', 'Male', 'LGBTQ'].map((g, index) => (
-                    <button
-                      type="button"
-                      key={g}
-                      onClick={() => handleGenderSelect(g as 'Female' | 'Male' | 'LGBTQ')}
-                      className={`px-3 py-2 sm:py-3 rounded-lg border text-xs sm:text-sm transition flex-1 min-w-0 ${
-                        formData.gender === g
-                          ? 'bg-[#F5BC1C] text-white border-[#F5BC1C]'
-                          : 'bg-white text-gray-700 border-gray-200'
-                      }`}
-                      style={{animationDelay: `${index * 0.1}s`}}
-                    >
-                      {g}
-                    </button>
-                  ))}
-                </div>
-                {formData.gender === 'LGBTQ' && (
-                  <p className="text-xs text-[#F5BC1C] mt-1">
-                    <span className="font-bold">Note:</span> LGBTQ selection requires a feminine name
-                  </p>
-                )}
-              </div>
+              {formData.gender === 'LGBTQ' && (
+                <p className="text-xs text-[#F5BC1C] mt-1">
+                  <span className="font-bold">Note:</span> LGBTQ selection requires a feminine name
+                </p>
+              )}
             </div>
             
             <div className={animatedFields.referralCode ? 'animate-fadeInUp' : 'opacity-0'}>

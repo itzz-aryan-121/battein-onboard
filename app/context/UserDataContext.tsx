@@ -10,6 +10,14 @@ export interface UserData {
   gender: 'Female' | 'Male' | 'LGBTQ' | '';
   referralCode: string;
   
+  // Profile name for display (can be different from personal name)
+  profileName: string;
+  
+  // Partner personal details
+  city: string;
+  occupation: string;
+  degree: string;
+  
   // Partner details data
   spokenLanguages: string[];
   hobbies: string[];
@@ -55,6 +63,10 @@ const initialUserData: UserData = {
   phoneNumber: '',
   gender: '',
   referralCode: '',
+  profileName: '',
+  city: '',
+  occupation: '',
+  degree: '',
   spokenLanguages: [],
   hobbies: [],
   bio: '',
