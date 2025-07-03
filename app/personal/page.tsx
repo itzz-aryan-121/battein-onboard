@@ -198,9 +198,15 @@ const PersonalDetailsForm = () => {
   return (
     <div className="bg-white min-h-screen w-full flex flex-col relative">
       {/* Main content container */}
-      <div className="flex flex-col md:flex-row h-full relative">
+      <div className="flex flex-col md:flex-row h-full relative min-h-screen">
         {/* Left side - Form */}
-        <div className="w-full md:w-1/2 px-4 md:px-10 pt-6 pb-16 flex flex-col relative z-10">
+        <div className="w-full md:w-1/2 px-4 md:px-10 pt-6 pb-16 flex flex-col relative z-10"
+          style={{
+            maxHeight: '100vh',
+            overflowY: 'auto',
+            minHeight: '0',
+          }}
+        >
           {/* Logo */}
           <div className="flex items-center mb-4 sm:mb-6 animate-fadeInDown">
             <div className="bg-[#F5BC1C] w-10 sm:w-12 h-10 sm:h-12 rounded-xl flex items-center justify-center mr-3 animate-pulse" style={{animationDuration: '3s'}}>
@@ -229,7 +235,7 @@ const PersonalDetailsForm = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Enter your profile name"
+                placeholder="Enter your name"
                 className={`w-full border ${errors.name ? 'border-red-500' : 'border-[#F5BC1C]'} rounded-lg px-3 py-3 text-base`}
                 required
               />
@@ -357,7 +363,7 @@ const PersonalDetailsForm = () => {
             <div className="animate-fadeInUp delay-600">
               {/* Info Section */}
               <div className="flex mb-4 items-start">
-                <div className="bg-[#F5BC1C] w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 animate-pulse" style={{animationDuration: '3s'}}>
+                <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 animate-pulse" style={{animationDuration: '3s'}}>
                   <Image src="/assets/Cloud Security.png" alt="Security Icon" width={20} height={20} className="sm:w-6 sm:h-6" />
                 </div>
                 <div>
@@ -405,7 +411,7 @@ const PersonalDetailsForm = () => {
       </div>
       
       {/* Wave Background */}
-      <div className="absolute bottom-0 left-0 right-0 w-full z-0" style={{ transform: 'translateY(60px)' }}>
+      <div className="absolute bottom-0 left-0 right-0 w-full z-30" style={{ transform: 'translateY(60px)' }}>
         <WaveBackground height={120} />
       </div>
     </div>
