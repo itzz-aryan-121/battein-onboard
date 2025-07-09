@@ -45,6 +45,16 @@ const RegistrationForm = () => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Check localStorage for video watch status on component mount
+  useEffect(() => {
+    const hasWatchedWelcomeVideo = localStorage.getItem('hasWatchedWelcomeVideo');
+    if (hasWatchedWelcomeVideo === 'true') {
+      setShowVideoModal(false);
+      setVideoWatchedOnce(true);
+      setHasWatchedVideo(true);
+    }
+  }, []);
+
   // Progressive form field appearance for better UX
   useEffect(() => {
     const timeouts = [
@@ -62,12 +72,16 @@ const RegistrationForm = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Convert referral code to uppercase
+    const processedValue = name === 'referralCode' ? value.toUpperCase() : value;
+    
     setFormData(prevState => ({
       ...prevState,
-      [name]: value
+      [name]: processedValue
     }));
     
-    validateField(name, value);
+    validateField(name, processedValue);
   };
 
   const handleGenderSelect = (gender: 'Female' | 'Male' | 'LGBTQ') => {
@@ -188,6 +202,8 @@ const RegistrationForm = () => {
   const handleVideoEnded = () => {
     setHasWatchedVideo(true);
     setVideoWatchedOnce(true);
+    // Save to localStorage that user has watched the video
+    localStorage.setItem('hasWatchedWelcomeVideo', 'true');
   };
 
   const handleReplay = () => {
@@ -197,6 +213,12 @@ const RegistrationForm = () => {
       videoRef.current.currentTime = 0;
       videoRef.current.play();
     }
+  };
+
+  const handleSkipVideo = () => {
+    setShowVideoModal(false);
+    // Save to localStorage that user has watched the video (even if skipped)
+    localStorage.setItem('hasWatchedWelcomeVideo', 'true');
   };
 
   return (
@@ -210,7 +232,7 @@ const RegistrationForm = () => {
           <div className="relative bg-white/95 w-full max-w-md mx-auto z-10 rounded-2xl shadow-2xl border border-yellow-100 p-0 animate-scaleIn">
             {/* Close button (disabled until watched once) */}
             <button
-              onClick={() => setShowVideoModal(false)}
+              onClick={handleSkipVideo}
               className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white text-gray-700 shadow hover:bg-gray-100 transition disabled:opacity-50 disabled:pointer-events-none z-20"
               disabled={!videoWatchedOnce}
               aria-label="Close video"
@@ -287,7 +309,7 @@ const RegistrationForm = () => {
                   <>
                     <button
                       className="w-40 py-2 rounded-lg bg-yellow-500 text-white font-bold shadow hover:bg-yellow-600 transition text-base"
-                      onClick={() => setShowVideoModal(false)}
+                      onClick={handleSkipVideo}
                     >
                       Continue
                     </button>
