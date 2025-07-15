@@ -14,11 +14,11 @@ const RegistrationForm = () => {
   const [formData, setFormData] = useState<{
     profileName: string;
     gender: 'Female' | 'Male' | 'LGBTQ';
-    agencyCode: string;
+    referralCode: string;
   }>({
     profileName: userData.profileName || '',
     gender: userData.gender || 'Female',
-    agencyCode: userData.agencyCode || ''
+    referralCode: userData.referralCode || ''
   });
   
   // Validation errors for each field
@@ -30,7 +30,7 @@ const RegistrationForm = () => {
   const [animatedFields, setAnimatedFields] = useState({
     name: false,
     gender: false,
-    agencyCode: false
+    referralCode: false
   });
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -60,7 +60,7 @@ const RegistrationForm = () => {
     const timeouts = [
       setTimeout(() => setAnimatedFields(prev => ({ ...prev, name: true })), 300),
       setTimeout(() => setAnimatedFields(prev => ({ ...prev, gender: true })), 500),
-      setTimeout(() => setAnimatedFields(prev => ({ ...prev, agencyCode: true })), 700),
+      setTimeout(() => setAnimatedFields(prev => ({ ...prev, referralCode: true })), 700),
     ];
     
     return () => timeouts.forEach(timeout => clearTimeout(timeout));
@@ -73,8 +73,8 @@ const RegistrationForm = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
-    // Convert agency code to uppercase
-    const processedValue = name === 'agencyCode' ? value.toUpperCase() : value;
+    // Convert referral code to uppercase
+    const processedValue = name === 'referralCode' ? value.toUpperCase() : value;
     
     setFormData(prevState => ({
       ...prevState,
@@ -167,7 +167,7 @@ const RegistrationForm = () => {
       updateUserData({
         profileName: formData.profileName,
         gender: formData.gender as 'Female' | 'Male' | 'LGBTQ',
-        agencyCode: formData.agencyCode
+        referralCode: formData.referralCode
       });
 
       // If gender is Male, show success modal without redirection
@@ -529,14 +529,14 @@ const RegistrationForm = () => {
               )}
             </div>
             
-            <div className={animatedFields.agencyCode ? 'animate-fadeInUp' : 'opacity-0'}>
+            <div className={animatedFields.referralCode ? 'animate-fadeInUp' : 'opacity-0'}>
               <label className="block text-[#2D2D2D] font-medium text-sm mb-2">
                 {t('welcome', 'referralLabel')} <span className="text-xs text-gray-400 font-normal">{t('welcome', 'referralSubtext')}</span>
               </label>
               <input
                 type="text"
-                name="agencyCode"
-                value={formData.agencyCode}
+                name="referralCode"
+                value={formData.referralCode}
                 onChange={handleChange}
                 placeholder={t('welcome', 'referralPlaceholder')}
                 className="w-full border border-[#F5BC1C] rounded-lg px-3 py-3 text-base"

@@ -8,7 +8,7 @@ export interface UserData {
   name: string;
   phoneNumber: string;
   gender: 'Female' | 'Male' | 'LGBTQ' | '';
-  agencyCode: string;
+  referralCode: string;
   
   // Profile name for display (can be different from personal name)
   profileName: string;
@@ -62,7 +62,7 @@ const initialUserData: UserData = {
   name: '',
   phoneNumber: '',
   gender: '',
-  agencyCode: '',
+  referralCode: '',
   profileName: '',
   city: '',
   occupation: '',
@@ -196,7 +196,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         name: userData.name,
         phoneNumber: userData.phoneNumber,
         gender: userData.gender,
-        agencyCode: userData.agencyCode || undefined,
+        referralCode: userData.referralCode || undefined,
         spokenLanguages: userData.spokenLanguages,
         hobbies: userData.hobbies,
         bio: userData.bio,
@@ -247,7 +247,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('name');
       localStorage.removeItem('phoneNumber');
       localStorage.removeItem('gender');
-      localStorage.removeItem('agencyCode');
+      localStorage.removeItem('referralCode');
       localStorage.removeItem('partnerDetails');
       localStorage.removeItem('partnerId');
       localStorage.removeItem('kycData');
